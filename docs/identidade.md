@@ -23,3 +23,10 @@ esta entrega usa o portal como referência visual e não declara auditoria contr
 Não há fotos institucionais, imagens de pessoas ou números de acervo inventados na entrega.
 Os dois arquivos de teste são superfícies coloridas geradas para validar envio, metadados
 e apresentação; ficam somente no banco isolado de testes do navegador.
+
+
+## Arte de compartilhamento
+
+`public/assets/zon023-compartilhar-v1.jpg` é uma ilustração digital criada para a prévia de links e o envio pelo WhatsApp. Usa a paleta do acervo e referências visuais de memória, fotografia e Marechal Hermes. As cenas ilustradas não são fotografias históricas documentais.
+
+Formato: JPEG, 1200 × 630 pixels, aproximadamente 204 KB. Título, URL e identificação da 023ª Zona Eleitoral permanecem legíveis no cartão horizontal.

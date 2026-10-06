@@ -387,7 +387,7 @@ test("download em ZIP traz as fotos filtradas e a planilha; anos e páginas extr
       (await s.app.fetch(new Request("http://localhost/api/download.zip?year=1999"))).status,
     ).toBe(404);
     await s.app.ready;
-    for (const path of ["/baixar", "/manifest.webmanifest", "/assets/icon-192.png"])
+    for (const path of ["/baixar", "/manifest.webmanifest", "/assets/icon-192.png", "/assets/favicon-32.png", "/assets/zon023-compartilhar-v1.jpg"])
       expect((await s.app.fetch(new Request("http://localhost" + path))).status).toBe(200);
   } finally {
     s.cleanup();

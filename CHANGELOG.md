@@ -2,6 +2,13 @@
 
 As entradas descrevem entregas. Pendências aparecem no README e não são anunciadas como concluídas.
 
+## 2026-10-06 — Domínio e compartilhamento
+
+- DNS de `zon023.com.br` e `www` apontado para a VPS do acervo.
+- Repositório tornado público após revisão dos arquivos e do histórico.
+- Arte própria em JPEG para prévias de links e compartilhamento no WhatsApp.
+- Metadados Open Graph, Twitter Card e endereços canônicos.
+
 ## 2026-10-06 — Conteúdo e documentação
 
 - Título **Memórias da 023ª Zona Eleitoral**, sem subtítulo promocional.

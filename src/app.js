@@ -260,7 +260,7 @@ export function createApp({
   }
   const escapeHtml = (value) =>
     String(value).replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
-  function page(file, values = {}, title = "") {
+  function page(file, values = {}, title = "", pathname = "/") {
     let html = readFileSync(join(publicRoot, file), "utf8");
     for (const asset of ["app.js", "style.css", "admin.js", "admin.css"])
       html = html.replace(`/${asset}"`, `/${asset}?v=${texts["/" + asset].version}"`);
@@ -279,6 +279,7 @@ export function createApp({
       "<!--settings-json-->",
       `<script type="application/json" id="site-settings">${JSON.stringify(values).replace(/</g, "\\u003c")}</script>`,
     );
+    html = html.replace("<!--canonical-->", `<link rel="canonical" href="https://zon023.com.br${pathname}" /><meta property="og:url" content="https://zon023.com.br${pathname}" />`);
     if (title) html = html
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
       .replace(/(<meta property="og:title" content=")[^"]*/, `$1${escapeHtml(title)}`);
@@ -328,7 +329,7 @@ export function createApp({
   function renderHome() {
     const settings = admin.settings();
     texts["/"] = page("index.html", settings);
-    texts["/baixar"] = page("index.html", settings, "Baixar fotos · 023ª Zona Eleitoral");
+    texts["/baixar"] = page("index.html", settings, "Baixar fotos · 023ª Zona Eleitoral", "/baixar");
   }
   renderHome();
   {
@@ -815,7 +816,7 @@ export function createApp({
       let target;
       if (/^\/media\/[a-f0-9-]{36}(\.thumb|\.view)?\.(jpg|png|webp)$/.test(path))
         target = join(media, path.slice(7));
-      else if (/^\/assets\/[a-z0-9-]+\.(svg|woff2)$/.test(path))
+      else if (/^\/assets\/[a-z0-9-]+\.(svg|woff2|jpg)$/.test(path))
         target = join(publicRoot, path.slice(1));
       else throw new InputError("Página não encontrada.", 404);
       const asset = Bun.file(target);

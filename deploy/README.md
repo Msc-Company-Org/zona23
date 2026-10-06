@@ -6,8 +6,9 @@ Este guia separa o código, a imagem em execução e os dados persistentes. Um p
 
 | Item | Estado confirmado em 06/10/2026 |
 | --- | --- |
-| Site disponível | https://zona23.msccompany.com.br/ |
-| Novo domínio | `zon023.com.br`, registro aceito e ainda em ativação |
+| Domínio principal | https://zon023.com.br/ |
+| Endereço alternativo | https://zona23.msccompany.com.br/ |
+| Registro e DNS | Ativação confirmada; raiz e `www` resolvem para a VPS |
 | DNS preparado | A do domínio raiz para a VPS; `www` como CNAME do domínio raiz |
 | Serviço | `acervo`, projeto Compose `zona23`, container `zona23-acervo-1` |
 | Porta | `3023`, interna à rede do proxy |

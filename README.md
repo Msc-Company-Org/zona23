@@ -9,9 +9,9 @@ Um acervo colaborativo para reunir fotografias, identificar as pessoas e preserv
 [![Interface](https://img.shields.io/badge/interface-HTML%20%C2%B7%20CSS%20%C2%B7%20JS-ffda59)](public/)
 [![Deploy](https://img.shields.io/badge/publica%C3%A7%C3%A3o-Docker-47c77d)](deploy/README.md)
 
-**[🌐 Abrir o acervo](https://zona23.msccompany.com.br/)** · **[📖 Como usar](docs/guia-do-acervo.md)** · **[🛠️ Desenvolver](#-rodar-no-computador)** · **[🚀 Publicar](deploy/README.md)**
+**[🌐 Abrir o acervo](https://zon023.com.br/)** · **[📖 Como usar](docs/guia-do-acervo.md)** · **[🛠️ Desenvolver](#-rodar-no-computador)** · **[🚀 Publicar](deploy/README.md)**
 
-> **Endereço atual:** `zona23.msccompany.com.br`. O domínio `zon023.com.br` está em ativação. Este projeto colaborativo não presume homologação institucional pelo TRE-RJ.
+> **Domínio principal:** `zon023.com.br`. O endereço `zona23.msccompany.com.br` permanece disponível como alternativa. Este projeto colaborativo não presume homologação institucional pelo TRE-RJ.
 
 ## 🧭 O que você encontra
 
@@ -30,6 +30,12 @@ Um acervo colaborativo para reunir fotografias, identificar as pessoas e preserv
 - **Com imagens leves:** miniaturas WebP e visualização de até 1600 pixels.
 - **Com contexto:** nomes, datas, títulos e descrições acompanham as imagens.
 - **Com acessibilidade:** rótulos nos controles, foco visível e respeito a movimento reduzido.
+
+## 💬 Compartilhar no WhatsApp
+
+Envie **https://zon023.com.br/** para compartilhar o acervo. A página inclui título, descrição e uma imagem própria para a prévia do link.
+
+Também é possível baixar a [arte de compartilhamento](public/assets/zon023-compartilhar-v1.jpg) ou usar **Imagem para WhatsApp** no menu do site. A arte é uma ilustração digital; não representa uma fotografia histórica documental.
 
 ## 📖 Comece por aqui
 
@@ -78,7 +84,7 @@ bun run check
 bun test
 ```
 
-Os testes usam dados isolados e cobrem persistência, uploads, filtros, paginação, edição, downloads e proteção administrativa. A validação de 06/10/2026 passou com **11 testes e 139 asserções**.
+Os testes usam dados isolados e cobrem persistência, uploads, filtros, paginação, edição, downloads e proteção administrativa. A validação de 06/10/2026 passou com **11 testes de integração**.
 
 Mudanças de interface também precisam de conferência visual no celular e no computador. Testes do servidor não substituem essa revisão.
 
@@ -111,7 +117,6 @@ Leia o [guia de contribuição](CONTRIBUTING.md). Uma boa proposta explica o pro
 
 ### 📌 Próximas entregas
 
-- Concluir a ativação de `zon023.com.br` e verificar DNS e HTTPS.
 - Criar os usuários solicitados, a tela de perfil e o fluxo individual de primeiro acesso.
 - Configurar e documentar os canais de operação da VPS.
 
