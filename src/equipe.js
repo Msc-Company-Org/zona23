@@ -1,4 +1,5 @@
-import { ROLES } from "./auth.js";
+import { GROUPS, ROLES } from "./auth.js";
+import { LOCAIS, SECAO_LOCAL } from "./locais.js";
 
 // Área interna da equipe do cartório: pessoas da equipe, marcos do calendário e painel inicial.
 // Os módulos de eleição (escala, tarefas, convocações…) entram aqui em arquivos próprios.
@@ -28,7 +29,7 @@ export function migrateEquipe(db) {
 export function createEquipe(ctx) {
   const { db, json, InputError, textValue, validDate, auth, today } = ctx;
 
-  const USER_FIELDS = "id,username,name,title,role,phone,email,active,must_change,onboarded_at,last_login_at,created_at";
+  const USER_FIELDS = "id,username,name,title,role,phone,email,active,must_change,onboarded_at,last_login_at,created_at,local_id,secao";
   const shapeUser = (row, full) => {
     const base = {
       id: row.id,
@@ -38,6 +39,8 @@ export function createEquipe(ctx) {
       role: row.role,
       phone: row.phone,
       email: row.email,
+      localId: row.local_id ?? null,
+      secao: row.secao ?? null,
     };
     if (!full) return base;
     return {
@@ -70,12 +73,22 @@ export function createEquipe(ctx) {
     };
   }
 
+  // Local e seção de quem trabalha em campo (presidente: seção; administrador de prédio: local).
+  function lugar(body) {
+    const secao = body.secao ? Number(body.secao) : null;
+    if (secao && !SECAO_LOCAL.has(secao)) throw new InputError("Seção não encontrada na 23ª ZE.");
+    const localId = body.localId ? Number(body.localId) : secao ? SECAO_LOCAL.get(secao).id : null;
+    if (localId && !LOCAIS.some((local) => local.id === localId)) throw new InputError("Local não encontrado.");
+    return { localId, secao };
+  }
+
   async function handle(req, url, path) {
     const method = req.method;
     const me = auth.guard(req);
-    const isAdmin = me.role === "admin";
-    // Juiz(a) e promotor(a) consultam; quem altera é a equipe do cartório.
-    if (me.role === "autoridade" && method !== "GET")
+    const isAdmin = GROUPS.gestao.includes(me.role);
+    const cartorio = GROUPS.cartorio.includes(me.role);
+    // Autoridades e pessoal de campo consultam; quem altera é a equipe do cartório.
+    if (!cartorio && method !== "GET")
       throw new InputError("Seu perfil consulta as informações; alterações ficam com a equipe do cartório.", 403);
 
     // ---------- Início ----------
@@ -85,9 +98,10 @@ export function createEquipe(ctx) {
         today: day,
         user: auth.publicUser(me),
         team: db
-          .query(`SELECT ${USER_FIELDS} FROM users WHERE active=1 ORDER BY name COLLATE NOCASE`)
-          .all()
+          .query(`SELECT ${USER_FIELDS} FROM users WHERE active=1 AND role IN (${[...GROUPS.cartorio, ...GROUPS.autoridade].map(() => "?").join(",")}) ORDER BY name COLLATE NOCASE`)
+          .all(...GROUPS.cartorio, ...GROUPS.autoridade)
           .map((row) => shapeUser(row, false)),
+        local: me.local_id ? LOCAIS.find((local) => local.id === me.local_id) || null : me.secao ? SECAO_LOCAL.get(me.secao) || null : null,
         marcos: db
           .query("SELECT * FROM marcos WHERE date>=? ORDER BY date,time LIMIT 12")
           .all(day),
@@ -98,15 +112,19 @@ export function createEquipe(ctx) {
     }
 
     // ---------- Pessoas da equipe ----------
-    if (path === "/api/equipe/users" && method === "GET")
+    if (path === "/api/equipe/users" && method === "GET") {
+      // Quem é de campo vê só os contatos do cartório e das autoridades.
+      const visible = cartorio ? ROLES : [...GROUPS.cartorio, ...GROUPS.autoridade];
       return json({
         users: db
           .query(
-            `SELECT ${USER_FIELDS} FROM users ${isAdmin ? "" : "WHERE active=1"} ORDER BY active DESC, name COLLATE NOCASE`,
+            `SELECT ${USER_FIELDS} FROM users WHERE ${isAdmin ? "1" : "active=1"} AND role IN (${visible.map(() => "?").join(",")})
+             ORDER BY active DESC, name COLLATE NOCASE`,
           )
-          .all()
+          .all(...visible)
           .map((row) => shapeUser(row, isAdmin)),
       });
+    }
     const userMatch = path.match(/^\/api\/equipe\/users\/([a-f0-9-]{36})(\/link)?$/);
     if ((path === "/api/equipe/users" && method === "POST") || userMatch) {
       if (!isAdmin) throw new InputError("Só a administração gerencia as contas.", 403);
@@ -118,6 +136,7 @@ export function createEquipe(ctx) {
         name: body.name,
         title: body.title,
         role: body.role || "equipe",
+        ...lugar(body),
         phone: body.phone,
         email: body.email,
         createdBy: me.id,
@@ -135,19 +154,22 @@ export function createEquipe(ctx) {
       const role = body.role ?? target.role;
       if (!ROLES.includes(role)) throw new InputError("Perfil desconhecido.");
       const active = body.active === undefined ? Boolean(target.active) : Boolean(body.active);
-      if (target.id === me.id && (role !== "admin" || !active))
+      if (target.id === me.id && (!GROUPS.gestao.includes(role) || !active))
         throw new InputError("Você não pode tirar o próprio acesso de administração.");
       const name = body.name === undefined ? target.name : textValue(body.name, "Nome", 80, true);
       const title = body.title === undefined ? target.title : textValue(String(body.title), "Cargo", 60);
       const phone = body.phone === undefined ? target.phone : auth.cleanPhone(body.phone);
       const email = body.email === undefined ? target.email : auth.cleanEmail(body.email, target.id);
-      db.query("UPDATE users SET name=?,title=?,role=?,phone=?,email=?,active=? WHERE id=?").run(
+      const where = body.localId === undefined && body.secao === undefined ? { localId: target.local_id, secao: target.secao } : lugar(body);
+      db.query("UPDATE users SET name=?,title=?,role=?,phone=?,email=?,active=?,local_id=?,secao=? WHERE id=?").run(
         name,
         title,
         role,
         phone,
         email,
         active ? 1 : 0,
+        where.localId,
+        where.secao,
         target.id,
       );
       // Conta desativada perde as sessões abertas e os links pendentes.

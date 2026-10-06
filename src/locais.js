@@ -1,0 +1,47 @@
+// Locais de votação e seções da 23ª Zona Eleitoral (informação pública: endereços e seções
+// são divulgados pela Justiça Eleitoral). Contatos de direção e de pessoas não ficam aqui.
+// Fonte: Planejamento Logístico 2026 do cartório; 225 seções, conferidas com a lista do TSE.
+export const LOCAIS = [
+  ["A", "1309", "E.M. Madre Benedita", "Guadalupe", "14º", [166, 167, 168, 359, 427, 469]],
+  ["A", "1260", "C.E. Joel de Oliveira", "Deodoro", "14º", [145, 146, 147, 148, 149, 150, 366, 428, 587]],
+  ["A", "1333", "E.M. Juracy Silveira", "Deodoro", "14º", [141, 142, 143, 144, 179, 180, 436, 466]],
+  ["B", "1295", "E.M. Lia Braga de Faria", "Guadalupe", "41º", [161, 162, 163, 164, 165, 489]],
+  ["B", "1287", "E.M. Baden Powell", "Deodoro", "41º", [159, 160, 381, 478]],
+  ["B", "1279", "Colégio Pio XII – Matiola", "Guadalupe", "41º", [151, 152, 153, 154, 155, 156, 157, 158, 401, 477]],
+  ["C", "1325", "E.M. Rose Klabin", "Guadalupe", "41º", [174, 175, 176, 177, 178, 353, 474]],
+  ["C", "1317", "E.M. Oswaldo Goeldi", "Guadalupe", "9º", [169, 170, 171, 172, 173]],
+  ["D", "1635", "CIEP João do Rio", "Guadalupe", "41º", [222, 382, 429, 465, 482, 486, 488, 493, 586]],
+  ["D", "1430", "E.M. Isaías Alves", "Guadalupe", "41º", [224, 225, 226, 227, 228, 476]],
+  ["D", "1422", "E.M. Emílio Carlos", "Guadalupe", "41º", [219, 220, 221, 223, 471]],
+  ["D", "1708", "Rede Elite – Shopping Jardim Guadalupe", "Guadalupe", "41º", [188, 189, 190, 191, 192, 369, 444, 458]],
+  ["E", "1627", "E.M. Prof. Álvaro Espinheira", "Guadalupe", "41º", [483, 487, 491, 585]],
+  ["E", "1600", "Colégio Mercedário Pio XII – Mercês", "Guadalupe", "41º", [481, 484, 485, 492]],
+  ["E", "1619", "Colégio Marechal Lott", "Guadalupe", "41º", [448, 459, 473, 480, 494]],
+  ["F", "1376", "E.M. Gilberto Amado", "Guadalupe", "41º", [181, 182, 193, 194, 195, 472, 479, 490]],
+  ["F", "1350", "E.M. Bélgica", "Guadalupe", "41º", [183, 184, 185, 186, 187, 306, 307, 308, 309, 310, 356, 391, 410, 434, 475]],
+  ["G", "1384", "E.M. Maurice Maeterlinck", "Guadalupe", "41º", [196, 197, 198, 199, 200, 371]],
+  ["G", "1180", "E.E.I. Ernani Cardoso", "Guadalupe", "41º", [100, 101, 102, 443, 470]],
+  ["G", "1392", "E.M. Piauí", "Guadalupe", "41º", [201, 202, 203, 204, 451]],
+  ["H", "1694", "Centro Educacional Santa Mônica", "Bento Ribeiro", "9º", [531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542]],
+  ["H", "1724", "Centro Tecnológico Rio (CT-Rio)", "Bento Ribeiro", "9º", [558, 559, 560, 561, 562]],
+  ["I", "1716", "E.M. Francisco Palheta", "Bento Ribeiro", "9º", [548, 549, 550, 551, 552, 553, 554, 555, 556, 557]],
+  ["I", "1740", "E.M. Miguel de Cervantes", "Bento Ribeiro", "9º", [574, 575, 576, 577, 578, 579]],
+  ["I", "1651", "E.E. Prof. José Accioli", "Marechal Hermes", "9º", [505, 506, 507, 508, 509, 510, 511]],
+  ["J", "1660", "Centro Educacional Triângulo", "Bento Ribeiro", "9º", [512, 513, 514, 515, 516]],
+  ["J", "1643", "Colégio Progressão", "Marechal Hermes", "9º", [495, 496, 497, 498, 499, 500, 501, 502, 503, 504]],
+  ["L", "1678", "Colégio Américo de Oliveira", "Marechal Hermes", "9º", [517, 518, 519, 520, 521]],
+  ["L", "1732", "E.M. Evangelina Duarte Batista", "Marechal Hermes", "9º", [563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573]],
+  ["L", "1686", "E.M. Santos Dumont", "Marechal Hermes", "9º", [522, 523, 524, 525, 526, 527, 528, 529, 530]],
+  ["M", "", "E.T.E. Visconde de Mauá (FAETEC)", "Marechal Hermes", "14º", [543, 544, 545, 546, 547]],
+  ["N", "1759", "E.M. Rosa da Fonseca", "Vila Militar", "14º", [580, 581, 582, 583, 584]],
+].map(([area, codigo, nome, bairro, bpm, secoes], index) => ({
+  id: index + 1,
+  area,
+  codigo,
+  nome,
+  bairro,
+  bpm,
+  secoes,
+}));
+
+export const SECAO_LOCAL = new Map(LOCAIS.flatMap((local) => local.secoes.map((secao) => [secao, local])));

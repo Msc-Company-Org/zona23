@@ -1,5 +1,6 @@
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";
+import { GROUPS } from "./auth.js";
 
 // Acervo na área da equipe: fotos, eventos, pessoas e textos do site.
 // Login, sessão e senha ficam em auth.js.
@@ -84,7 +85,7 @@ export function createAdmin(ctx) {
     const method = req.method;
     const legacy = path.match(/^\/api\/admin\/(\w+)$/)?.[1];
     if (LEGACY.includes(legacy)) return auth.handle(req, url, "/api/auth/" + legacy, ip);
-    auth.guard(req, ["admin", "equipe"]);
+    auth.guard(req, GROUPS.cartorio);
 
     // ---------- Painel ----------
     if (path === "/api/admin/dashboard" && method === "GET") {

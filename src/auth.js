@@ -8,8 +8,15 @@ const SESSION = { short: 12 * HOUR, long: 30 * 24 * HOUR };
 // Quem entrou por link pode definir a senha sem informar a atual durante este intervalo.
 const LINK_FRESH = 30 * 60000;
 export const LINK_TTL = { login: 15 * 60000, invite: 72 * HOUR };
-// admin: equipe + gestão das contas · equipe: todos os módulos · autoridade: juiz(a) e promotor(a).
-export const ROLES = ["admin", "equipe", "autoridade"];
+// Perfis de acesso. Cartório: administração do sistema, chefia e equipe; autoridades consultam;
+// pessoal de campo (ASE, presidentes de seção e administradores de prédio) vê só o que é seu.
+export const GROUPS = {
+  gestao: ["admin", "chefe"],
+  cartorio: ["admin", "chefe", "equipe"],
+  autoridade: ["juiz", "promotor"],
+  campo: ["ase", "presidente", "adm_predio"],
+};
+export const ROLES = [...GROUPS.cartorio, ...GROUPS.autoridade, ...GROUPS.campo];
 const EASY = ["admin123", "12345678", "password", "senha123", "zona0230", "zon@0230", "123456789"];
 
 export function migrateAuth(db) {
@@ -27,6 +34,10 @@ export function migrateAuth(db) {
   add("users", "last_login_at", "TEXT NOT NULL DEFAULT ''");
   add("users", "title", "TEXT NOT NULL DEFAULT ''");
   add("users", "onboarded_at", "TEXT NOT NULL DEFAULT ''");
+  add("users", "local_id", "INTEGER");
+  add("users", "secao", "INTEGER");
+  // Perfil antigo "autoridade" vira juiz ou promotor conforme o cargo.
+  db.exec(`UPDATE users SET role = CASE WHEN lower(title) LIKE '%ju_z%' THEN 'juiz' ELSE 'promotor' END WHERE role = 'autoridade'`);
   add("sessions", "created_at", "INTEGER NOT NULL DEFAULT 0");
   add("sessions", "remember", "INTEGER NOT NULL DEFAULT 0");
   add("sessions", "method", "TEXT NOT NULL DEFAULT 'password'");
@@ -120,7 +131,7 @@ export function createAuth(ctx) {
     if (!token) return null;
     const row = db
       .query(
-        `SELECT u.id,u.username,u.name,u.role,u.title,u.phone,u.email,u.must_change,u.active,u.onboarded_at,
+        `SELECT u.id,u.username,u.name,u.role,u.title,u.phone,u.email,u.must_change,u.active,u.onboarded_at,u.local_id,u.secao,
           s.expires_at,s.created_at AS session_created,s.method,s.token_hash
          FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=?`,
       )
@@ -135,6 +146,8 @@ export function createAuth(ctx) {
     name: row.name || row.username,
     role: row.role,
     title: row.title || "",
+    localId: row.local_id ?? null,
+    secao: row.secao ?? null,
     phone: row.phone || "",
     email: row.email || "",
     mustChange: Boolean(row.must_change),
@@ -190,7 +203,7 @@ export function createAuth(ctx) {
   }
 
   // Conta nova sem senha conhecida entra pelo link; com senha inicial, ela expira em `initialDays`.
-  function createUser({ username, name = "", title = "", role = "equipe", phone = "", email = "", password = "", initialDays = 7, createdBy = "" }) {
+  function createUser({ username, name = "", title = "", role = "equipe", phone = "", email = "", password = "", initialDays = 7, createdBy = "", localId = null, secao = null }) {
     const handle = loginName(normalize, username);
     if (!/^[a-z][a-z0-9._-]{1,31}$/.test(handle))
       throw new InputError("Usuário: use letras e números, começando por letra.");
@@ -214,6 +227,7 @@ export function createAuth(ctx) {
       cleanEmail(email),
       password && initialDays ? Date.now() + initialDays * 24 * HOUR : 0,
     );
+    if (localId || secao) db.query("UPDATE users SET local_id=?,secao=? WHERE id=?").run(localId || null, secao || null, id);
     audit(createdBy, "user_create", "user", id, handle);
     return db.query("SELECT * FROM users WHERE id=?").get(id);
   }

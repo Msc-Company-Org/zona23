@@ -9,6 +9,8 @@ import sharp from "sharp";
 import { createAdmin, SETTINGS, today } from "./admin.js";
 import { createAuth, migrateAuth } from "./auth.js";
 import { createEquipe, migrateEquipe } from "./equipe.js";
+import { createEleicao, migrateEleicao } from "./eleicao.js";
+import { createDocumentos, migrateDocumentos, MAX_DOCUMENTO } from "./documentos.js";
 
 const MAX_FILE = 25 * 1024 * 1024;
 const VIEW_SIZE = 1600;
@@ -57,6 +59,8 @@ export function createApp({
   adminBootstrapPassword = "",
   mailer = null,
   androidApp = null,
+  totalizacao = false,
+  fetchJson = null,
 } = {}) {
   if (!Number.isFinite(maxStorageMB) || maxStorageMB < 0)
     throw new Error("MAX_STORAGE_MB deve ser um número válido e não negativo.");
@@ -118,6 +122,8 @@ export function createApp({
   db.exec("CREATE INDEX IF NOT EXISTS photo_event ON photos(event_id)");
   migrateAuth(db);
   migrateEquipe(db);
+  migrateEleicao(db);
+  migrateDocumentos(db);
   const countHit = db.query(
     "INSERT INTO hits VALUES (?,?,?,1) ON CONFLICT(day,kind,ref) DO UPDATE SET count=count+1",
   );
@@ -357,6 +363,8 @@ export function createApp({
     today,
     origin: allowedOrigins[0] || "",
   });
+  const eleicao = createEleicao({ db, json, InputError, textValue, auth, totalizacao, fetchJson });
+  const documentos = createDocumentos({ db, json, InputError, textValue, auth, root, securityHeaders });
   function renderHome() {
     const settings = admin.settings();
     // O acervo de fotos mora em /memorias; a raiz é a entrada da equipe.
@@ -620,14 +628,17 @@ export function createApp({
           req.headers.get("Sec-Fetch-Site") === "cross-site"
         )
           throw new InputError("Envie a partir da página do acervo.", 403);
-        if (Number(req.headers.get("Content-Length") || 0) > MAX_FILE + 65536)
-          throw new InputError("A foto deve ter até 25 MB.", 413);
+        const documento = path === "/api/documentos";
+        if (Number(req.headers.get("Content-Length") || 0) > (documento ? MAX_DOCUMENTO : MAX_FILE) + 65536)
+          throw new InputError(documento ? "O arquivo deve ter até 40 MB." : "A foto deve ter até 25 MB.", 413);
         // Equipe logada e contagem de acesso não gastam a cota de envios públicos.
         if (path === "/api/hit") hitLimit(ip);
         else if (!auth.user(req)) rateLimit(ip);
       }
       if (path.startsWith("/api/auth/")) return await auth.handle(req, url, path, ip);
       if (path.startsWith("/api/equipe/")) return await equipe.handle(req, url, path);
+      if (path.startsWith("/api/eleicao/")) return await eleicao.handle(req, url, path);
+      if (path === "/api/documentos" || path.startsWith("/api/documentos/")) return await documentos.handle(req, url, path);
       if (path.startsWith("/api/admin/")) return await admin.handle(req, url, path, ip);
       if (path === "/api/app" && req.method === "GET") return json({ apk: await apkInfo() });
       if (path === "/api/hit" && req.method === "POST") {
@@ -952,5 +963,15 @@ export function createApp({
       );
     }
   }
-  return { fetch, close: () => db.close(), ready: iconsReady, auth };
+  return {
+    fetch,
+    close: () => {
+      eleicao.stop();
+      db.close();
+    },
+    ready: iconsReady,
+    auth,
+    documentos,
+    eleicao,
+  };
 }

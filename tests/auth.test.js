@@ -128,7 +128,7 @@ test("perfis: equipe não gerencia contas, autoridade só consulta e conta desat
   try {
     seed(s, "admin1", "admin");
     seed(s, "servidor");
-    seed(s, "juiz", "autoridade", "Juiz Eleitoral");
+    seed(s, "juiz", "juiz", "Juiz Eleitoral");
     const ready = async (username, next) => {
       const session = await s.login(username);
       await s.request("/api/auth/password", "POST", { current: INITIAL, next }, session.cookie);
