@@ -64,6 +64,12 @@ const agora = () => new Date().toISOString();
 const quando = (data, hora) => (data && hora ? `${data.slice(6, 10)}-${data.slice(3, 5)}-${data.slice(0, 2)}T${hora}` : "");
 
 const PRESENCAS = ["", "presente", "faltou", "substituido"];
+// Título de eleitor e CPF aparecem mascarados; só o cartório revela, com registro na auditoria.
+export function mascararDocumentos(texto = "") {
+  return String(texto)
+    .replace(/\b\d{3}\.?\d{3}\.?\d{3}-?(\d{2})\b/g, "•••.•••.•••-$1")
+    .replace(/\b\d{4}\s?\d{4}\s?(\d{4})\b/g, "•••• •••• $1");
+}
 const semAcento = (texto) => String(texto).normalize("NFD").replace(/\p{Diacritic}/gu, "").toUpperCase().replace(/\s+/g, " ").trim();
 
 // Importa convocações (relatório do ELO/Convoca+ já convertido em JSON, sem número de título).
@@ -233,7 +239,14 @@ export function createEleicao(ctx) {
   }
   function shapeDemanda(row) {
     const local = row.local_id ? LOCAIS.find((l) => l.id === row.local_id) : null;
-    return { ...row, local: local ? { id: local.id, nome: local.nome, area: local.area } : null, tipoNome: TIPOS[row.tipo] || row.tipo };
+    return {
+      ...row,
+      descricao: mascararDocumentos(row.descricao),
+      resposta: mascararDocumentos(row.resposta),
+      dados_eleitor: mascararDocumentos(row.dados_eleitor),
+      local: local ? { id: local.id, nome: local.nome, area: local.area } : null,
+      tipoNome: TIPOS[row.tipo] || row.tipo,
+    };
   }
   const demanda = (id) => {
     const row = db.query(`SELECT ${DEMANDA} FROM demandas d WHERE d.id=?`).get(id);
@@ -402,6 +415,13 @@ export function createEleicao(ctx) {
       );
       auth.audit(me.id, "demanda_create", "demanda", id, body.tipo);
       return json({ demanda: shapeDemanda(demanda(id)) }, 201);
+    }
+    const revelarMatch = path.match(/^\/api\/eleicao\/demandas\/([a-f0-9-]{36})\/revelar$/);
+    if (revelarMatch && method === "POST") {
+      if (!cartorio) throw new InputError("Só a equipe do cartório vê os números completos.", 403);
+      const atual = demanda(revelarMatch[1]);
+      auth.audit(me.id, "demanda_revelar", "demanda", atual.id);
+      return json({ descricao: atual.descricao, dados_eleitor: atual.dados_eleitor, resposta: atual.resposta });
     }
     const demandaMatch = path.match(/^\/api\/eleicao\/demandas\/([a-f0-9-]{36})$/);
     if (demandaMatch && method === "PATCH") {

@@ -1009,7 +1009,8 @@ let refreshTimer = null;
 let demandas = [],
   demandaTipos = {},
   dmStatus = "ativas",
-  viewing = null;
+  viewing = null,
+  respostaExibida = "";
 const DM_STATUS = {
   aberta: ["Aberta", "chip-yellow"],
   em_atendimento: ["Em atendimento", "chip-blue"],
@@ -1141,7 +1142,13 @@ function openDemanda(d) {
     ${linha("Local", d.local?.nome)}${linha("Seção", d.secao)}${linha("Quem pediu", d.solicitante)}${linha("Chegou por", d.canal)}
     ${linha("Dados do eleitor", d.dados_eleitor)}${linha("Aberta", `${quandoLabel(d.criada_em)} · ${d.aberta_por_nome || ""}`)}
     ${linha("Responsável", d.responsavel_nome)}${linha("Concluída", quandoLabel(d.concluida_em))}${!cartorio ? linha("Resposta", d.resposta) : ""}</dl>`;
-  $("#dv-resposta").value = d.resposta || "";
+  const temNumero = /•{3,4}/.test(`${d.descricao} ${d.dados_eleitor} ${d.resposta}`);
+  if (cartorio && temNumero)
+    $("#dv-info").insertAdjacentHTML(
+      "beforeend",
+      `<button type="button" class="link dv-revelar" id="dv-revelar">${icon("eye")}Mostrar título/CPF completos (fica registrado)</button>`,
+    );
+  $("#dv-resposta").value = respostaExibida = d.resposta || "";
   $("#dv-resposta-field").hidden = !cartorio;
   const botao = (acao, texto, classe) => `<button class="btn ${classe}" type="button" data-acao="${acao}">${texto}</button>`;
   $("#dv-actions").innerHTML = cartorio
@@ -1156,13 +1163,27 @@ function openDemanda(d) {
   errorAt("#dv-error");
   $("#dm-view").showModal();
 }
+$("#dv-info").addEventListener("click", async (event) => {
+  if (!event.target.closest("#dv-revelar") || !viewing) return;
+  try {
+    const dados = await api(`/api/eleicao/demandas/${viewing.id}/revelar`, { method: "POST" });
+    $("#dv-info .dv-desc").textContent = dados.descricao;
+    const campo = [...$$("#dv-info dt")].find((dt) => dt.textContent === "Dados do eleitor");
+    if (campo) campo.nextElementSibling.textContent = dados.dados_eleitor;
+    if (dados.resposta) $("#dv-resposta").value = respostaExibida = dados.resposta;
+    $("#dv-revelar").remove();
+  } catch (error) {
+    toast(error.message, false);
+  }
+});
 $("#dv-actions").addEventListener("click", async (event) => {
   const button = event.target.closest("[data-acao]");
   if (!button || !viewing) return;
   try {
     await api(`/api/eleicao/demandas/${viewing.id}`, {
       method: "PATCH",
-      body: { acao: button.dataset.acao, resposta: $("#dv-resposta").value },
+      // Resposta só vai se foi editada: a versão mascarada não substitui a original.
+      body: { acao: button.dataset.acao, ...($("#dv-resposta").value !== respostaExibida ? { resposta: $("#dv-resposta").value } : {}) },
     });
     $("#dm-view").close();
     toast({ assumir: "Demanda assumida.", concluir: "Demanda concluída.", cancelar: "Demanda cancelada.", reabrir: "Demanda reaberta.", atualizar: "Resposta salva." }[button.dataset.acao]);

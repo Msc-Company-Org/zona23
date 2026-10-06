@@ -142,7 +142,11 @@ L = lê · E = edita · P = próprio (só o que é seu) · — = não vê
 - **Tipos:** título, seção ou local; material ou ata; urna; mesário; estrutura; policiamento; filas; procedimento; outro.
 - **Ciclo:** aberta → em atendimento → concluída ou cancelada, com resposta registrada.
 - **Prioridade:** normal, alta, urgente.
-- **Privacidade:** dados de eleitor visíveis só para o cartório e para quem abriu, e apagados 7 dias após a conclusão.
+- **Privacidade:**
+  - título de eleitor e CPF aparecem **mascarados** para todos (ex.: `•••• •••• 0353`);
+  - só a equipe do cartório revela o número completo, em uma demanda por vez, com registro na auditoria;
+  - dados de eleitor visíveis só para o cartório e para quem abriu, e apagados 7 dias após a conclusão.
+  - Convocações não guardam título nem CPF.
 - **Próximo:**
   - respostas rápidas (modelos);
   - atribuir a um colega;

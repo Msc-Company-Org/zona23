@@ -871,3 +871,5 @@
   .cv-pessoa { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
   .cv-presenca { min-width: 300px; }
 }
+.dv-revelar { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; }
+.dv-revelar .icon { width: 16px; height: 16px; }

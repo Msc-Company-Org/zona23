@@ -173,3 +173,25 @@ test("convocações: importação sem título, repetição atualiza e presença 
     s.close();
   }
 }, 30000);
+
+test("demandas: título e CPF mascarados para todos; só o cartório revela, com auditoria", async () => {
+  const s = sandbox();
+  try {
+    const equipe = await s.pessoa("servidor", "equipe");
+    const adm = await s.pessoa("adm1", "adm_predio", { localId: 2 });
+    const criada = await s.request("/api/eleicao/demandas", "POST", { tipo: "localizar_eleitor", descricao: "CPF 123.456.789-01 não consta", dadosEleitor: "Título 1234 5678 0353" }, adm);
+    expect(criada.data.demanda.dados_eleitor).toBe("Título •••• •••• 0353");
+    expect(criada.data.demanda.descricao).toBe("CPF •••.•••.•••-01 não consta");
+    const id = criada.data.demanda.id;
+    expect((await s.request(`/api/eleicao/demandas/${id}/revelar`, "POST", {}, adm)).status).toBe(403);
+    const revelado = await s.request(`/api/eleicao/demandas/${id}/revelar`, "POST", {}, equipe);
+    expect(revelado.data.dados_eleitor).toBe("Título 1234 5678 0353");
+    expect(s.app.db.query("SELECT COUNT(*) c FROM audit_log WHERE action='demanda_revelar'").get().c).toBe(1);
+    // Concluir sem reenviar a resposta não grava a versão mascarada.
+    await s.request(`/api/eleicao/demandas/${id}`, "PATCH", { acao: "atualizar", resposta: "Título 1234 5678 0353 vota na 587" }, equipe);
+    await s.request(`/api/eleicao/demandas/${id}`, "PATCH", { acao: "concluir" }, equipe);
+    expect(s.app.db.query("SELECT resposta FROM demandas WHERE id=?").get(id).resposta).toBe("Título 1234 5678 0353 vota na 587");
+  } finally {
+    s.close();
+  }
+}, 30000);
