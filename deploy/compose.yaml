@@ -1,0 +1,36 @@
+name: zona23
+services:
+  acervo:
+    image: msc/zona23:c883fad
+    restart: unless-stopped
+    networks: [web]
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3023"
+      DATA_DIR: /data
+      PUBLIC_ORIGIN: https://zona23.msccompany.com.br
+      TRUST_PROXY: "false"
+      MAX_STORAGE_MB: "10240"
+    volumes:
+      - /srv/msc/data/zona23:/data
+    mem_limit: 768m
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+    healthcheck:
+      test: ["CMD", "bun", "-e", "const r = await fetch('http://127.0.0.1:3023/api/stats'); if (!r.ok) process.exit(1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: web
+      traefik.http.routers.zona23.rule: Host(`zona23.msccompany.com.br`)
+      traefik.http.routers.zona23.entrypoints: websecure
+      traefik.http.routers.zona23.tls.certresolver: letsencrypt
+      traefik.http.services.zona23.loadbalancer.server.port: "3023"
+networks:
+  web:
+    external: true

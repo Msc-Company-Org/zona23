@@ -1,0 +1,1 @@
+15 7 * * * root /srv/msc/bin/backup-zona23.sh >> /var/log/zona23-backup.log 2>&1

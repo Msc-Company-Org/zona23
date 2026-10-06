@@ -1,0 +1,14 @@
+{
+  "name": "tre-memoria",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun src/server.js",
+    "dev": "bun --watch src/server.js",
+    "test": "bun test",
+    "check": "node --check public/app.js && bun build src/server.js --target=bun --packages=external --outdir=local/build"
+  },
+  "dependencies": {
+    "sharp": "^0.34.3"
+  }
+}

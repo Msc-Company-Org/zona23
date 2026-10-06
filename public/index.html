@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Acervo colaborativo de fotografias da 23ª Zona Eleitoral, em Marechal Hermes. Encontre pessoas, datas e memórias."
+    />
+    <title>Zona 23 · Acervo de fotos</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Pular para o acervo</a>
+    <div class="institutional">
+      <div class="wrap">
+        <span>23ª ZONA ELEITORAL · MARECHAL HERMES</span
+        ><span>Consulta e envio públicos</span>
+      </div>
+    </div>
+    <header class="header wrap">
+      <a href="/" class="brand" aria-label="Zona 23 · Início do acervo">
+        <span class="zone-mark" aria-hidden="true">23</span>
+        <span class="header-title"
+          ><strong>Zona 23</strong><span>Marechal Hermes</span></span
+        >
+      </a>
+      <button class="button primary upload-trigger">
+        <span class="plus" aria-hidden="true">+</span> Enviar fotos
+      </button>
+    </header>
+    <main id="main" class="wrap">
+      <section class="intro" aria-labelledby="title">
+        <div class="intro-copy">
+          <p class="eyebrow">ACERVO FOTOGRÁFICO</p>
+          <h1 id="title">Fotos da Zona 23</h1>
+          <p>Marechal Hermes · Rio de Janeiro</p>
+        </div>
+        <div
+          class="zone-card"
+          aria-label="Zona 23, Marechal Hermes, Rio de Janeiro"
+        >
+          <div class="zone-number"><span>ZONA</span><strong>23</strong></div>
+        </div>
+      </section>
+      <section id="collection" aria-labelledby="collection-title">
+        <div class="collection-top">
+          <div>
+            <h2 id="collection-title">Fotos e pessoas</h2>
+          </div>
+          <dl class="stats">
+            <div>
+              <dt>Fotos</dt>
+              <dd id="stat-photos">—</dd>
+            </div>
+            <div>
+              <dt>Pessoas</dt>
+              <dd id="stat-people">—</dd>
+            </div>
+            <div>
+              <dt>Datas</dt>
+              <dd id="stat-dates">—</dd>
+            </div>
+          </dl>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Seções do acervo">
+          <button
+            id="gallery-tab"
+            role="tab"
+            aria-selected="true"
+            aria-controls="gallery-panel"
+          >
+            Fotografias</button
+          ><button
+            id="people-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="people-panel"
+            tabindex="-1"
+          >
+            Pessoas cadastradas
+          </button>
+        </div>
+        <div id="gallery-panel" role="tabpanel" aria-labelledby="gallery-tab">
+          <form id="search-form" class="search-form">
+            <label class="name-filter"
+              >Nome da pessoa<input
+                id="filter-name"
+                type="search"
+                placeholder="Buscar por nome"
+                maxlength="120" /></label
+            ><label
+              >A partir de<input
+                id="filter-from"
+                type="date"
+                min="1800-01-01" /></label
+            ><label
+              >Até<input id="filter-to" type="date" min="1800-01-01" /></label
+            ><button class="button navy" type="submit">
+              <span aria-hidden="true">⌕</span> Pesquisar
+            </button>
+          </form>
+          <div class="results-toolbar">
+            <p id="result-summary" role="status">Carregando fotografias…</p>
+            <div>
+              <button id="clear-filters" class="quiet" hidden>
+                Limpar filtros</button
+              ><label class="sort"
+                >Ordenar por<select id="sort">
+                  <option value="newest">Data mais recente</option>
+                  <option value="oldest">Data mais antiga</option>
+                </select></label
+              >
+            </div>
+          </div>
+          <div id="gallery" class="gallery" aria-busy="true"></div>
+          <button id="load-more" class="button outline load-more" hidden>
+            Carregar mais fotos
+          </button>
+        </div>
+        <div
+          id="people-panel"
+          role="tabpanel"
+          aria-labelledby="people-tab"
+          hidden
+        >
+          <div class="directory-top">
+            <p>Os nomes cadastrados podem ser usados em outras fotos.</p>
+            <button id="directory-add" class="button outline">
+              + Cadastrar pessoa
+            </button>
+          </div>
+          <label class="directory-search"
+            >Buscar pessoa<input
+              type="search"
+              id="directory-search"
+              placeholder="Nome da pessoa"
+          /></label>
+          <div id="directory" class="directory"></div>
+        </div>
+      </section>
+    </main>
+    <footer class="wrap">
+      <span><strong>Zona 23</strong> · Marechal Hermes</span>
+      <a
+        class="institution-reference"
+        href="https://www.tre-rj.jus.br/"
+        target="_blank"
+        rel="noopener"
+      >
+        <img
+          src="/assets/tre-rj.svg"
+          alt="Tribunal Regional Eleitoral-RJ"
+          width="82"
+          height="32"
+        />
+        <span>Portal do TRE-RJ <span aria-hidden="true">↗</span></span>
+      </a>
+    </footer>
+
+    <dialog
+      id="upload-dialog"
+      class="upload-dialog"
+      aria-labelledby="upload-title"
+    >
+      <div class="dialog-top">
+        <div>
+          <h2 id="upload-title">Enviar fotos</h2>
+        </div>
+        <button
+          class="close"
+          data-close="upload-dialog"
+          aria-label="Fechar envio"
+        >
+          ×
+        </button>
+      </div>
+      <form id="upload-form">
+        <div class="upload-layout">
+          <div class="file-side">
+            <label class="dropzone" id="dropzone"
+              ><span class="upload-icon" aria-hidden="true">↑</span
+              ><strong>Selecione suas fotos</strong
+              ><span>ou arraste os arquivos aqui</span
+              ><small>JPG, PNG ou WebP · até 25 MB por foto</small
+              ><input
+                id="file-input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+            /></label>
+            <div id="file-list" class="file-list"></div>
+            <img id="file-preview" alt="Prévia da foto selecionada" hidden />
+          </div>
+          <div class="metadata-side">
+            <p id="file-hint" class="hint">
+              Selecione uma foto para preencher as informações.
+            </p>
+            <label
+              >Data da fotografia <span class="required">*</span
+              ><input
+                id="photo-date"
+                type="date"
+                min="1800-01-01"
+                required /></label
+            ><label
+              >Título <span class="optional">opcional</span
+              ><input
+                id="photo-title"
+                maxlength="160"
+                placeholder="Ex.: Encontro da equipe" /></label
+            ><label
+              >Descrição <span class="optional">opcional</span
+              ><textarea
+                id="photo-description"
+                maxlength="2000"
+                rows="2"
+                placeholder="Local, evento ou contexto da foto"
+              ></textarea>
+            </label>
+            <div class="people-picker">
+              <label for="person-search">Quem aparece nesta foto?</label>
+              <p class="hint">
+                Busque um nome cadastrado ou inclua uma nova pessoa.
+              </p>
+              <div id="selected-people" class="chips"></div>
+              <input
+                id="person-search"
+                type="search"
+                placeholder="Buscar pessoa pelo nome"
+                autocomplete="off"
+                maxlength="120"
+              />
+              <div id="person-results" class="person-results"></div>
+              <button id="add-person" type="button" class="text-link">
+                + Cadastrar uma pessoa
+              </button>
+              <p id="no-people-hint" class="hint">
+                Você também pode enviar sem identificar pessoas.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="upload-bottom">
+          <label
+            >Seu nome
+            <span class="optional">opcional, aparece como crédito</span
+            ><input
+              id="author"
+              maxlength="120"
+              autocomplete="name"
+              placeholder="Quem está compartilhando" /></label
+          ><label class="check"
+            ><input id="public-confirm" type="checkbox" required /><span
+              >Entendo que as fotos e os nomes identificados ficarão visíveis
+              para qualquer pessoa.</span
+            ></label
+          >
+          <p id="upload-error" class="error" role="alert" hidden></p>
+          <p id="upload-progress" role="status" hidden></p>
+          <div class="dialog-actions">
+            <button
+              class="button outline"
+              type="button"
+              data-close="upload-dialog"
+            >
+              Cancelar</button
+            ><button id="submit-upload" class="button primary" type="submit">
+              Publicar no acervo
+            </button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+    <dialog
+      id="person-dialog"
+      class="person-dialog"
+      aria-labelledby="person-title"
+    >
+      <div class="dialog-top">
+        <div>
+          <h2 id="person-title">Cadastrar pessoa</h2>
+        </div>
+        <button
+          class="close"
+          data-close="person-dialog"
+          aria-label="Fechar cadastro"
+        >
+          ×
+        </button>
+      </div>
+      <form id="person-form">
+        <p>
+          O nome ficará disponível para identificar esta pessoa nas próximas
+          fotos.
+        </p>
+        <label
+          >Nome completo <span class="required">*</span
+          ><input
+            id="person-name"
+            required
+            maxlength="120"
+            autocomplete="off" /></label
+        ><label
+          >Como diferenciar esta pessoa? <span class="optional">opcional</span
+          ><input
+            id="person-reference"
+            maxlength="80"
+            placeholder="Ex.: equipe ou função"
+        /></label>
+        <p class="hint">
+          Use a identificação quando houver pessoas com o mesmo nome.
+        </p>
+        <p class="error" id="person-error" role="alert" hidden></p>
+        <div class="dialog-actions">
+          <button
+            class="button outline"
+            type="button"
+            data-close="person-dialog"
+          >
+            Cancelar</button
+          ><button id="save-person" class="button navy" type="submit">
+            Salvar pessoa
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog
+      id="photo-dialog"
+      class="photo-dialog"
+      aria-labelledby="detail-title"
+    >
+      <div class="dialog-top">
+        <span id="detail-position"></span
+        ><button
+          class="close"
+          data-close="photo-dialog"
+          aria-label="Fechar fotografia"
+        >
+          ×
+        </button>
+      </div>
+      <div class="photo-detail">
+        <div class="detail-image">
+          <img id="detail-image" alt="" />
+          <div class="photo-nav">
+            <button id="previous-photo" aria-label="Foto anterior">←</button
+            ><button id="next-photo" aria-label="Próxima foto">→</button>
+          </div>
+        </div>
+        <div class="detail-info">
+          <p class="eyebrow" id="detail-date"></p>
+          <h2 id="detail-title"></h2>
+          <p id="detail-description"></p>
+          <h3>Pessoas nesta fotografia</h3>
+          <div id="detail-people" class="chips"></div>
+          <p id="detail-author" class="hint"></p>
+          <a id="detail-download" class="button outline" download
+            >Baixar foto <span aria-hidden="true">↓</span></a
+          ><button id="detail-edit" class="quiet" hidden>
+            Editar informações
+          </button>
+          <p id="edit-hint" class="hint" hidden>
+            Você pode corrigir os dados das fotos enviadas neste aparelho.
+          </p>
+        </div>
+      </div>
+    </dialog>
+    <div id="toast" class="toast" role="status" hidden></div>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+node_modules
+local
+deploy
+docs
+tests
+*.tar
+.env
+.git
