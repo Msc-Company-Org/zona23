@@ -34,12 +34,12 @@ export function createAdmin(ctx) {
   const { db, json, InputError, textValue, validDate, normalize, hash, media, secureCookie } =
     ctx;
 
-  if (!db.query("SELECT 1 FROM users LIMIT 1").get()) {
-    // Usuário inicial pedido pelo titular; a troca de senha é exigida no primeiro acesso.
+  if (ctx.bootstrapPassword && !db.query("SELECT 1 FROM users LIMIT 1").get()) {
+    // A equipe só é habilitada com uma senha inicial configurada fora do código.
     db.query("INSERT INTO users VALUES (?,?,?,1,?)").run(
       crypto.randomUUID(),
       "admin",
-      Bun.password.hashSync("admin"),
+      Bun.password.hashSync(ctx.bootstrapPassword),
       new Date().toISOString(),
     );
   }
@@ -127,6 +127,8 @@ export function createAdmin(ctx) {
   async function handle(req, url, path) {
     const method = req.method;
     if (path === "/api/admin/login" && method === "POST") {
+      if (!db.query("SELECT 1 FROM users LIMIT 1").get())
+        throw new InputError("A área da equipe ainda está em configuração. O acervo continua disponível.", 503);
       const body = await req.json();
       const username = textValue(body.username ?? "", "Usuário", 60, true).toLowerCase();
       const password = typeof body.password === "string" ? body.password : "";

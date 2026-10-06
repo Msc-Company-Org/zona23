@@ -1,5 +1,6 @@
 import { createApp } from "./app.js";
 const app = createApp({
+  adminBootstrapPassword: process.env.ADMIN_BOOTSTRAP_PASSWORD || "",
   dataDir: process.env.DATA_DIR || "./local/data",
   publicOrigin: process.env.PUBLIC_ORIGIN || "",
   trustProxy: process.env.TRUST_PROXY === "true",

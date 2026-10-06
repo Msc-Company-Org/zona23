@@ -52,9 +52,12 @@ export function createApp({
   publicOrigin = "",
   trustProxy = false,
   maxStorageMB = 10240,
+  adminBootstrapPassword = "",
 } = {}) {
   if (!Number.isFinite(maxStorageMB) || maxStorageMB < 0)
     throw new Error("MAX_STORAGE_MB deve ser um número válido e não negativo.");
+  if (adminBootstrapPassword && (typeof adminBootstrapPassword !== "string" || adminBootstrapPassword.length < 12))
+    throw new Error("A senha inicial da equipe precisa ter pelo menos 12 caracteres.");
   // PUBLIC_ORIGIN aceita mais de um endereço separado por vírgula (ex.: domínio novo + antigo).
   const allowedOrigins = publicOrigin
     .split(",")
@@ -315,6 +318,7 @@ export function createApp({
     hash,
     media,
     dummyHash,
+    bootstrapPassword: adminBootstrapPassword,
     secureCookie: allowedOrigins.some((origin) => origin.startsWith("https:")),
     onSettings: renderHome,
   });
