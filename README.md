@@ -88,6 +88,16 @@ botão flutuante de envio, visualizador com deslizar para os lados e botão Volt
 fechando janelas. O texto alterna Zona 23, Zon23, Zona 023, TRE Marechal Hermes e 23ª ZE.
 Campos com 16 px para evitar zoom no iOS. Conferido em Chromium headless a 320, 390 e 1366 px.
 
+Segunda rodada visual (06/10/2026): linha do tempo agrupada por ano, recolhível, com atalhos de ano;
+cards com inclinação 3D e luz que segue o mouse (só em mouse, desligado com movimento reduzido), cor da
+borda/sombra tirada da média da miniatura; card que expande até o visualizador (View Transitions);
+miniatura borrada antes da versão de tela; menu expansível; filtros recolhíveis; dúvidas em acordeão;
+modo de seleção com barra flutuante. Página `/baixar`: ZIP do acervo, por ano, pessoa, período ou
+seleção (até 200 pela galeria), sempre com `fotos.csv` (data, título, pessoas, autor).
+`GET /api/download.zip` aceita os mesmos filtros de `/api/photos` mais `year` e `ids`; até 1000 fotos
+e 3 downloads simultâneos, montando um arquivo por vez na memória. Instalável no celular
+(`/manifest.webmanifest`, ícones PNG gerados do `assets/icon.svg` na partida).
+
 ## Verificação e entrega
 
 ```powershell

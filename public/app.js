@@ -1,4 +1,5 @@
 const $ = (selector) => document.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const esc = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
@@ -18,7 +19,7 @@ const dateLabel = (date) =>
   date ? longDate.format(new Date(date + "T12:00:00Z")) : "Sem data";
 const badgeLabel = (date) =>
   date
-    ? `${Number(date.slice(8))} ${MONTHS[Number(date.slice(5, 7)) - 1]} ${date.slice(0, 4)}`
+    ? `${Number(date.slice(8))} ${MONTHS[Number(date.slice(5, 7)) - 1]}`
     : "Sem data";
 const initials = (name) =>
   name
@@ -30,10 +31,17 @@ const initials = (name) =>
     .toUpperCase();
 const seed = (text) =>
   [...String(text)].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0, 7);
-const avatar = (person, extra = "") =>
-  `<span class="avatar c${seed(person.id) % 4} ${extra}" aria-hidden="true">${esc(initials(person.name))}</span>`;
+const avatar = (person) =>
+  `<span class="avatar c${seed(person.id) % 4}" aria-hidden="true">${esc(initials(person.name))}</span>`;
 const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
+const size = (bytes) =>
+  bytes > 1e9
+    ? (bytes / 1e9).toFixed(1).replace(".", ",") + " GB"
+    : bytes > 1e6
+      ? Math.round(bytes / 1e6) + " MB"
+      : Math.max(1, Math.round(bytes / 1e3)) + " KB";
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
 
 // Variações do nome para o texto não ficar repetitivo nem formal demais.
 const ZONE = ["Zona 23", "Zon23", "Zona 023", "TRE Marechal Hermes", "23ª ZE"];
@@ -53,7 +61,10 @@ let photos = [],
   selectedPerson = null,
   directoryPeople = [],
   requestNumber = 0,
-  order = "newest";
+  order = "newest",
+  year = "",
+  yearCounts = {},
+  allYears = [];
 let uploadQueue = [],
   activeIndex = -1,
   selectedPeople = [],
@@ -62,11 +73,17 @@ let uploadQueue = [],
   busy = false,
   currentPhoto = null,
   lastResults = [];
+let selecting = false;
+const selected = new Map();
+const collapsed = new Set();
+const tints = new Map();
 let peopleRequest = 0,
   searchTimer,
   filterTimer,
   directoryTimer,
-  toastTimer;
+  dlPeopleTimer,
+  toastTimer,
+  installPrompt = null;
 let editKeys = {};
 try {
   editKeys = JSON.parse(localStorage.getItem("tre023-edit-keys") || "{}");
@@ -110,11 +127,14 @@ function errorAt(selector, message = "") {
   if (message && element.closest(".sheet-body"))
     element.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
-function toast(message) {
+function toast(message, success = false) {
   clearTimeout(toastTimer);
   const element = $("#toast");
   element.hidden = true;
-  element.textContent = message;
+  element.innerHTML =
+    (success
+      ? '<svg class="toast-check" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="14"/><path d="m8.5 14.5 3.6 3.6 7.4-7.6"/></svg>'
+      : "") + `<span>${esc(message)}</span>`;
   void element.offsetWidth;
   element.hidden = false;
   toastTimer = setTimeout(() => (element.hidden = true), 4200);
@@ -122,6 +142,81 @@ function toast(message) {
 function empty(title, body, action = "") {
   return `<div class="empty"><svg class="empty-art" aria-hidden="true"><use href="#art-empty"/></svg><h3>${esc(title)}</h3><p>${esc(body)}</p>${action}</div>`;
 }
+function setOpen(element, open) {
+  element.dataset.open = String(open);
+  element.inert = !open;
+}
+
+/* ---------- Rotas: início e /baixar ---------- */
+function route() {
+  const download = location.pathname === "/baixar";
+  $("#view-home").hidden = download;
+  $("#view-download").hidden = !download;
+  for (const link of $$("[data-link]")) {
+    const target = new URL(link.href);
+    const current =
+      target.pathname === location.pathname && (download || !target.hash);
+    if (current) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  }
+  document.title = download
+    ? "Baixar fotos · Zon23"
+    : "Zon23 · Fotos da Zona 23 de Marechal Hermes";
+  if (download) loadDownloads();
+  syncFab();
+}
+function navigate(href) {
+  const url = new URL(href, location.href);
+  closeMenu();
+  if (url.pathname !== location.pathname || url.hash) {
+    history.pushState(null, "", url.pathname + url.search);
+    route();
+  }
+  if (url.hash === "#pessoas") {
+    changeTab("people");
+    $("#collection").scrollIntoView({ behavior: smooth() });
+  } else if (url.hash) $(url.hash)?.scrollIntoView({ behavior: smooth() });
+  else scrollTo({ top: 0, behavior: smooth() });
+}
+const smooth = () => (reduceMotion.matches ? "instant" : "smooth");
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("a[data-link]");
+  if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
+  event.preventDefault();
+  navigate(link.getAttribute("href"));
+});
+
+/* ---------- Menu expansível ---------- */
+function openMenu(open) {
+  setOpen($("#menu"), open);
+  $("#menu-button").setAttribute("aria-expanded", String(open));
+  $("#menu-button").setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
+  $("#menu-button use").setAttribute("href", open ? "#i-close" : "#i-menu");
+  $("#menu-scrim").hidden = !open;
+  document.documentElement.classList.toggle("menu-open", open);
+}
+const closeMenu = () => openMenu(false);
+$("#menu-button").onclick = () =>
+  openMenu($("#menu").dataset.open !== "true");
+$("#menu-scrim").onclick = closeMenu;
+addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && $("#menu").dataset.open === "true") closeMenu();
+});
+$("#menu").addEventListener("click", (event) => {
+  if (event.target.closest("button")) closeMenu();
+});
+addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  installPrompt = event;
+  $("#install-app").hidden = false;
+});
+$("#install-app").onclick = async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice.catch(() => {});
+  installPrompt = null;
+  $("#install-app").hidden = true;
+};
 
 /* ---------- Números ---------- */
 function countUp(element, value) {
@@ -132,90 +227,126 @@ function countUp(element, value) {
   }
   const began = performance.now();
   const frame = (now) => {
-    const t = Math.min(1, (now - began) / 700);
+    const t = Math.min(1, (now - began) / 800);
     element.textContent = Math.round(start + (value - start) * (1 - (1 - t) ** 3));
     if (t < 1) requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
 }
+let statsData = null;
 async function stats() {
-  const data = await api("/api/stats");
-  countUp($("#stat-photos"), data.photos);
-  countUp($("#stat-people"), data.people);
-  countUp($("#stat-dates"), data.dates);
+  statsData = await api("/api/stats");
+  countUp($("#stat-photos"), statsData.photos);
+  countUp($("#stat-people"), statsData.people);
+  countUp($("#stat-dates"), statsData.dates);
+  allYears = statsData.years;
+  renderYearNav();
+  return statsData;
 }
 
-/* ---------- Galeria ---------- */
+/* ---------- Linha do tempo ---------- */
 function hasFilters() {
   return Boolean(
     $("#filter-name").value.trim() ||
       $("#filter-from").value ||
       $("#filter-to").value ||
-      selectedPerson,
+      selectedPerson ||
+      year,
   );
 }
-function photoCard(photo, index = 0) {
-  const names = photo.people.map((person) => person.name.split(" ")[0]);
-  const who = names.length
-    ? names.slice(0, 3).join(", ") + (names.length > 3 ? ` +${names.length - 3}` : "")
-    : "Ninguém marcado ainda";
-  return `<button class="photo-card" data-photo="${photo.id}" aria-label="${esc(titleOf(photo))}, ${esc(dateLabel(photo.date))}"><span class="photo-frame"><img src="${photo.thumbnail}" loading="${index < 6 ? "eager" : "lazy"}" decoding="async" alt="" width="640" height="800"><span class="badge${photo.date ? "" : " undated"}">${esc(badgeLabel(photo.date))}</span>${photo.people.length ? `<span class="people-count">${icon("people")}${photo.people.length}</span>` : ""}</span><span class="card-info"><strong>${esc(titleOf(photo))}</strong><small>${esc(who)}</small></span></button>`;
+const yearKey = (photo) => (photo.date ? photo.date.slice(0, 4) : "sem-data");
+function photoCard(photo) {
+  const people = photo.people;
+  const firstNames = people.map((person) => person.name.split(" ")[0]);
+  const who = people.length
+    ? firstNames.slice(0, 2).join(", ") + (people.length > 2 ? ` +${people.length - 2}` : "")
+    : "Ninguém marcado";
+  const tint = tints.get(photo.id);
+  return `<button class="photo-card" type="button" data-photo="${photo.id}" aria-pressed="${selected.has(photo.id)}"${tint ? ` data-tint="${tint}"` : ""} aria-label="${esc(titleOf(photo))}, ${esc(dateLabel(photo.date))}"><span class="photo-frame"><img src="${photo.thumbnail}" loading="lazy" decoding="async" alt="" width="640" height="640"><span class="glare"></span><span class="badge${photo.date ? "" : " undated"}">${esc(badgeLabel(photo.date))}</span>${people.length ? `<span class="people-count">${icon("people")}${people.length}</span>` : ""}<span class="pick">${icon("check")}</span></span><span class="card-info"><strong>${esc(titleOf(photo))}</strong><span class="card-meta">${people.length ? `<span class="avatar-stack">${people.slice(0, 3).map(avatar).join("")}</span>` : ""}<span>${esc(who)}</span></span></span></button>`;
+}
+function groupHtml(key) {
+  const count = yearCounts[key === "sem-data" ? "" : key] ?? 0;
+  const closed = collapsed.has(key);
+  return `<section class="year-group${closed ? " collapsed" : ""}" data-year="${key}"><button class="year-head" type="button" aria-expanded="${!closed}"><span class="year-num${key === "sem-data" ? " undated" : ""}">${key === "sem-data" ? "Sem data" : key}</span><span class="year-count">${plural(count, "foto", "fotos")}</span><span class="year-line"></span><svg class="icon chevron" aria-hidden="true"><use href="#i-down"/></svg></button><div class="year-body"${closed ? " inert" : ""}><div class="gallery"></div></div></section>`;
+}
+function appendCards(list) {
+  const gallery = $("#gallery");
+  for (const photo of list) {
+    const key = yearKey(photo);
+    let group = gallery.querySelector(`[data-year="${key}"]`);
+    if (!group) {
+      gallery.insertAdjacentHTML("beforeend", groupHtml(key));
+      group = gallery.lastElementChild;
+    }
+    group.querySelector(".gallery").insertAdjacentHTML("beforeend", photoCard(photo));
+  }
+  for (const card of $$(".photo-card[data-tint]", gallery)) {
+    card.style.setProperty("--tint", card.dataset.tint);
+    card.removeAttribute("data-tint");
+  }
+  for (const img of $$(".photo-frame:not(.loaded) img", gallery))
+    if (img.complete && img.naturalWidth) loaded(img);
+}
+// Cor média da miniatura vira a cor da borda, da sombra e do fundo do card.
+function loaded(img) {
+  const frame = img.closest(".photo-frame");
+  frame.classList.add("loaded");
+  const card = img.closest(".photo-card");
+  const id = card?.dataset.photo;
+  if (!id || tints.has(id) || !img.naturalWidth) return;
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 6;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(img, 0, 0, 6, 6);
+    const data = context.getImageData(0, 0, 6, 6).data;
+    let r = 0,
+      g = 0,
+      b = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+    }
+    const n = data.length / 4;
+    // Escurece um pouco para a sombra não ficar lavada em fotos claras.
+    const tint = [r, g, b].map((value) => Math.round((value / n) * 0.82)).join(" ");
+    tints.set(id, tint);
+    card.style.setProperty("--tint", tint);
+  } catch {
+    /* sem cor, fica o azul padrão */
+  }
 }
 const skeletons = (count) =>
-  Array.from(
+  `<section class="year-group"><div class="year-head"><span class="year-num">····</span></div><div class="gallery">${Array.from(
     { length: count },
     () =>
       '<div class="photo-card skeleton" aria-hidden="true"><span class="photo-frame"></span><span class="bar"></span><span class="bar"></span></div>',
-  ).join("");
+  ).join("")}</div></section>`;
 function summary() {
   const term = selectedPerson?.name || $("#filter-name").value.trim();
   const count = `<strong>${total}</strong> ${total === 1 ? "foto" : "fotos"}`;
   $("#result-summary").innerHTML = term
     ? `${count} com “${esc(term)}”`
-    : hasFilters()
-      ? `${count} no período`
-      : `${count} na ${pick(ZONE.slice(0, 3), total)}`;
-}
-function renderGallery(append = false, previous = 0) {
-  const gallery = $("#gallery");
-  if (append)
-    gallery.insertAdjacentHTML(
-      "beforeend",
-      photos
-        .slice(previous)
-        .map((photo, index) => photoCard(photo, index))
-        .join(""),
-    );
-  else
-    gallery.innerHTML = photos.length
-      ? photos.map(photoCard).join("")
+    : year
+      ? `${count} ${year === "sem-data" ? "sem data" : "de " + year}`
       : hasFilters()
-        ? empty(
-            "Ninguém com esse nome por aqui",
-            "Tente só o primeiro nome ou mude o período.",
-            '<button class="btn btn-outline" id="empty-clear" type="button">Limpar busca</button>',
-          )
-        : empty(
-            "A Zon23 ainda está sem fotos",
-            "Tem alguma da Zona 23 no celular? Seja a primeira pessoa a mandar.",
-            `<button class="btn btn-primary upload-trigger" type="button">${icon("camera")}Mandar fotos</button>`,
-          );
-  for (const img of gallery.querySelectorAll(".photo-frame:not(.loaded) img"))
-    if (img.complete && img.naturalWidth) img.parentElement.classList.add("loaded");
-  summary();
-  $("#clear-filters").hidden = !hasFilters();
-  $("#load-more").hidden = nextOffset === null;
+        ? `${count} no período`
+        : `${count} na ${pick(ZONE.slice(0, 3), total)}, ${order === "newest" ? "das mais novas às antigas" : "das antigas às mais novas"}`;
 }
-$("#gallery").addEventListener(
-  "load",
-  (event) => event.target.closest?.(".photo-frame")?.classList.add("loaded"),
-  true,
-);
-$("#gallery").addEventListener(
-  "error",
-  (event) => event.target.closest?.(".photo-frame")?.classList.add("loaded"),
-  true,
-);
+function renderYearNav() {
+  if (!allYears.length) {
+    $("#year-nav").innerHTML = "";
+    return;
+  }
+  $("#year-nav").innerHTML = [
+    `<button class="year-chip" type="button" data-year-filter="" aria-pressed="${!year}">Todos</button>`,
+    ...allYears.map((item) => {
+      const key = item.year || "sem-data";
+      return `<button class="year-chip" type="button" data-year-filter="${key}" aria-pressed="${year === key}">${item.year || "Sem data"}<small>${item.count}</small></button>`;
+    }),
+  ].join("");
+}
 async function loadPhotos(append = false) {
   const number = ++requestNumber;
   const params = new URLSearchParams({
@@ -223,20 +354,43 @@ async function loadPhotos(append = false) {
     from: $("#filter-from").value,
     to: $("#filter-to").value,
     order,
+    year,
   });
   if (selectedPerson) params.set("person", selectedPerson.id);
   if (append) params.set("offset", nextOffset);
   $("#gallery").setAttribute("aria-busy", "true");
   $("#load-more").disabled = true;
-  if (!append && !photos.length) $("#gallery").innerHTML = skeletons(8);
+  if (!append && !photos.length) $("#gallery").innerHTML = skeletons(6);
   try {
     const data = await api("/api/photos?" + params);
     if (number !== requestNumber) return;
-    const previous = photos.length;
-    photos = append ? [...photos, ...data.photos] : data.photos;
+    if (data.years)
+      yearCounts = Object.fromEntries(data.years.map((item) => [item.year, item.count]));
     total = data.total;
     nextOffset = data.nextOffset;
-    renderGallery(append, previous);
+    if (append) {
+      photos = [...photos, ...data.photos];
+      appendCards(data.photos);
+    } else {
+      photos = data.photos;
+      $("#gallery").innerHTML = "";
+      if (photos.length) appendCards(photos);
+      else
+        $("#gallery").innerHTML = hasFilters()
+          ? empty(
+              "Ninguém com esse nome por aqui",
+              "Tente só o primeiro nome, outro ano ou outro período.",
+              '<button class="btn btn-outline" id="empty-clear" type="button">Limpar busca</button>',
+            )
+          : empty(
+              "A Zon23 ainda está sem fotos",
+              "Tem alguma da Zona 23 no celular? Seja a primeira pessoa a mandar.",
+              `<button class="btn btn-primary upload-trigger" type="button">${icon("camera")}Mandar fotos</button>`,
+            );
+    }
+    summary();
+    $("#clear-filters").hidden = !hasFilters();
+    $("#load-more").hidden = nextOffset === null;
   } catch (error) {
     if (number !== requestNumber) return;
     $("#gallery").innerHTML = empty(
@@ -253,21 +407,41 @@ async function loadPhotos(append = false) {
     }
   }
 }
+$("#gallery").addEventListener(
+  "load",
+  (event) => event.target.matches?.(".photo-frame img") && loaded(event.target),
+  true,
+);
+$("#gallery").addEventListener(
+  "error",
+  (event) => event.target.closest?.(".photo-frame")?.classList.add("loaded"),
+  true,
+);
+function toggleGroup(group) {
+  const key = group.dataset.year;
+  const close = !group.classList.contains("collapsed");
+  group.classList.add("animating");
+  group.classList.toggle("collapsed", close);
+  group.querySelector(".year-head").setAttribute("aria-expanded", String(!close));
+  group.querySelector(".year-body").inert = close;
+  if (close) collapsed.add(key);
+  else collapsed.delete(key);
+  setTimeout(() => group.classList.remove("animating"), 460);
+}
 function clearFilters() {
   $("#search-form").reset();
   selectedPerson = null;
+  year = "";
+  renderYearNav();
   togglePeriod(false);
   loadPhotos();
 }
 function togglePeriod(open) {
-  $("#period").hidden = !open;
+  setOpen($("#period"), open);
   $("#toggle-period").setAttribute("aria-expanded", String(open));
 }
-$("#toggle-period").onclick = () => {
-  const open = $("#period").hidden;
-  togglePeriod(open);
-  if (open) $("#filter-from").focus();
-};
+$("#toggle-period").onclick = () =>
+  togglePeriod($("#period").dataset.open !== "true");
 $("#search-form").addEventListener("submit", (event) => {
   event.preventDefault();
   selectedPerson = null;
@@ -282,10 +456,10 @@ $("#filter-name").addEventListener("input", () => {
 for (const id of ["#filter-from", "#filter-to"])
   $(id).addEventListener("change", () => loadPhotos());
 $("#clear-filters").onclick = clearFilters;
-for (const button of document.querySelectorAll("[data-order]"))
+for (const button of $$("[data-order]"))
   button.onclick = () => {
     order = button.dataset.order;
-    for (const other of document.querySelectorAll("[data-order]"))
+    for (const other of $$("[data-order]"))
       other.setAttribute("aria-pressed", String(other === button));
     loadPhotos();
   };
@@ -296,12 +470,100 @@ new IntersectionObserver(
     if (entries[0].isIntersecting && nextOffset !== null && !$("#load-more").disabled)
       loadPhotos(true);
   },
-  { rootMargin: "600px 0px" },
+  { rootMargin: "700px 0px" },
 ).observe($("#load-more"));
+
+/* ---------- Cards 3D: inclinação e luz seguindo o mouse ---------- */
+let tiltCard = null,
+  tiltFrame = 0;
+$("#gallery").addEventListener("pointermove", (event) => {
+  if (!finePointer.matches || reduceMotion.matches || event.pointerType !== "mouse") return;
+  const card = event.target.closest(".photo-card:not(.skeleton)");
+  if (card !== tiltCard) resetTilt();
+  if (!card) return;
+  tiltCard = card;
+  card.classList.add("tilting");
+  cancelAnimationFrame(tiltFrame);
+  tiltFrame = requestAnimationFrame(() => {
+    const box = card.getBoundingClientRect();
+    const x = (event.clientX - box.left) / box.width,
+      y = (event.clientY - box.top) / box.height;
+    card.style.setProperty("--ry", ((x - 0.5) * 10).toFixed(2) + "deg");
+    card.style.setProperty("--rx", ((0.5 - y) * 8).toFixed(2) + "deg");
+    card.style.setProperty("--mx", (x * 100).toFixed(1) + "%");
+    card.style.setProperty("--my", (y * 100).toFixed(1) + "%");
+  });
+});
+function resetTilt() {
+  if (!tiltCard) return;
+  cancelAnimationFrame(tiltFrame);
+  tiltCard.classList.remove("tilting");
+  for (const name of ["--rx", "--ry"]) tiltCard.style.setProperty(name, "0deg");
+  tiltCard = null;
+}
+$("#gallery").addEventListener("pointerleave", resetTilt);
+
+/* ---------- Seleção para download ---------- */
+const MAX_SELECTION = 200;
+function setSelecting(on) {
+  selecting = on;
+  if (!on) {
+    selected.clear();
+    for (const card of $$(".photo-card[aria-pressed='true']"))
+      card.setAttribute("aria-pressed", "false");
+  }
+  $("#gallery").dataset.selecting = String(on);
+  $("#select-mode").setAttribute("aria-pressed", String(on));
+  $("#select-mode span").textContent = on ? "Concluir" : "Selecionar";
+  syncSelection();
+  syncFab();
+}
+function syncSelection() {
+  const count = selected.size;
+  setOpen($("#select-bar"), selecting);
+  const counter = $("#select-count");
+  if (counter.textContent !== String(count)) {
+    counter.textContent = count;
+    counter.classList.remove("bump");
+    void counter.offsetWidth;
+    counter.classList.add("bump");
+  }
+  $("#select-label").textContent = count === 1 ? "selecionada" : "selecionadas";
+  const link = $("#select-download");
+  link.setAttribute("aria-disabled", String(!count));
+  link.href = count
+    ? `/api/download.zip?label=selecao&ids=${[...selected.keys()].join(",")}`
+    : "#";
+}
+function toggleSelect(card) {
+  const id = card.dataset.photo;
+  if (selected.has(id)) selected.delete(id);
+  else if (selected.size >= MAX_SELECTION) {
+    toast(`Dá para baixar até ${MAX_SELECTION} de uma vez.`);
+    return;
+  } else selected.set(id, true);
+  card.setAttribute("aria-pressed", String(selected.has(id)));
+  syncSelection();
+}
+$("#select-mode").onclick = () => setSelecting(!selecting);
+$("#select-cancel").onclick = () => setSelecting(false);
+$("#select-all").onclick = () => {
+  for (const card of $$(".photo-card[data-photo]")) {
+    if (selected.size >= MAX_SELECTION) break;
+    selected.set(card.dataset.photo, true);
+    card.setAttribute("aria-pressed", "true");
+  }
+  syncSelection();
+};
+$("#select-download").addEventListener("click", (event) => {
+  if (!selected.size) return event.preventDefault();
+  toast(`Preparando o ZIP com ${plural(selected.size, "foto", "fotos")}…`, true);
+});
 
 /* ---------- Abas e pessoas ---------- */
 function changeTab(which, focus = false) {
   const people = which === "people";
+  $(".tabs").dataset.active = people ? "people" : "gallery";
   for (const [id, active] of [
     ["gallery", !people],
     ["people", people],
@@ -310,6 +572,7 @@ function changeTab(which, focus = false) {
     $(`#${id}-tab`).tabIndex = active ? 0 : -1;
     $(`#${id}-panel`).hidden = !active;
   }
+  if (people && selecting) setSelecting(false);
   if (focus) $(`#${which}-tab`).focus();
   if (people) loadDirectory();
 }
@@ -367,23 +630,106 @@ $("#directory-search").oninput = () => {
 function filterPerson(person) {
   if (!person) return;
   selectedPerson = person;
+  year = "";
+  renderYearNav();
   $("#filter-name").value = person.name;
   const finish = () => {
+    if (location.pathname !== "/") {
+      history.pushState(null, "", "/");
+      route();
+    }
     changeTab("gallery");
     loadPhotos();
-    $("#collection").scrollIntoView({
-      behavior: reduceMotion.matches ? "instant" : "smooth",
-    });
+    $("#collection").scrollIntoView({ behavior: smooth() });
   };
   if ($("#photo-dialog").open) closeDialog("photo-dialog", finish);
   else finish();
 }
+
+/* ---------- Página de download ---------- */
+const zip = (params, label) =>
+  `/api/download.zip?${new URLSearchParams({ ...params, label })}`;
+async function loadDownloads() {
+  try {
+    const data = statsData || (await stats());
+    $("#dl-all-meta").textContent = data.photos
+      ? `${plural(data.photos, "foto", "fotos")} · cerca de ${size(data.bytes)}`
+      : "Ainda não há fotos para baixar.";
+    $("#dl-all").setAttribute("aria-disabled", String(!data.photos));
+    $("#dl-year-list").innerHTML = data.years.length
+      ? data.years
+          .map((item) => {
+            const key = item.year || "sem-data";
+            return `<a class="dl-row" href="${zip({ year: key }, item.year || "sem-data")}" download><span><strong>${item.year || "Sem data"}</strong><small>${plural(item.count, "foto", "fotos")} · ${size(item.bytes)}</small></span><span class="dl-go">${icon("download")}</span></a>`;
+          })
+          .join("")
+      : '<p class="hint">Nenhum ano ainda.</p>';
+    loadDownloadPeople();
+  } catch (error) {
+    $("#dl-all-meta").textContent = error.message;
+  }
+}
+async function loadDownloadPeople() {
+  const query = $("#dl-person-search").value.trim();
+  try {
+    const data = await api("/api/people?q=" + encodeURIComponent(query));
+    if (query !== $("#dl-person-search").value.trim()) return;
+    const people = data.people.filter((person) => person.photos > 0).slice(0, 30);
+    $("#dl-person-list").innerHTML = people.length
+      ? people
+          .map(
+            (person) =>
+              `<a class="dl-row" href="${zip({ person: person.id }, person.name)}" download><span><strong>${esc(person.name)}</strong><small>${plural(person.photos, "foto", "fotos")}${person.reference ? " · " + esc(person.reference) : ""}</small></span><span class="dl-go">${icon("download")}</span></a>`,
+          )
+          .join("")
+      : `<p class="hint">${query ? "Ninguém com esse nome nas fotos." : "Ninguém marcado ainda."}</p>`;
+  } catch (error) {
+    $("#dl-person-list").innerHTML = `<p class="hint">${esc(error.message)}</p>`;
+  }
+}
+$("#dl-person-search").oninput = () => {
+  clearTimeout(dlPeopleTimer);
+  dlPeopleTimer = setTimeout(loadDownloadPeople, 200);
+};
+for (const toggle of $$(".dl-toggle")) {
+  const panel = $("#" + toggle.getAttribute("aria-controls"));
+  setOpen(panel, false);
+  toggle.onclick = () => {
+    const open = panel.dataset.open !== "true";
+    setOpen(panel, open);
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.closest(".dl-card").dataset.open = String(open);
+  };
+}
+$("#dl-period-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const from = $("#dl-from").value,
+    to = $("#dl-to").value;
+  if (!from || !to || from > to) {
+    toast("Confira as datas: a primeira vem antes da segunda.");
+    return;
+  }
+  location.href = zip({ from, to }, `${from}-a-${to}`);
+});
+$("#view-download").addEventListener("click", (event) => {
+  const link = event.target.closest("a[download]");
+  if (link && link.getAttribute("aria-disabled") !== "true")
+    toast("Preparando o ZIP… o download começa em instantes.", true);
+});
+$("#dl-pick").onclick = () => {
+  history.pushState(null, "", "/");
+  route();
+  changeTab("gallery");
+  setSelecting(true);
+  $("#collection").scrollIntoView({ behavior: smooth() });
+};
 
 /* ---------- Dialogs com botão Voltar do celular ---------- */
 const stack = [];
 function openDialog(id, url = location.href) {
   const dialog = $("#" + id);
   if (dialog.open) return;
+  closeMenu();
   dialog.showModal();
   stack.push(id);
   history.pushState({ dialog: id }, "", url);
@@ -410,7 +756,10 @@ function finishClose(id) {
 }
 addEventListener("popstate", () => {
   const id = stack.at(-1);
-  if (!id) return;
+  if (!id) {
+    route();
+    return;
+  }
   if (id === "upload-dialog" && busy) {
     history.pushState({ dialog: id }, "", location.href);
     return;
@@ -419,7 +768,7 @@ addEventListener("popstate", () => {
   $("#" + id).close();
   finishClose(id);
 });
-for (const dialog of document.querySelectorAll("dialog")) {
+for (const dialog of $$("dialog")) {
   dialog.addEventListener("cancel", (event) => {
     event.preventDefault();
     closeDialog(dialog.id);
@@ -440,7 +789,10 @@ for (const dialog of document.querySelectorAll("dialog")) {
 /* ---------- Botão flutuante ---------- */
 let heroVisible = true;
 function syncFab() {
-  $(".fab").classList.toggle("hide", heroVisible || stack.length > 0);
+  $(".fab").classList.toggle(
+    "hide",
+    (heroVisible && !$("#view-home").hidden) || stack.length > 0 || selecting,
+  );
 }
 new IntersectionObserver((entries) => {
   heroVisible = entries[0].isIntersecting;
@@ -463,6 +815,7 @@ function markThumb(index) {
   const badge = document.querySelector(`[data-thumb="${index}"] .num`);
   if (!badge) return;
   const done = filled(uploadQueue[index]);
+  if (badge.classList.contains("done") === done) return;
   badge.classList.toggle("done", done);
   badge.innerHTML = done ? icon("check") : String(index + 1);
 }
@@ -504,12 +857,10 @@ function selectFile(index) {
   $("#photo-date").value = item.metadata.date;
   $("#photo-title").value = item.metadata.title;
   $("#photo-description").value = item.metadata.description;
+  $("#more-details").open = Boolean(item.metadata.title || item.metadata.description);
   selectedPeople = [...item.metadata.people];
   $("#file-preview").src = item.url;
-  $("#file-hint").textContent =
-    uploadQueue.length > 1
-      ? `Foto ${activeIndex + 1} de ${uploadQueue.length}`
-      : "";
+  $("#file-hint").textContent = `Foto ${activeIndex + 1} de ${uploadQueue.length}`;
   $("#file-hint").hidden = uploadQueue.length < 2;
   $("#person-search").value = "";
   renderChips();
@@ -538,6 +889,7 @@ function prepareDialog(edit = null) {
     $("#photo-date").value = edit.date;
     $("#photo-title").value = edit.title;
     $("#photo-description").value = edit.description;
+    $("#more-details").open = true;
     selectedPeople = [...edit.people];
     $("#file-preview").src = edit.view || edit.src;
     $("#file-hint").hidden = true;
@@ -549,6 +901,7 @@ function prepareDialog(edit = null) {
     releaseQueue();
     activeIndex = -1;
     selectedPeople = [];
+    $("#more-details").open = false;
     try {
       $("#author").value = localStorage.getItem("tre023-author") || "";
     } catch {}
@@ -606,9 +959,7 @@ $("#apply-all").onclick = () => {
     item.metadata.people = [...people];
     markThumb(index);
   });
-  toast(
-    `Data e pessoas aplicadas nas ${uploadQueue.length} fotos.`,
-  );
+  toast(`Data e pessoas aplicadas nas ${uploadQueue.length} fotos.`, true);
 };
 
 async function searchPeople() {
@@ -656,7 +1007,15 @@ function addPerson(context) {
   if (context === "upload") $("#person-name").value = $("#person-search").value.trim();
   errorAt("#person-error");
   openDialog("person-dialog");
-  setTimeout(() => $(context === "upload" && $("#person-name").value ? "#person-reference" : "#person-name").focus(), 50);
+  setTimeout(
+    () =>
+      $(
+        context === "upload" && $("#person-name").value
+          ? "#person-reference"
+          : "#person-name",
+      ).focus(),
+    60,
+  );
 }
 $("#directory-add").onclick = () => addPerson("directory");
 function choose(person) {
@@ -691,6 +1050,7 @@ $("#person-form").addEventListener("submit", async (event) => {
       data.reused
         ? `${data.person.name} já estava na lista. Marcado!`
         : `${data.person.name} entrou na lista da ${pick(ZONE.slice(0, 3))}.`,
+      true,
     );
     await Promise.all([
       stats(),
@@ -704,9 +1064,7 @@ $("#person-form").addEventListener("submit", async (event) => {
 });
 function setBusy(value) {
   busy = value;
-  for (const control of $("#upload-dialog").querySelectorAll(
-    "button,input,textarea",
-  ))
+  for (const control of $$("button,input,textarea", $("#upload-dialog")))
     control.disabled = value;
   if (!value) searchPeople();
 }
@@ -755,7 +1113,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
       const updated = data.photo;
       closeDialog("upload-dialog", () => showPhoto(updated));
       editingPhoto = null;
-      toast("Dados corrigidos.");
+      toast("Dados corrigidos.", true);
     } else {
       captureMetadata();
       const count = uploadQueue.length,
@@ -808,9 +1166,11 @@ $("#upload-form").addEventListener("submit", async (event) => {
           done === 1
             ? `Foto na ${pick(ZONE.slice(0, 3))}! Valeu.`
             : `${done} fotos na ${pick(ZONE.slice(0, 3))}! Valeu.`,
+          true,
         );
       }
     }
+    statsData = null;
     await Promise.all([loadPhotos(), stats()]);
   } catch (error) {
     $("#upload-progress").hidden = true;
@@ -826,23 +1186,48 @@ function photoUrl(id) {
   url.searchParams.set("photo", id);
   return url;
 }
+const viewCache = new Set();
 function preload(photo) {
-  if (photo) new Image().src = photo.view;
+  if (!photo || viewCache.has(photo.view)) return;
+  const image = new Image();
+  image.onload = () => viewCache.add(photo.view);
+  image.src = photo.view;
 }
-function showPhoto(photo) {
+// Mostra a miniatura (já em cache) na hora e troca pela versão de tela quando chegar.
+function setViewerImage(photo, direction = 0) {
+  const image = $("#detail-image");
+  const apply = () => {
+    image.classList.remove("out-left", "out-right");
+    if (viewCache.has(photo.view)) {
+      image.src = photo.view;
+      image.classList.remove("lowres");
+      return;
+    }
+    image.src = photo.thumbnail;
+    image.classList.add("lowres");
+    const full = new Image();
+    full.onload = () => {
+      viewCache.add(photo.view);
+      if (currentPhoto?.id !== photo.id) return;
+      image.src = photo.view;
+      image.classList.remove("lowres");
+    };
+    full.src = photo.view;
+  };
+  if (direction && !reduceMotion.matches) {
+    image.classList.add(direction > 0 ? "out-left" : "out-right");
+    setTimeout(apply, 140);
+  } else apply();
+}
+function showPhoto(photo, direction = 0) {
   if (!photo) return;
   currentPhoto = photo;
   const index = photos.findIndex((item) => item.id === photo.id);
   $("#detail-position").textContent =
     index >= 0 && total > 1 ? `${index + 1} de ${total}` : pick(ZONE, photo.id);
-  const image = $("#detail-image");
-  if ($("#photo-dialog").open && !reduceMotion.matches) {
-    image.classList.add("swap");
-    image.onload = () => image.classList.remove("swap");
-  }
-  image.src = photo.view || photo.src;
-  image.alt = photo.title || "Foto do acervo da Zona 23";
-  $("#detail-date").textContent = dateLabel(photo.date);
+  setViewerImage(photo, direction);
+  $("#detail-image").alt = photo.title || "Foto do acervo da Zona 23";
+  $("#detail-date").innerHTML = `${icon("calendar")}${esc(dateLabel(photo.date))}`;
   $("#detail-date").classList.toggle("undated", !photo.date);
   $("#detail-title").textContent = titleOf(photo);
   $("#detail-description").textContent = photo.description;
@@ -850,13 +1235,11 @@ function showPhoto(photo) {
     ? photo.people
         .map(
           (person) =>
-            `<button class="chip chip-link" type="button" data-detail-person="${person.id}">${esc(person.name)}${person.reference ? ` <small>${esc(person.reference)}</small>` : ""}</button>`,
+            `<button class="chip chip-link" type="button" data-detail-person="${person.id}">${avatar(person)}${esc(person.name)}${person.reference ? ` <small>${esc(person.reference)}</small>` : ""}</button>`,
         )
         .join("")
     : '<p class="hint">Ninguém marcado ainda.</p>';
-  $("#detail-author").textContent = photo.author
-    ? "Enviada por " + photo.author
-    : "";
+  $("#detail-author").textContent = photo.author ? "Enviada por " + photo.author : "";
   $("#detail-author").hidden = !photo.author;
   $("#detail-download").href = photo.src;
   $("#detail-download").download =
@@ -871,9 +1254,25 @@ function showPhoto(photo) {
   else openDialog("photo-dialog", photoUrl(photo.id));
   if (index >= photos.length - 3 && nextOffset !== null) loadPhotos(true);
 }
+// Card "expande" até o visualizador (View Transitions, quando o navegador tem).
+function openFromCard(card, photo) {
+  const thumb = card.querySelector("img");
+  if (!document.startViewTransition || reduceMotion.matches || !thumb?.complete) {
+    showPhoto(photo);
+    return;
+  }
+  resetTilt();
+  thumb.style.viewTransitionName = "photo-hero";
+  const transition = document.startViewTransition(() => {
+    thumb.style.viewTransitionName = "";
+    $("#detail-image").style.viewTransitionName = "photo-hero";
+    showPhoto(photo);
+  });
+  transition.finished.finally(() => ($("#detail-image").style.viewTransitionName = ""));
+}
 function movePhoto(delta) {
   const index = photos.findIndex((photo) => photo.id === currentPhoto?.id);
-  if (photos[index + delta]) showPhoto(photos[index + delta]);
+  if (photos[index + delta]) showPhoto(photos[index + delta], delta);
 }
 $("#previous-photo").onclick = () => movePhoto(-1);
 $("#next-photo").onclick = () => movePhoto(1);
@@ -908,11 +1307,10 @@ $("#viewer-stage").addEventListener(
 $("#detail-share").onclick = async () => {
   const url = photoUrl(currentPhoto.id).href;
   try {
-    if (navigator.share)
-      await navigator.share({ title: titleOf(currentPhoto), url });
+    if (navigator.share) await navigator.share({ title: titleOf(currentPhoto), url });
     else {
       await navigator.clipboard.writeText(url);
-      toast("Link copiado.");
+      toast("Link copiado.", true);
     }
   } catch {
     /* compartilhamento cancelado */
@@ -929,9 +1327,23 @@ document.addEventListener("click", (event) => {
   if (!button || button.disabled) return;
   if (button.dataset.close) closeDialog(button.dataset.close);
   else if (button.classList.contains("upload-trigger")) prepareDialog();
-  else if (button.dataset.photo)
-    showPhoto(photos.find((photo) => photo.id === button.dataset.photo));
-  else if (button.dataset.directoryPerson)
+  else if (button.dataset.photo) {
+    if (selecting) toggleSelect(button);
+    else
+      openFromCard(
+        button,
+        photos.find((photo) => photo.id === button.dataset.photo),
+      );
+  } else if (button.classList.contains("year-head"))
+    toggleGroup(button.closest(".year-group"));
+  else if (button.dataset.yearFilter !== undefined) {
+    year = button.dataset.yearFilter;
+    selectedPerson = null;
+    $("#filter-name").value = "";
+    renderYearNav();
+    button.scrollIntoView({ inline: "center", block: "nearest", behavior: smooth() });
+    loadPhotos();
+  } else if (button.dataset.directoryPerson)
     filterPerson(
       directoryPeople.find((person) => person.id === button.dataset.directoryPerson),
     );
@@ -966,13 +1378,17 @@ document.addEventListener("click", (event) => {
 
 /* ---------- Início ---------- */
 (async () => {
+  setOpen($("#menu"), false);
+  setOpen($("#period"), false);
   const url = new URL(location.href);
   const requestedPhoto = url.searchParams.get("photo");
   if (requestedPhoto) {
     url.searchParams.delete("photo");
     history.replaceState(null, "", url);
   }
+  route();
   await Promise.all([loadPhotos(), stats().catch(() => {})]);
+  if (location.hash === "#pessoas") changeTab("people");
   if (requestedPhoto) {
     try {
       const data = await api("/api/photos/" + encodeURIComponent(requestedPhoto));

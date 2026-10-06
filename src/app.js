@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
-import { unlink, rename } from "node:fs/promises";
+import { unlink, rename, readFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -95,6 +95,40 @@ export function createApp({
     (SELECT json_group_array(json_object('id',id,'name',name,'reference',reference)) FROM
       (SELECT p.id,p.name,p.reference FROM people p JOIN photo_people pp ON p.id=pp.person_id
        WHERE pp.photo_id=f.id ORDER BY p.normalized)) AS people`;
+  const YEAR = "CASE WHEN f.date='' THEN '' ELSE substr(f.date,1,4) END";
+  const UUID = /^[a-f0-9-]{36}$/;
+  function filters(url) {
+    const get = (key) => url.searchParams.get(key) || "";
+    const q = normalize(get("name")).slice(0, 120);
+    const from = get("from"),
+      to = get("to"),
+      person = get("person"),
+      year = get("year");
+    const ids = get("ids") ? get("ids").split(",") : [];
+    if (
+      (from && !validDate(from)) ||
+      (to && !validDate(to)) ||
+      (from && to && from > to)
+    )
+      throw new InputError(
+        "Confira o período: a data inicial deve vir antes da final.",
+      );
+    if (year && !/^(\d{4}|sem-data)$/.test(year))
+      throw new InputError("Confira o ano.");
+    if (ids.length > 1000 || ids.some((id) => !UUID.test(id)))
+      throw new InputError("Confira as fotos escolhidas.");
+    const yearValue = year === "sem-data" ? "" : year;
+    const where = `WHERE (?='' OR (f.date<>'' AND f.date>=?)) AND (?='' OR (f.date<>'' AND f.date<=?))
+          AND (?='' OR EXISTS(SELECT 1 FROM photo_people pp JOIN people p ON p.id=pp.person_id WHERE pp.photo_id=f.id AND instr(p.normalized,?)>0))
+          AND (?='' OR EXISTS(SELECT 1 FROM photo_people pp WHERE pp.photo_id=f.id AND pp.person_id=?))
+          AND (?=0 OR ${YEAR}=?)
+          AND (?='[]' OR f.id IN (SELECT value FROM json_each(?)))`;
+    const list = JSON.stringify(ids);
+    return {
+      where,
+      args: [from, from, to, to, q, q, person, person, year ? 1 : 0, yearValue, list, list],
+    };
+  }
   function shape(row) {
     row.people = JSON.parse(row.people || "[]");
     row.src = `/media/${row.filename}`;
@@ -188,6 +222,191 @@ export function createApp({
     const body = encoding ? entry[encoding] : entry.body;
     return new Response(req.method === "HEAD" ? null : body, { headers });
   }
+  texts["/baixar"] = texts["/"];
+  {
+    const body = Buffer.from(
+      JSON.stringify({
+        name: "Zon23 · Fotos da Zona 23",
+        short_name: "Zon23",
+        description: "As fotos da Zona 23 de Marechal Hermes num lugar só.",
+        lang: "pt-BR",
+        start_url: "/",
+        display: "standalone",
+        background_color: "#f4f7fc",
+        theme_color: "#1b305a",
+        icons: [
+          { src: "/assets/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "/assets/icon-512.png", sizes: "512x512", type: "image/png" },
+          {
+            src: "/assets/icon-maskable.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+      }),
+    );
+    texts["/manifest.webmanifest"] = {
+      type: "application/manifest+json",
+      body,
+      gzip: gzipSync(body),
+      br: brotliCompressSync(body),
+      etag: `"${hash(body).slice(0, 16)}"`,
+    };
+  }
+  // Ícones PNG para instalar na tela inicial, gerados do SVG da marca (sem depender de fontes).
+  const icons = {};
+  const iconSvg = readFileSync(join(publicRoot, "assets/icon.svg"));
+  const iconsReady = Promise.all(
+    [
+      ["/assets/icon-180.png", 180, 0],
+      ["/assets/icon-192.png", 192, 0],
+      ["/assets/icon-512.png", 512, 0],
+      ["/assets/icon-maskable.png", 512, 0.12],
+    ].map(async ([route, size, pad]) => {
+      const inner = Math.round((size * (1 - pad * 2)) / 2) * 2;
+      let image = sharp(iconSvg, { density: 400 }).resize(inner, inner);
+      if (pad)
+        image = sharp(await image.png().toBuffer()).extend({
+          top: (size - inner) / 2,
+          bottom: (size - inner) / 2,
+          left: (size - inner) / 2,
+          right: (size - inner) / 2,
+          background: "#1b305a",
+        });
+      icons[route] = await image.png().toBuffer();
+    }),
+  ).catch((error) => console.error("Ícones:", error.message));
+
+  // Download em ZIP sem compressão (fotos já são comprimidas): um arquivo por vez na memória.
+  let activeDownloads = 0;
+  const slug = (value) =>
+    normalize(value)
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 40);
+  const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  function download(url) {
+    const { where, args } = filters(url);
+    const rows = db
+      .query(
+        `SELECT ${PHOTO_COLUMNS} FROM photos f ${where} ORDER BY f.date='',f.date,f.created_at,f.id LIMIT 1001`,
+      )
+      .all(...args)
+      .map((row) => {
+        const file = join(media, row.filename);
+        return { ...shape(row), file };
+      });
+    if (!rows.length) throw new InputError("Nenhuma foto para baixar.", 404);
+    if (rows.length > 1000)
+      throw new InputError("Escolha até 1000 fotos por download.", 413);
+    if (activeDownloads >= 3)
+      throw new InputError("Muitos downloads ao mesmo tempo. Tente em instantes.", 429);
+    activeDownloads++;
+    const now = new Date();
+    const dosTime =
+      (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+    const dosDate =
+      ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+    const central = [];
+    let offset = 0,
+      index = 0,
+      done = false;
+    const csv = [
+      "arquivo,data,titulo,descricao,pessoas,enviada_por",
+      ...rows.map((row) => {
+        row.zipName = `${row.date || "sem-data"}_${slug(row.title) || "zon23"}_${row.id.slice(0, 8)}.${row.src.split(".").pop()}`;
+        return [
+          row.zipName,
+          row.date,
+          row.title,
+          row.description,
+          row.people
+            .map((person) => person.name + (person.reference ? ` (${person.reference})` : ""))
+            .join("; "),
+          row.author,
+        ]
+          .map(csvCell)
+          .join(",");
+      }),
+    ].join("\r\n");
+    const entries = [
+      ...rows.map((row) => ({ name: row.zipName, load: () => readFile(row.file) })),
+      { name: "fotos.csv", load: async () => Buffer.from("\ufeff" + csv) },
+    ];
+    function entry(name, data) {
+      const nameBytes = Buffer.from(name);
+      const crc = Bun.hash.crc32(data) >>> 0;
+      const local = Buffer.alloc(30);
+      local.writeUInt32LE(0x04034b50, 0);
+      local.writeUInt16LE(20, 4);
+      local.writeUInt16LE(0x0800, 6);
+      local.writeUInt16LE(0, 8);
+      local.writeUInt16LE(dosTime, 10);
+      local.writeUInt16LE(dosDate, 12);
+      local.writeUInt32LE(crc, 14);
+      local.writeUInt32LE(data.length, 18);
+      local.writeUInt32LE(data.length, 22);
+      local.writeUInt16LE(nameBytes.length, 26);
+      const record = Buffer.alloc(46);
+      record.writeUInt32LE(0x02014b50, 0);
+      record.writeUInt16LE(20, 4);
+      record.writeUInt16LE(20, 6);
+      record.writeUInt16LE(0x0800, 8);
+      record.writeUInt16LE(dosTime, 12);
+      record.writeUInt16LE(dosDate, 14);
+      record.writeUInt32LE(crc, 16);
+      record.writeUInt32LE(data.length, 20);
+      record.writeUInt32LE(data.length, 24);
+      record.writeUInt16LE(nameBytes.length, 28);
+      record.writeUInt32LE(offset, 42);
+      central.push(Buffer.concat([record, nameBytes]));
+      offset += 30 + nameBytes.length + data.length;
+      return [local, nameBytes, data];
+    }
+    const finish = () => {
+      if (!done) activeDownloads--;
+      done = true;
+    };
+    const stream = new ReadableStream({
+      async pull(controller) {
+        try {
+          if (index < entries.length) {
+            const item = entries[index++];
+            for (const part of entry(item.name, await item.load()))
+              controller.enqueue(part);
+            return;
+          }
+          const directory = Buffer.concat(central);
+          const end = Buffer.alloc(22);
+          end.writeUInt32LE(0x06054b50, 0);
+          end.writeUInt16LE(central.length, 8);
+          end.writeUInt16LE(central.length, 10);
+          end.writeUInt32LE(directory.length, 12);
+          end.writeUInt32LE(offset, 16);
+          controller.enqueue(directory);
+          controller.enqueue(end);
+          controller.close();
+          finish();
+        } catch (error) {
+          finish();
+          console.error("Falha no download:", error.message);
+          controller.error(error);
+        }
+      },
+      cancel: finish,
+    });
+    const label = slug(url.searchParams.get("label") || "") || "fotos";
+    return new Response(stream, {
+      headers: {
+        ...securityHeaders,
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="zon23-${label}.zip"`,
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
   // Versão de tela (1600 px) gerada sob demanda: o visualizador não baixa o original de até 25 MB.
   const pendingViews = new Map();
   async function ensureView(id) {
@@ -242,6 +461,12 @@ export function createApp({
             )
             .get(),
           people: db.query("SELECT COUNT(*) AS count FROM people").get().count,
+          bytes: db.query("SELECT COALESCE(SUM(bytes),0) AS b FROM photos").get().b,
+          years: db
+            .query(
+              `SELECT ${YEAR} AS year, COUNT(*) AS count, SUM(bytes) AS bytes FROM photos f GROUP BY year ORDER BY year='' , year DESC`,
+            )
+            .all(),
         });
       }
       if (path === "/api/people" && req.method === "GET") {
@@ -275,23 +500,10 @@ export function createApp({
         );
         return json({ person: { id, name, reference }, reused: false }, 201);
       }
+      if (path === "/api/download.zip" && req.method === "GET")
+        return download(url);
       if (path === "/api/photos" && req.method === "GET") {
-        const q = normalize(url.searchParams.get("name") || "").slice(0, 120);
-        const from = url.searchParams.get("from") || "",
-          to = url.searchParams.get("to") || "",
-          person = url.searchParams.get("person") || "";
-        if (
-          (from && !validDate(from)) ||
-          (to && !validDate(to)) ||
-          (from && to && from > to)
-        )
-          throw new InputError(
-            "Confira o período: a data inicial deve vir antes da final.",
-          );
-        const where = `WHERE (?='' OR (f.date<>'' AND f.date>=?)) AND (?='' OR (f.date<>'' AND f.date<=?))
-          AND (?='' OR EXISTS(SELECT 1 FROM photo_people pp JOIN people p ON p.id=pp.person_id WHERE pp.photo_id=f.id AND instr(p.normalized,?)>0))
-          AND (?='' OR EXISTS(SELECT 1 FROM photo_people pp WHERE pp.photo_id=f.id AND pp.person_id=?))`;
-        const args = [from, from, to, to, q, q, person, person];
+        const { where, args } = filters(url);
         const offset = Math.max(
           0,
           Math.min(
@@ -309,7 +521,16 @@ export function createApp({
         const total = db
           .query(`SELECT COUNT(*) AS count FROM photos f ${where}`)
           .get(...args).count;
+        const years =
+          offset === 0
+            ? db
+                .query(
+                  `SELECT ${YEAR} AS year, COUNT(*) AS count FROM photos f ${where} GROUP BY year`,
+                )
+                .all(...args)
+            : undefined;
         return json({
+          years,
           photos: rows.map(shape),
           total,
           nextOffset: offset + rows.length < total ? offset + rows.length : null,
@@ -441,6 +662,14 @@ export function createApp({
       if (!["GET", "HEAD"].includes(req.method))
         throw new InputError("Método não permitido.", 405);
       if (texts[path]) return text(req, texts[path]);
+      if (icons[path])
+        return new Response(req.method === "HEAD" ? null : icons[path], {
+          headers: {
+            ...securityHeaders,
+            "Content-Type": "image/png",
+            "Cache-Control": "public,max-age=2592000",
+          },
+        });
       const view = path.match(/^\/media\/([a-f0-9-]{36})\.view\.webp$/);
       if (view) await ensureView(view[1]);
       let target;
@@ -473,5 +702,5 @@ export function createApp({
       );
     }
   }
-  return { fetch, close: () => db.close() };
+  return { fetch, close: () => db.close(), ready: iconsReady };
 }

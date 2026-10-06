@@ -347,3 +347,49 @@ test("versão de tela é servida e recriada se faltar; páginas saem comprimidas
     s.cleanup();
   }
 });
+
+test("download em ZIP traz as fotos filtradas e a planilha; anos e páginas extras respondem", async () => {
+  const s = sandbox();
+  try {
+    const ana = (await s.request("/api/people", "POST", { name: "Ana" })).data.person.id;
+    const a = (await s.request("/api/photos", "POST", upload("2024-05-01", [ana]))).data.photo;
+    const b = (await s.request("/api/photos", "POST", upload("2022-01-01"))).data.photo;
+    await s.request("/api/photos", "POST", upload(""));
+    const list = await s.request("/api/photos");
+    expect(list.data.years).toEqual(
+      expect.arrayContaining([
+        { year: "2024", count: 1 },
+        { year: "2022", count: 1 },
+        { year: "", count: 1 },
+      ]),
+    );
+    expect((await s.request("/api/photos?year=sem-data")).data.total).toBe(1);
+    expect((await s.request("/api/photos?ids=" + [a.id, b.id].join(","))).data.total).toBe(2);
+    expect((await s.request("/api/photos?ids=x")).status).toBe(400);
+    expect((await s.request("/api/stats")).data.years.map((y) => y.year)).toEqual([
+      "2024",
+      "2022",
+      "",
+    ]);
+    const zip = await s.app.fetch(
+      new Request("http://localhost/api/download.zip?person=" + ana + "&label=Ana"),
+    );
+    expect(zip.status).toBe(200);
+    expect(zip.headers.get("Content-Disposition")).toContain("zon23-ana.zip");
+    const file = join(s.dataDir, "teste.zip");
+    await Bun.write(file, await zip.arrayBuffer());
+    const listing = Bun.spawnSync(["unzip", "-l", file]).stdout.toString();
+    expect(listing).toContain("2024-05-01_encontro-da-equipe_" + a.id.slice(0, 8) + ".jpg");
+    expect(listing).toContain("fotos.csv");
+    expect(listing).not.toContain(b.id.slice(0, 8));
+    expect(Bun.spawnSync(["unzip", "-tq", file]).exitCode).toBe(0);
+    expect(
+      (await s.app.fetch(new Request("http://localhost/api/download.zip?year=1999"))).status,
+    ).toBe(404);
+    await s.app.ready;
+    for (const path of ["/baixar", "/manifest.webmanifest", "/assets/icon-192.png"])
+      expect((await s.app.fetch(new Request("http://localhost" + path))).status).toBe(200);
+  } finally {
+    s.cleanup();
+  }
+});
