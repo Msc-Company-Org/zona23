@@ -973,5 +973,6 @@ export function createApp({
     auth,
     documentos,
     eleicao,
+    db,
   };
 }
