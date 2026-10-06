@@ -113,6 +113,7 @@ Leia o [guia de contribuição](CONTRIBUTING.md). Uma boa proposta explica o pro
 | [Guia do acervo](docs/guia-do-acervo.md) | Para encontrar, enviar, corrigir ou baixar fotos. |
 | [Textos e navegação](docs/textos-e-navegacao.md) | Para manter títulos, botões e ícones consistentes. |
 | [Arquitetura](docs/arquitetura.md) | Para entender dados, rotas e desempenho. |
+| [Governança e continuidade](docs/governanca.md) | Para entender versões, acessos, responsabilidades e próximos passos. |
 | [Identidade visual](docs/identidade.md) | Para consultar a origem dos ativos visuais. |
 | [Publicação e recuperação](deploy/README.md) | Para publicar, verificar e recuperar uma versão. |
 | [Histórico de mudanças](CHANGELOG.md) | Para acompanhar as entregas. |
