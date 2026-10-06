@@ -773,6 +773,7 @@ h2 {
   padding-left: 46px;
 }
 input:where(:not([type="checkbox"]):not([type="file"])),
+select,
 textarea {
   width: 100%;
   min-height: 50px;
@@ -3005,4 +3006,50 @@ dialog[open]::backdrop {
 .date-pill .icon {
   width: 15px;
   height: 15px;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+  background: #fff
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9.5 6 6 6-6' fill='none' stroke='%231b305a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    right 12px center / 20px no-repeat;
+  cursor: pointer;
+}
+.event-filter {
+  grid-column: 1 / -1;
+}
+.card-event {
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--tint) / 1);
+  filter: brightness(0.7) saturate(1.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.event-pill {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 650;
+  transition: transform 0.3s var(--spring), background-color 0.2s;
+}
+.event-pill .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--yellow);
+}
+.event-pill:active {
+  transform: scale(0.95);
 }

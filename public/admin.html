@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#0b1630" />
+    <title>Equipe · Zon23</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/admin.css" />
+    <script src="/admin.js" defer></script>
+  </head>
+  <body class="admin">
+    <!--sprite-->
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <symbol id="i-dashboard" viewBox="0 0 24 24">
+        <rect x="3.5" y="3.5" width="7" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="13.5" y="3.5" width="7" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="13.5" y="11.5" width="7" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="3.5" y="15.5" width="7" height="5" rx="2" fill="currentColor" opacity=".3" stroke="currentColor" stroke-width="1.8" />
+      </symbol>
+      <symbol id="i-photos" viewBox="0 0 24 24">
+        <rect x="3.5" y="5.5" width="14" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M7 3.5h11a2.5 2.5 0 0 1 2.5 2.5v10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <circle cx="8.5" cy="10" r="1.6" fill="currentColor" />
+        <path d="m3.8 16.5 4.2-4 3 2.8 2.5-2 4 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-event" viewBox="0 0 24 24">
+        <path d="M5 21V4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+        <path d="M5 4.5h12.5l-2.6 4 2.6 4H5" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-text" viewBox="0 0 24 24">
+        <path d="M4.5 6.5v-2h11v2M10 4.5v15M7.5 19.5h5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M14.5 12.5h6M17.5 12.5v7M16 19.5h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24">
+        <rect x="5" y="10.5" width="14" height="10" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="12" cy="15.5" r="1.5" fill="currentColor" />
+      </symbol>
+      <symbol id="i-logout" viewBox="0 0 24 24">
+        <path d="M14 4.5H7A2.5 2.5 0 0 0 4.5 7v10A2.5 2.5 0 0 0 7 19.5h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M11 12h9m0 0-3.2-3.2M20 12l-3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24">
+        <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8" />
+      </symbol>
+      <symbol id="i-eye-off" viewBox="0 0 24 24">
+        <path d="M4 4l16 16M9.9 6A9.6 9.6 0 0 1 12 5.5C18 5.5 21.5 12 21.5 12a17 17 0 0 1-2.8 3.6M6.4 7.6C3.9 9.4 2.5 12 2.5 12S6 18.5 12 18.5c1.5 0 2.9-.4 4-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M4.5 7h15M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2M6.5 7l.8 12a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.8-12M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-merge" viewBox="0 0 24 24">
+        <circle cx="6.5" cy="6" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <circle cx="6.5" cy="18" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <circle cx="17.5" cy="12" r="2.6" fill="currentColor" />
+        <path d="M8.6 7.2c3 1 3.4 4.8 6.4 4.8M8.6 16.8c3-1 3.4-4.8 6.4-4.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24">
+        <path d="M12 3.5 21 19.5H3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M12 9.5v4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <circle cx="12" cy="16.8" r="1.1" fill="currentColor" />
+      </symbol>
+      <symbol id="i-storage" viewBox="0 0 24 24">
+        <ellipse cx="12" cy="6" rx="7.5" ry="2.8" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M4.5 6v12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V6M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8" fill="none" stroke="currentColor" stroke-width="1.8" />
+      </symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24">
+        <path d="M12 16V5m0 0L7.5 9.5M12 5l4.5 4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24">
+        <path d="M12 3 19.5 6v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z" fill="#ffda59" stroke="#1b305a" stroke-width="1.6" stroke-linejoin="round" />
+        <path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#1b305a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+    </svg>
+
+    <!-- Entrar -->
+    <section id="login-view" class="auth" hidden>
+      <div class="auth-glow" aria-hidden="true"></div>
+      <form id="login-form" class="auth-card" novalidate>
+        <svg class="auth-mark" aria-hidden="true"><use href="#mark" /></svg>
+        <p class="kicker-dark">Zon23 · Equipe</p>
+        <h1>Área da equipe</h1>
+        <p class="auth-sub">Gestão das fotos da Zona 023.</p>
+        <label class="field">
+          <span class="field-label">Usuário</span>
+          <input id="login-user" autocomplete="username" autocapitalize="none" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Senha</span>
+          <input id="login-pass" type="password" autocomplete="current-password" required />
+        </label>
+        <p id="login-error" class="error" role="alert" hidden></p>
+        <button class="btn btn-navy btn-lg" type="submit">
+          <svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg>Entrar
+        </button>
+        <a class="auth-back" href="/">Voltar para o site</a>
+      </form>
+    </section>
+
+    <!-- Troca obrigatória de senha -->
+    <section id="password-view" class="auth" hidden>
+      <div class="auth-glow" aria-hidden="true"></div>
+      <form id="first-password-form" class="auth-card" novalidate>
+        <svg class="auth-shield" aria-hidden="true"><use href="#i-shield" /></svg>
+        <p class="kicker-dark">Primeiro acesso</p>
+        <h1>Crie sua senha</h1>
+        <p class="auth-sub">A senha inicial é provisória. Use pelo menos 8 caracteres.</p>
+        <label class="field">
+          <span class="field-label">Senha atual</span>
+          <input id="first-current" type="password" autocomplete="current-password" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Nova senha</span>
+          <input id="first-next" type="password" autocomplete="new-password" minlength="8" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Repita a nova senha</span>
+          <input id="first-repeat" type="password" autocomplete="new-password" minlength="8" required />
+        </label>
+        <p id="first-error" class="error" role="alert" hidden></p>
+        <button class="btn btn-primary btn-lg" type="submit">Salvar e entrar</button>
+        <button class="auth-back logout" type="button">Sair</button>
+      </form>
+    </section>
+
+    <!-- Aplicação -->
+    <div id="app-view" class="shell" hidden>
+      <header class="a-top">
+        <a class="a-brand" href="/admin">
+          <svg class="brand-mark" aria-hidden="true"><use href="#mark" /></svg>
+          <span><strong>Zon<span>23</span></strong><small>Equipe</small></span>
+        </a>
+        <div class="a-top-actions">
+          <a class="btn btn-glass btn-sm a-site" href="/" target="_blank" rel="noopener">
+            <svg class="icon" aria-hidden="true"><use href="#i-out" /></svg><span>Ver site</span>
+          </a>
+          <button class="icon-btn icon-btn-dark logout" type="button" aria-label="Sair">
+            <svg class="icon" aria-hidden="true"><use href="#i-logout" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <nav class="a-nav" aria-label="Seções">
+        <button type="button" data-section="painel"><svg class="icon" aria-hidden="true"><use href="#i-dashboard" /></svg><span>Painel</span></button>
+        <button type="button" data-section="fotos"><svg class="icon" aria-hidden="true"><use href="#i-photos" /></svg><span>Fotos</span></button>
+        <button type="button" data-section="eventos"><svg class="icon" aria-hidden="true"><use href="#i-event" /></svg><span>Eventos</span></button>
+        <button type="button" data-section="pessoas"><svg class="icon" aria-hidden="true"><use href="#i-people" /></svg><span>Pessoas</span></button>
+        <button type="button" data-section="textos"><svg class="icon" aria-hidden="true"><use href="#i-text" /></svg><span>Textos</span></button>
+        <button type="button" data-section="conta" class="nav-account"><svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg><span>Conta</span></button>
+      </nav>
+
+      <main class="a-main" id="main">
+        <!-- Painel -->
+        <section id="painel" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">TRE Marechal Hermes</p>
+              <h1>Painel</h1>
+            </div>
+            <div class="segmented" role="group" aria-label="Período">
+              <button type="button" data-days="7" aria-pressed="false">7 dias</button>
+              <button type="button" data-days="30" aria-pressed="true">30 dias</button>
+              <button type="button" data-days="90" aria-pressed="false">90 dias</button>
+            </div>
+          </div>
+          <div id="kpis" class="kpis"></div>
+          <div class="a-grid">
+            <article class="a-card chart-card">
+              <div class="card-head">
+                <div>
+                  <h2 id="chart-title">Fotos vistas por dia</h2>
+                  <p id="chart-sub" class="muted"></p>
+                </div>
+                <div class="segmented segmented-sm" role="group" aria-label="Métrica">
+                  <button type="button" data-metric="photos" aria-pressed="true">Fotos vistas</button>
+                  <button type="button" data-metric="pages" aria-pressed="false">Visitas</button>
+                  <button type="button" data-metric="downloads" aria-pressed="false">Downloads</button>
+                  <button type="button" data-metric="uploads" aria-pressed="false">Envios</button>
+                </div>
+              </div>
+              <div class="chart" id="chart"></div>
+              <details class="chart-table">
+                <summary>Ver em tabela</summary>
+                <div id="chart-table"></div>
+              </details>
+            </article>
+            <article class="a-card todo-card">
+              <div class="card-head"><h2>Para arrumar</h2></div>
+              <div id="todo" class="todo"></div>
+            </article>
+            <article class="a-card">
+              <div class="card-head"><h2>Mais vistas</h2></div>
+              <div id="top-photos" class="mini-list"></div>
+            </article>
+            <article class="a-card">
+              <div class="card-head"><h2>Quem mais aparece</h2></div>
+              <div id="top-people" class="mini-list"></div>
+            </article>
+            <article class="a-card a-wide">
+              <div class="card-head"><h2>Chegaram agora</h2><button class="link" type="button" data-go="fotos">Ver todas</button></div>
+              <div id="recent" class="recent"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Fotos -->
+        <section id="fotos" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Acervo da Zon23</p>
+              <h1>Fotos</h1>
+            </div>
+            <a class="btn btn-primary btn-sm" href="/" target="_blank" rel="noopener">
+              <svg class="icon" aria-hidden="true"><use href="#i-upload" /></svg>Enviar pelo site
+            </a>
+          </div>
+          <div class="a-filters">
+            <label class="field-icon">
+              <span class="sr-only">Buscar</span>
+              <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+              <input id="p-search" type="search" placeholder="Título, pessoa ou quem enviou" autocomplete="off" />
+            </label>
+            <select id="p-status" aria-label="Visibilidade">
+              <option value="">Todas</option>
+              <option value="visible">Publicadas</option>
+              <option value="hidden">Ocultas</option>
+            </select>
+            <select id="p-missing" aria-label="Pendência">
+              <option value="">Sem filtro de pendência</option>
+              <option value="date">Sem data</option>
+              <option value="people">Sem pessoas</option>
+              <option value="event">Sem evento</option>
+            </select>
+            <select id="p-event" aria-label="Evento"><option value="">Todos os eventos</option></select>
+          </div>
+          <div class="a-bar">
+            <p id="p-summary" class="muted" role="status"></p>
+            <button id="p-select-all" class="link" type="button">Selecionar visíveis</button>
+          </div>
+          <div id="p-grid" class="p-grid"></div>
+          <button id="p-more" class="btn btn-outline load-more" type="button" hidden>Carregar mais</button>
+        </section>
+
+        <!-- Eventos -->
+        <section id="eventos" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Zona 023</p>
+              <h1>Eventos</h1>
+              <p class="muted">Eleições, treinamentos, confraternizações. Cada foto pode ter um evento.</p>
+            </div>
+            <button id="event-new" class="btn btn-primary btn-sm" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Novo evento
+            </button>
+          </div>
+          <div id="event-list" class="event-grid"></div>
+        </section>
+
+        <!-- Pessoas -->
+        <section id="pessoas" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Zon23</p>
+              <h1>Pessoas</h1>
+              <p class="muted">Corrija nomes e junte cadastros repetidos.</p>
+            </div>
+          </div>
+          <label class="field-icon a-search">
+            <span class="sr-only">Buscar pessoa</span>
+            <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+            <input id="pe-search" type="search" placeholder="Buscar nome" autocomplete="off" />
+          </label>
+          <div id="pe-list" class="pe-list"></div>
+        </section>
+
+        <!-- Textos -->
+        <section id="textos" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Nomenclatura</p>
+              <h1>Textos do site</h1>
+              <p class="muted">Títulos e variações do nome que aparecem para o público.</p>
+            </div>
+          </div>
+          <div class="texts-layout">
+            <form id="settings-form" class="a-card settings-form" novalidate>
+              <div id="settings-fields"></div>
+              <p id="settings-error" class="error" role="alert" hidden></p>
+              <div class="form-actions">
+                <button class="btn btn-navy" type="submit">Salvar textos</button>
+              </div>
+            </form>
+            <aside class="preview-hero" aria-label="Prévia">
+              <p class="preview-label">Prévia</p>
+              <div class="preview-box">
+                <p class="kicker"><span class="dot" aria-hidden="true"></span><span id="pv-kicker"></span></p>
+                <p class="pv-title"><span id="pv-title"></span> <em id="pv-highlight"></em></p>
+                <p class="pv-lede" id="pv-lede"></p>
+                <p class="pv-names" id="pv-names"></p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- Conta -->
+        <section id="conta" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Segurança</p>
+              <h1>Sua conta</h1>
+              <p class="muted" id="account-user"></p>
+            </div>
+          </div>
+          <form id="password-form" class="a-card narrow" novalidate>
+            <h2>Trocar senha</h2>
+            <label class="field"><span class="field-label">Senha atual</span><input id="pw-current" type="password" autocomplete="current-password" /></label>
+            <label class="field"><span class="field-label">Nova senha</span><input id="pw-next" type="password" autocomplete="new-password" /></label>
+            <label class="field"><span class="field-label">Repita a nova senha</span><input id="pw-repeat" type="password" autocomplete="new-password" /></label>
+            <p id="pw-error" class="error" role="alert" hidden></p>
+            <div class="form-actions"><button class="btn btn-navy" type="submit">Trocar senha</button></div>
+            <p class="muted small">A sessão dura 12 horas. Trocar a senha encerra as outras sessões.</p>
+          </form>
+        </section>
+      </main>
+
+      <div id="bulk-bar" class="select-bar bulk-bar" data-open="false" role="region" aria-label="Ações em lote">
+        <button id="bulk-cancel" class="icon-btn icon-btn-dark" type="button" aria-label="Limpar seleção">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+        <p><strong id="bulk-count">0</strong> <span>selecionadas</span></p>
+        <div class="bulk-actions">
+          <button class="btn btn-glass btn-sm" type="button" data-bulk="event"><svg class="icon" aria-hidden="true"><use href="#i-event" /></svg><span>Evento</span></button>
+          <button class="btn btn-glass btn-sm" type="button" data-bulk="date"><svg class="icon" aria-hidden="true"><use href="#i-calendar" /></svg><span>Data</span></button>
+          <button class="btn btn-glass btn-sm" type="button" data-bulk="person"><svg class="icon" aria-hidden="true"><use href="#i-user-plus" /></svg><span>Pessoa</span></button>
+          <button class="btn btn-glass btn-sm" type="button" data-bulk="hide"><svg class="icon" aria-hidden="true"><use href="#i-eye-off" /></svg><span>Ocultar</span></button>
+          <button class="btn btn-glass btn-sm" type="button" data-bulk="show"><svg class="icon" aria-hidden="true"><use href="#i-eye" /></svg><span>Mostrar</span></button>
+          <button class="btn btn-danger btn-sm" type="button" data-bulk="delete"><svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg><span>Excluir</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editar foto -->
+    <dialog id="photo-edit" class="sheet edit-dialog" aria-labelledby="pe-title">
+      <form id="photo-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark" id="pe-kicker">Foto</p><h2 id="pe-title">Editar foto</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body edit-body">
+          <div class="edit-media">
+            <img id="ed-image" alt="" />
+            <div class="edit-stats" id="ed-stats"></div>
+            <a id="ed-open" class="link" target="_blank" rel="noopener">Abrir no site</a>
+          </div>
+          <div class="edit-fields">
+            <label class="switch">
+              <input id="ed-visible" type="checkbox" />
+              <span class="switch-track" aria-hidden="true"><span></span></span>
+              <span><strong>Publicada</strong><small id="ed-visible-hint">Aparece para todo mundo</small></span>
+            </label>
+            <label class="field"><span class="field-label">Título</span><input id="ed-title" maxlength="160" /></label>
+            <div class="two">
+              <label class="field"><span class="field-label">Data</span><input id="ed-date" type="date" min="1800-01-01" /></label>
+              <label class="field"><span class="field-label">Evento</span><select id="ed-event"></select></label>
+            </div>
+            <label class="field"><span class="field-label">Descrição</span><textarea id="ed-description" maxlength="2000" rows="3"></textarea></label>
+            <label class="field"><span class="field-label">Enviada por</span><input id="ed-author" maxlength="120" /></label>
+            <div class="field">
+              <span class="field-label"><svg class="icon" aria-hidden="true"><use href="#i-people" /></svg>Pessoas na foto</span>
+              <div id="ed-people" class="chips"></div>
+              <label class="field-icon">
+                <span class="sr-only">Adicionar pessoa</span>
+                <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+                <input id="ed-person-search" type="search" placeholder="Adicionar pessoa" autocomplete="off" />
+              </label>
+              <div id="ed-person-results" class="person-results"></div>
+            </div>
+          </div>
+          <p id="ed-error" class="error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot">
+          <div class="foot-actions">
+            <button id="ed-delete" class="btn btn-danger-soft" type="button"><svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg><span>Excluir</span></button>
+            <span class="spacer"></span>
+            <button class="btn btn-outline" type="button" data-close>Cancelar</button>
+            <button class="btn btn-navy" type="submit">Salvar</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Evento -->
+    <dialog id="event-dialog" class="sheet small-dialog" aria-labelledby="ev-title">
+      <form id="event-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark">Zona 023</p><h2 id="ev-title">Novo evento</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body">
+          <label class="field"><span class="field-label">Nome</span><input id="ev-name" maxlength="100" placeholder="Ex.: Eleições 2024 · 1º turno" /></label>
+          <label class="field"><span class="field-label">Data <span class="optional">opcional</span></span><input id="ev-date" type="date" min="1800-01-01" /></label>
+          <label class="field"><span class="field-label">Descrição <span class="optional">opcional</span></span><textarea id="ev-description" maxlength="500" rows="3"></textarea></label>
+          <p id="ev-error" class="error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot">
+          <div class="foot-actions">
+            <button id="ev-delete" class="btn btn-danger-soft" type="button" hidden><svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg><span>Excluir</span></button>
+            <span class="spacer"></span>
+            <button class="btn btn-outline" type="button" data-close>Cancelar</button>
+            <button class="btn btn-navy" type="submit">Salvar</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Pessoa -->
+    <dialog id="person-edit" class="sheet small-dialog" aria-labelledby="pr-title">
+      <form id="person-edit-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark">Cadastro</p><h2 id="pr-title">Editar pessoa</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body">
+          <label class="field"><span class="field-label">Nome completo</span><input id="pr-name" maxlength="120" autocapitalize="words" /></label>
+          <label class="field"><span class="field-label">Apelido ou função <span class="optional">opcional</span></span><input id="pr-reference" maxlength="80" /></label>
+          <p id="pr-error" class="error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot">
+          <div class="foot-actions">
+            <span class="spacer"></span>
+            <button class="btn btn-outline" type="button" data-close>Cancelar</button>
+            <button class="btn btn-navy" type="submit">Salvar</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Escolher (evento, data, pessoa, juntar) -->
+    <dialog id="pick-dialog" class="sheet small-dialog" aria-labelledby="pk-title">
+      <form id="pick-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark" id="pk-kicker">Em lote</p><h2 id="pk-title">Escolher</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body" id="pk-body"></div>
+        <div class="sheet-foot">
+          <div class="foot-actions">
+            <span class="spacer"></span>
+            <button class="btn btn-outline" type="button" data-close>Cancelar</button>
+            <button class="btn btn-navy" type="submit" id="pk-submit">Aplicar</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Confirmar -->
+    <dialog id="confirm-dialog" class="sheet confirm-dialog" aria-labelledby="cf-title">
+      <form method="dialog" class="sheet-form">
+        <div class="sheet-body confirm-body">
+          <span class="confirm-icon"><svg class="icon" aria-hidden="true"><use href="#i-alert" /></svg></span>
+          <h2 id="cf-title"></h2>
+          <p id="cf-text" class="muted"></p>
+        </div>
+        <div class="sheet-foot">
+          <div class="foot-actions">
+            <button class="btn btn-outline btn-grow" value="no">Cancelar</button>
+            <button class="btn btn-danger btn-grow" value="yes" id="cf-ok">Confirmar</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" hidden></div>
+  </body>
+</html>

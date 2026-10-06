@@ -6,6 +6,7 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { gzipSync, brotliCompressSync } from "node:zlib";
 import sharp from "sharp";
+import { createAdmin, SETTINGS, today } from "./admin.js";
 
 const MAX_FILE = 25 * 1024 * 1024;
 const VIEW_SIZE = 1600;
@@ -54,7 +55,12 @@ export function createApp({
 } = {}) {
   if (!Number.isFinite(maxStorageMB) || maxStorageMB < 0)
     throw new Error("MAX_STORAGE_MB deve ser um número válido e não negativo.");
-  const allowedOrigin = publicOrigin ? new URL(publicOrigin).origin : "";
+  // PUBLIC_ORIGIN aceita mais de um endereço separado por vírgula (ex.: domínio novo + antigo).
+  const allowedOrigins = publicOrigin
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => new URL(value).origin);
   const root = resolve(dataDir),
     media = join(root, "media");
   const publicRoot = resolve(import.meta.dir, "../public");
@@ -76,7 +82,37 @@ export function createApp({
     );
     CREATE INDEX IF NOT EXISTS photo_date ON photos(date DESC);
     CREATE INDEX IF NOT EXISTS people_photo ON photo_people(person_id, photo_id);
+    CREATE TABLE IF NOT EXISTS events (
+      id TEXT PRIMARY KEY, name TEXT NOT NULL, date TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL,
+      must_change INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sessions (
+      token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS hits (
+      day TEXT NOT NULL, kind TEXT NOT NULL, ref TEXT NOT NULL, count INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY(day, kind, ref)
+    );
   `);
+  // Migração sem perda: colunas novas em bancos já publicados.
+  const columns = db.query("PRAGMA table_info(photos)").all().map((row) => row.name);
+  if (!columns.includes("hidden"))
+    db.exec("ALTER TABLE photos ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0");
+  if (!columns.includes("event_id"))
+    db.exec(
+      "ALTER TABLE photos ADD COLUMN event_id TEXT REFERENCES events(id) ON DELETE SET NULL",
+    );
+  db.exec("CREATE INDEX IF NOT EXISTS photo_event ON photos(event_id)");
+  const countHit = db.query(
+    "INSERT INTO hits VALUES (?,?,?,1) ON CONFLICT(day,kind,ref) DO UPDATE SET count=count+1",
+  );
+  const hit = (kind, ref = "") => countHit.run(today(), kind, ref);
   const rate = new Map();
   function rateLimit(ip) {
     const now = Date.now();
@@ -90,20 +126,31 @@ export function createApp({
     bucket.count++;
     rate.set(ip, bucket);
   }
+  const hitRate = new Map();
+  function hitLimit(ip) {
+    const now = Date.now();
+    if (hitRate.size > 10000) hitRate.clear();
+    const bucket = hitRate.get(ip) || { count: 0, until: now + 3600000 };
+    if (bucket.until < now) Object.assign(bucket, { count: 0, until: now + 3600000 });
+    if (++bucket.count > 3000) throw new InputError("Muitos acessos.", 429);
+    hitRate.set(ip, bucket);
+  }
   // Fotos e pessoas numa consulta só: a galeria não faz uma ida ao banco por card.
-  const PHOTO_COLUMNS = `f.id,f.title,f.description,f.date,f.filename,f.author,f.created_at,
+  const PHOTO_COLUMNS = `f.id,f.title,f.description,f.date,f.filename,f.author,f.created_at,f.event_id,
+    (SELECT name FROM events WHERE id=f.event_id) AS event_name,
     (SELECT json_group_array(json_object('id',id,'name',name,'reference',reference)) FROM
       (SELECT p.id,p.name,p.reference FROM people p JOIN photo_people pp ON p.id=pp.person_id
        WHERE pp.photo_id=f.id ORDER BY p.normalized)) AS people`;
   const YEAR = "CASE WHEN f.date='' THEN '' ELSE substr(f.date,1,4) END";
   const UUID = /^[a-f0-9-]{36}$/;
-  function filters(url) {
+  function filters(url, admin = false) {
     const get = (key) => url.searchParams.get(key) || "";
     const q = normalize(get("name")).slice(0, 120);
     const from = get("from"),
       to = get("to"),
       person = get("person"),
-      year = get("year");
+      year = get("year"),
+      event = get("event");
     const ids = get("ids") ? get("ids").split(",") : [];
     if (
       (from && !validDate(from)) ||
@@ -115,6 +162,7 @@ export function createApp({
       );
     if (year && !/^(\d{4}|sem-data)$/.test(year))
       throw new InputError("Confira o ano.");
+    if (event && !UUID.test(event)) throw new InputError("Confira o evento.");
     if (ids.length > 1000 || ids.some((id) => !UUID.test(id)))
       throw new InputError("Confira as fotos escolhidas.");
     const yearValue = year === "sem-data" ? "" : year;
@@ -122,15 +170,22 @@ export function createApp({
           AND (?='' OR EXISTS(SELECT 1 FROM photo_people pp JOIN people p ON p.id=pp.person_id WHERE pp.photo_id=f.id AND instr(p.normalized,?)>0))
           AND (?='' OR EXISTS(SELECT 1 FROM photo_people pp WHERE pp.photo_id=f.id AND pp.person_id=?))
           AND (?=0 OR ${YEAR}=?)
-          AND (?='[]' OR f.id IN (SELECT value FROM json_each(?)))`;
+          AND (?='[]' OR f.id IN (SELECT value FROM json_each(?)))
+          AND (?='' OR f.event_id=?) AND (?=1 OR f.hidden=0)`;
     const list = JSON.stringify(ids);
     return {
       where,
-      args: [from, from, to, to, q, q, person, person, year ? 1 : 0, yearValue, list, list],
+      args: [
+        from, from, to, to, q, q, person, person, year ? 1 : 0, yearValue, list, list,
+        event, event, admin ? 1 : 0,
+      ],
     };
   }
   function shape(row) {
     row.people = JSON.parse(row.people || "[]");
+    row.event = row.event_id ? { id: row.event_id, name: row.event_name } : null;
+    delete row.event_id;
+    delete row.event_name;
     row.src = `/media/${row.filename}`;
     row.view = `/media/${row.id}.view.webp`;
     row.thumbnail = `/media/${row.id}.thumb.webp`;
@@ -139,7 +194,7 @@ export function createApp({
   }
   function photo(id) {
     const result = db
-      .query(`SELECT ${PHOTO_COLUMNS} FROM photos f WHERE f.id=?`)
+      .query(`SELECT ${PHOTO_COLUMNS} FROM photos f WHERE f.id=? AND f.hidden=0`)
       .get(id);
     if (!result) throw new InputError("Foto não encontrada.", 404);
     return shape(result);
@@ -191,12 +246,38 @@ export function createApp({
     entry.immutable = true;
     texts["/" + file] = entry;
   }
-  {
-    let html = readFileSync(join(publicRoot, "index.html"), "utf8");
-    for (const file of ["app.js", "style.css"])
-      html = html.replace(`/${file}"`, `/${file}?v=${texts["/" + file].version}"`);
+  for (const [file, type] of [
+    ["admin.js", "text/javascript;charset=utf-8"],
+    ["admin.css", "text/css;charset=utf-8"],
+  ]) {
+    const entry = load(file, type);
+    entry.version = entry.etag.slice(1, 11);
+    entry.immutable = true;
+    texts["/" + file] = entry;
+  }
+  const escapeHtml = (value) =>
+    String(value).replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
+  function page(file, values = {}) {
+    let html = readFileSync(join(publicRoot, file), "utf8");
+    for (const asset of ["app.js", "style.css", "admin.js", "admin.css"])
+      html = html.replace(`/${asset}"`, `/${asset}?v=${texts["/" + asset].version}"`);
+    if (html.includes("<!--sprite-->"))
+      html = html.replace(
+        "<!--sprite-->",
+        readFileSync(join(publicRoot, "index.html"), "utf8").match(
+          /<svg class="sprite"[\s\S]*?<\/svg>/,
+        )[0],
+      );
+    // Trechos marcados com <!--s:chave-->…<!--/s--> vêm dos textos editáveis da equipe.
+    html = html.replace(/<!--s:(\w+)-->[\s\S]*?<!--\/s-->/g, (match, key) =>
+      key in values ? escapeHtml(values[key]) : match,
+    );
+    html = html.replace(
+      "<!--settings-json-->",
+      `<script type="application/json" id="site-settings">${JSON.stringify(values).replace(/</g, "\\u003c")}</script>`,
+    );
     const body = Buffer.from(html);
-    texts["/"] = {
+    return {
       type: "text/html;charset=utf-8",
       body,
       gzip: gzipSync(body, { level: 9 }),
@@ -222,7 +303,25 @@ export function createApp({
     const body = encoding ? entry[encoding] : entry.body;
     return new Response(req.method === "HEAD" ? null : body, { headers });
   }
-  texts["/baixar"] = texts["/"];
+  texts["/admin"] = page("admin.html");
+  const dummyHash = Bun.password.hashSync(randomBytes(16).toString("hex"));
+  const admin = createAdmin({
+    db,
+    json,
+    InputError,
+    textValue,
+    validDate,
+    normalize,
+    hash,
+    media,
+    dummyHash,
+    secureCookie: allowedOrigins.some((origin) => origin.startsWith("https:")),
+    onSettings: renderHome,
+  });
+  function renderHome() {
+    texts["/"] = texts["/baixar"] = page("index.html", admin.settings());
+  }
+  renderHome();
   {
     const body = Buffer.from(
       JSON.stringify({
@@ -434,13 +533,13 @@ export function createApp({
     try {
       const url = new URL(req.url),
         path = url.pathname;
-      if (!["GET", "HEAD", "POST", "PATCH"].includes(req.method))
+      if (!["GET", "HEAD", "POST", "PATCH", "DELETE"].includes(req.method))
         throw new InputError("Método não permitido.", 405);
-      if (["POST", "PATCH"].includes(req.method)) {
+      if (["POST", "PATCH", "DELETE"].includes(req.method)) {
         const origin = req.headers.get("Origin");
-        const expected = allowedOrigin || url.origin;
+        const expected = allowedOrigins.length ? allowedOrigins : [url.origin];
         if (
-          (origin && origin !== expected) ||
+          (origin && !expected.includes(origin)) ||
           req.headers.get("Sec-Fetch-Site") === "cross-site"
         )
           throw new InputError("Envie a partir da página do acervo.", 403);
@@ -451,20 +550,45 @@ export function createApp({
             server?.requestIP(req)?.address ||
             "local"
           : server?.requestIP(req)?.address || "local";
-        rateLimit(ip);
+        // Equipe logada e contagem de acesso não gastam a cota de envios públicos.
+        if (path === "/api/hit") hitLimit(ip);
+        else if (!(path.startsWith("/api/admin/") && admin.user(req))) rateLimit(ip);
       }
+      if (path.startsWith("/api/admin/")) return await admin.handle(req, url, path);
+      if (path === "/api/hit" && req.method === "POST") {
+        const body = await req.json();
+        if (body.kind === "page" && ["/", "/baixar"].includes(body.ref)) hit("page", body.ref);
+        else if (
+          body.kind === "photo" &&
+          UUID.test(body.ref) &&
+          db.query("SELECT 1 FROM photos WHERE id=? AND hidden=0").get(body.ref)
+        )
+          hit("photo", body.ref);
+        return new Response(null, { status: 204, headers: securityHeaders });
+      }
+      if (path === "/api/settings" && req.method === "GET")
+        return json({ settings: admin.settings() });
+      if (path === "/api/events" && req.method === "GET")
+        return json({
+          events: db
+            .query(
+              `SELECT e.id,e.name,e.date,COUNT(f.id) AS photos FROM events e JOIN photos f ON f.event_id=e.id AND f.hidden=0
+               GROUP BY e.id ORDER BY e.date='' , e.date DESC, e.name`,
+            )
+            .all(),
+        });
       if (path === "/api/stats" && req.method === "GET") {
         return json({
           ...db
             .query(
-              "SELECT COUNT(*) AS photos, COUNT(DISTINCT NULLIF(date,'')) AS dates, MIN(NULLIF(date,'')) AS firstDate, MAX(NULLIF(date,'')) AS lastDate FROM photos",
+              "SELECT COUNT(*) AS photos, COUNT(DISTINCT NULLIF(date,'')) AS dates, MIN(NULLIF(date,'')) AS firstDate, MAX(NULLIF(date,'')) AS lastDate FROM photos WHERE hidden=0",
             )
             .get(),
           people: db.query("SELECT COUNT(*) AS count FROM people").get().count,
-          bytes: db.query("SELECT COALESCE(SUM(bytes),0) AS b FROM photos").get().b,
+          bytes: db.query("SELECT COALESCE(SUM(bytes),0) AS b FROM photos WHERE hidden=0").get().b,
           years: db
             .query(
-              `SELECT ${YEAR} AS year, COUNT(*) AS count, SUM(bytes) AS bytes FROM photos f GROUP BY year ORDER BY year='' , year DESC`,
+              `SELECT ${YEAR} AS year, COUNT(*) AS count, SUM(bytes) AS bytes FROM photos f WHERE f.hidden=0 GROUP BY year ORDER BY year='' , year DESC`,
             )
             .all(),
         });
@@ -474,8 +598,9 @@ export function createApp({
         return json({
           people: db
             .query(
-              `SELECT p.id,p.name,p.reference,COUNT(pp.photo_id) AS photos FROM people p
-          LEFT JOIN photo_people pp ON pp.person_id=p.id WHERE instr(p.normalized,?)>0 GROUP BY p.id ORDER BY p.normalized LIMIT 100`,
+              `SELECT p.id,p.name,p.reference,COUNT(f.id) AS photos FROM people p
+          LEFT JOIN photo_people pp ON pp.person_id=p.id LEFT JOIN photos f ON f.id=pp.photo_id AND f.hidden=0
+          WHERE instr(p.normalized,?)>0 GROUP BY p.id ORDER BY p.normalized LIMIT 100`,
             )
             .all(q),
         });
@@ -500,8 +625,11 @@ export function createApp({
         );
         return json({ person: { id, name, reference }, reused: false }, 201);
       }
-      if (path === "/api/download.zip" && req.method === "GET")
-        return download(url);
+      if (path === "/api/download.zip" && req.method === "GET") {
+        const response = download(url);
+        if (req.method === "GET") hit("zip", url.searchParams.get("label") || "");
+        return response;
+      }
       if (path === "/api/photos" && req.method === "GET") {
         const { where, args } = filters(url);
         const offset = Math.max(
@@ -634,7 +762,9 @@ export function createApp({
                 "O acervo atingiu o limite de armazenamento. Avise a organização.",
                 507,
               );
-            db.query("INSERT INTO photos VALUES (?,?,?,?,?,?,?,?,?)").run(
+            db.query(
+              "INSERT INTO photos (id,title,description,date,filename,bytes,author,edit_hash,created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+            ).run(
               id,
               values.title,
               values.description,
@@ -681,6 +811,8 @@ export function createApp({
       const asset = Bun.file(target);
       if (!(await asset.exists()))
         throw new InputError("Arquivo não encontrado.", 404);
+      const original = path.match(/^\/media\/([a-f0-9-]{36})\.(jpg|png|webp)$/);
+      if (original && req.method === "GET" && !req.headers.get("Range")) hit("download", original[1]);
       return new Response(req.method === "HEAD" ? null : asset, {
         headers: {
           ...securityHeaders,

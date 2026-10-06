@@ -245,12 +245,9 @@
           <div class="hero-glow" aria-hidden="true"></div>
           <div class="wrap hero-inner">
             <div class="hero-copy">
-              <p class="kicker"><span class="dot" aria-hidden="true"></span>Zona 023 · Marechal Hermes</p>
-              <h1 id="title">A Zona 23 <em>tem rosto.</em></h1>
-              <p class="lede">
-                Ache você e a equipe nas fotos da TRE Marechal Hermes. Tem foto
-                parada no celular? Manda pra cá.
-              </p>
+              <p class="kicker"><span class="dot" aria-hidden="true"></span><!--s:hero_kicker-->Zona 023 · Marechal Hermes<!--/s--></p>
+              <h1 id="title"><!--s:hero_title-->A Zona 23<!--/s--> <em><!--s:hero_highlight-->tem rosto.<!--/s--></em></h1>
+              <p class="lede"><!--s:hero_lede-->Ache você e a equipe nas fotos da TRE Marechal Hermes. Tem foto parada no celular? Manda pra cá.<!--/s--></p>
               <div class="hero-actions">
                 <button class="btn btn-primary btn-lg upload-trigger" type="button">
                   <svg class="icon" aria-hidden="true"><use href="#i-camera" /></svg>
@@ -357,6 +354,7 @@
                     <div class="period">
                       <label>De<input id="filter-from" type="date" min="1800-01-01" /></label>
                       <label>Até<input id="filter-to" type="date" min="1800-01-01" /></label>
+                      <label class="event-filter" hidden>Evento<select id="filter-event"><option value="">Todos os eventos</option></select></label>
                       <div class="segmented" role="group" aria-label="Ordem das fotos">
                         <button type="button" data-order="newest" aria-pressed="true">Recentes primeiro</button>
                         <button type="button" data-order="oldest" aria-pressed="false">Antigas primeiro</button>
@@ -510,7 +508,7 @@
       <div class="wrap footer-inner">
         <div class="footer-brand">
           <svg class="brand-mark" aria-hidden="true"><use href="#mark" /></svg>
-          <p><strong>Zon23</strong><br />Feito pela turma da 23ª ZE, Marechal Hermes.</p>
+          <p><strong>Zon23</strong><br /><!--s:footer_text-->Feito pela turma da 23ª ZE, Marechal Hermes.<!--/s--></p>
         </div>
         <nav class="footer-nav" aria-label="Rodapé">
           <a href="/" data-link>Fotos</a>
@@ -698,6 +696,7 @@
         <div class="viewer-info">
           <p class="date-pill" id="detail-date"></p>
           <h2 id="detail-title"></h2>
+          <button id="detail-event" class="event-pill" type="button" hidden></button>
           <p id="detail-description" class="detail-description"></p>
           <div class="detail-people">
             <p class="field-label">
@@ -722,5 +721,6 @@
     </dialog>
 
     <div id="toast" class="toast" role="status" hidden></div>
+    <!--settings-json-->
   </body>
 </html>

@@ -44,7 +44,15 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
 
 // Variações do nome para o texto não ficar repetitivo nem formal demais.
-const ZONE = ["Zona 23", "Zon23", "Zona 023", "TRE Marechal Hermes", "23ª ZE"];
+let SITE = {};
+try {
+  SITE = JSON.parse($("#site-settings")?.textContent || "{}");
+} catch {}
+const ZONE = (SITE.zone_names || "Zona 23, Zon23, Zona 023, TRE Marechal Hermes, 23ª ZE")
+  .split(",")
+  .map((name) => name.trim())
+  .filter(Boolean);
+while (ZONE.length < 4) ZONE.push(ZONE[0] || "Zona 23");
 const UNTITLED = [
   "Registro da Zon23",
   "Na Zona 023",
@@ -63,6 +71,7 @@ let photos = [],
   requestNumber = 0,
   order = "newest",
   year = "",
+  event = "",
   yearCounts = {},
   allYears = [];
 let uploadQueue = [],
@@ -147,6 +156,19 @@ function setOpen(element, open) {
   element.inert = !open;
 }
 
+/* ---------- Contagem anônima de acessos (painel da equipe) ---------- */
+const counted = new Set();
+function track(kind, ref) {
+  const key = kind + ref;
+  if (counted.has(key)) return;
+  counted.add(key);
+  const body = JSON.stringify({ kind, ref });
+  try {
+    if (!navigator.sendBeacon?.("/api/hit", new Blob([body], { type: "application/json" })))
+      fetch("/api/hit", { method: "POST", body, headers: { "Content-Type": "application/json" }, keepalive: true });
+  } catch {}
+}
+
 /* ---------- Rotas: início e /baixar ---------- */
 function route() {
   const download = location.pathname === "/baixar";
@@ -163,6 +185,7 @@ function route() {
     ? "Baixar fotos · Zon23"
     : "Zon23 · Fotos da Zona 23 de Marechal Hermes";
   if (download) loadDownloads();
+  track("page", download ? "/baixar" : "/");
   syncFab();
 }
 function navigate(href) {
@@ -251,7 +274,8 @@ function hasFilters() {
       $("#filter-from").value ||
       $("#filter-to").value ||
       selectedPerson ||
-      year,
+      year ||
+      event,
   );
 }
 const yearKey = (photo) => (photo.date ? photo.date.slice(0, 4) : "sem-data");
@@ -262,7 +286,8 @@ function photoCard(photo) {
     ? firstNames.slice(0, 2).join(", ") + (people.length > 2 ? ` +${people.length - 2}` : "")
     : "Ninguém marcado";
   const tint = tints.get(photo.id);
-  return `<button class="photo-card" type="button" data-photo="${photo.id}" aria-pressed="${selected.has(photo.id)}"${tint ? ` data-tint="${tint}"` : ""} aria-label="${esc(titleOf(photo))}, ${esc(dateLabel(photo.date))}"><span class="photo-frame"><img src="${photo.thumbnail}" loading="lazy" decoding="async" alt="" width="640" height="640"><span class="glare"></span><span class="badge${photo.date ? "" : " undated"}">${esc(badgeLabel(photo.date))}</span>${people.length ? `<span class="people-count">${icon("people")}${people.length}</span>` : ""}<span class="pick">${icon("check")}</span></span><span class="card-info"><strong>${esc(titleOf(photo))}</strong><span class="card-meta">${people.length ? `<span class="avatar-stack">${people.slice(0, 3).map(avatar).join("")}</span>` : ""}<span>${esc(who)}</span></span></span></button>`;
+  const eventLine = photo.event ? `<span class="card-event">${esc(photo.event.name)}</span>` : "";
+  return `<button class="photo-card" type="button" data-photo="${photo.id}" aria-pressed="${selected.has(photo.id)}"${tint ? ` data-tint="${tint}"` : ""} aria-label="${esc(titleOf(photo))}, ${esc(dateLabel(photo.date))}"><span class="photo-frame"><img src="${photo.thumbnail}" loading="lazy" decoding="async" alt="" width="640" height="640"><span class="glare"></span><span class="badge${photo.date ? "" : " undated"}">${esc(badgeLabel(photo.date))}</span>${people.length ? `<span class="people-count">${icon("people")}${people.length}</span>` : ""}<span class="pick">${icon("check")}</span></span><span class="card-info">${eventLine}<strong>${esc(titleOf(photo))}</strong><span class="card-meta">${people.length ? `<span class="avatar-stack">${people.slice(0, 3).map(avatar).join("")}</span>` : ""}<span>${esc(who)}</span></span></span></button>`;
 }
 function groupHtml(key) {
   const count = yearCounts[key === "sem-data" ? "" : key] ?? 0;
@@ -324,7 +349,10 @@ const skeletons = (count) =>
       '<div class="photo-card skeleton" aria-hidden="true"><span class="photo-frame"></span><span class="bar"></span><span class="bar"></span></div>',
   ).join("")}</div></section>`;
 function summary() {
-  const term = selectedPerson?.name || $("#filter-name").value.trim();
+  const term =
+    selectedPerson?.name ||
+    $("#filter-name").value.trim() ||
+    $("#filter-event").selectedOptions[0]?.dataset.name;
   const count = `<strong>${total}</strong> ${total === 1 ? "foto" : "fotos"}`;
   $("#result-summary").innerHTML = term
     ? `${count} com “${esc(term)}”`
@@ -355,6 +383,7 @@ async function loadPhotos(append = false) {
     to: $("#filter-to").value,
     order,
     year,
+    event,
   });
   if (selectedPerson) params.set("person", selectedPerson.id);
   if (append) params.set("offset", nextOffset);
@@ -432,6 +461,7 @@ function clearFilters() {
   $("#search-form").reset();
   selectedPerson = null;
   year = "";
+  event = "";
   renderYearNav();
   togglePeriod(false);
   loadPhotos();
@@ -455,6 +485,40 @@ $("#filter-name").addEventListener("input", () => {
 });
 for (const id of ["#filter-from", "#filter-to"])
   $(id).addEventListener("change", () => loadPhotos());
+$("#filter-event").addEventListener("change", () => {
+  event = $("#filter-event").value;
+  loadPhotos();
+});
+async function loadEvents() {
+  try {
+    const data = await api("/api/events");
+    $(".event-filter").hidden = !data.events.length;
+    $("#filter-event").innerHTML =
+      '<option value="">Todos os eventos</option>' +
+      data.events
+        .map(
+          (item) =>
+            `<option value="${item.id}" data-name="${esc(item.name)}"${item.id === event ? " selected" : ""}>${esc(item.name)} (${item.photos})</option>`,
+        )
+        .join("");
+  } catch {}
+}
+function filterEvent(item) {
+  event = item.id;
+  selectedPerson = null;
+  year = "";
+  $("#filter-name").value = "";
+  renderYearNav();
+  const finish = () => {
+    loadEvents();
+    togglePeriod(true);
+    changeTab("gallery");
+    loadPhotos();
+    $("#collection").scrollIntoView({ behavior: smooth() });
+  };
+  if ($("#photo-dialog").open) closeDialog("photo-dialog", finish);
+  else finish();
+}
 $("#clear-filters").onclick = clearFilters;
 for (const button of $$("[data-order]"))
   button.onclick = () => {
@@ -1230,6 +1294,10 @@ function showPhoto(photo, direction = 0) {
   $("#detail-date").innerHTML = `${icon("calendar")}${esc(dateLabel(photo.date))}`;
   $("#detail-date").classList.toggle("undated", !photo.date);
   $("#detail-title").textContent = titleOf(photo);
+  $("#detail-event").hidden = !photo.event;
+  if (photo.event)
+    $("#detail-event").innerHTML = `${icon("timeline")}${esc(photo.event.name)}`;
+  track("photo", photo.id);
   $("#detail-description").textContent = photo.description;
   $("#detail-people").innerHTML = photo.people.length
     ? photo.people
@@ -1316,6 +1384,7 @@ $("#detail-share").onclick = async () => {
     /* compartilhamento cancelado */
   }
 };
+$("#detail-event").onclick = () => currentPhoto?.event && filterEvent(currentPhoto.event);
 $("#detail-edit").onclick = () => {
   const photo = currentPhoto;
   closeDialog("photo-dialog", () => prepareDialog(photo));
@@ -1387,7 +1456,7 @@ document.addEventListener("click", (event) => {
     history.replaceState(null, "", url);
   }
   route();
-  await Promise.all([loadPhotos(), stats().catch(() => {})]);
+  await Promise.all([loadPhotos(), stats().catch(() => {}), loadEvents()]);
   if (location.hash === "#pessoas") changeTab("people");
   if (requestedPhoto) {
     try {
