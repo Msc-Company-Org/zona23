@@ -132,8 +132,8 @@ Leia o [guia de contribuição](CONTRIBUTING.md). Uma boa proposta explica o pro
 
 ### 📌 Próximas entregas
 
-- Escala ASE e Tarefas.
-- Frequência e declarações, Convocações, Locais e seções.
+- Presença e declarações em lote.
+- Para decidir (juízo) e dispensas de convocados.
 - Sala de situação para o dia da eleição.
 - Publicação do APK assinado.
 
