@@ -20,11 +20,14 @@ A raiz do domínio é a entrada da **equipe do cartório**. O acervo de fotos co
 
 | Perfil | Para quem | Pode |
 | --- | --- | --- |
-| `admin` | Chefia do cartório e administração do sistema | Tudo da equipe + criar contas, gerar links e desativar acessos. |
-| `equipe` | Servidores e auxiliares | Todos os módulos do cartório e o acervo. |
-| `autoridade` | Juiz(a) e promotor(a) eleitoral | Consultar Início, agenda, equipe e os módulos de acompanhamento. Não altera dados. |
+| `chefe`, `admin` | Chefia do cartório e administração do sistema | Tudo da equipe + criar contas, gerar links e desativar acessos. |
+| `equipe` | Servidores do cartório | Todos os módulos de trabalho e o acervo. |
+| `juiz`, `promotor` | Juiz(a) e promotor(a) eleitoral | Consultar; não alteram dados nem veem dados de eleitor. |
+| `ase` | Auxiliares de Serviços Eleitorais | A própria escala, presença e declarações; consulta de locais e documentos. |
+| `presidente` | Presidentes de seção | A própria seção e as próprias demandas. |
+| `adm_predio` | Administradores de prédio | O próprio local e as próprias demandas. |
 
-O **cargo** (por exemplo, “Chefe do Cartório” ou “Juiz Eleitoral”) é um texto exibido no topo e na equipe; o perfil é o que define o acesso. O menu muda por perfil: autoridades veem **Para decidir** (juiz) ou **Acompanhamento** (promotoria) no lugar de Tarefas e Escala.
+O **cargo** (texto livre, como “Chefe do Cartório”) aparece no topo e na equipe; o **perfil** define o acesso e o menu. Presidentes têm seção; administradores de prédio têm local. A matriz completa está no [planejamento](planejamento.md).
 
 ## 🔐 Como se entra
 
@@ -65,12 +68,12 @@ A apresentação pode ser revista em *Perfil → Rever a apresentação*.
 | Módulo | Situação |
 | --- | --- |
 | Início, Agenda, Equipe, Perfil | Disponíveis. |
-| Memórias: visão do acervo, fotos, eventos, pessoas e textos | Disponível para `admin` e `equipe`. |
-| Tarefas, Escala ASE | Em preparação. |
-| Frequência, Convocações, Locais e seções, Para decidir | Em preparação. |
-| Sala de situação, Acompanhamento | Em preparação. |
-
-Módulos em preparação aparecem com o chip **Em breve** e mostram o que vão fazer, sem link quebrado.
+| Demandas do dia da eleição | Disponível: abrir, assumir, responder e concluir. |
+| Totalização | Disponível: portal público do TSE, seção por seção. |
+| Locais e seções | Disponível: 32 locais e 225 seções, endereços, salas e mapa. |
+| Documentos | Disponível: biblioteca com categorias e visibilidade por perfil. |
+| Memórias (acervo) | Disponível para chefia e equipe. |
+| Tarefas, Escala, Presença, Declarações, Convocações, Sala de situação, Para decidir | Em preparação; veja o [planejamento](planejamento.md). |
 
 ## 🛠️ Criar as contas
 
@@ -80,10 +83,11 @@ Os nomes e a senha inicial são informados na linha de comando, fora do Git:
 INITIAL_PASSWORD='…' DATA_DIR=/data bun scripts/seed-equipe.js \
   "fulano:admin:Fulano:Chefe do Cartório" \
   "beltrana::Beltrana:Servidora do Cartório" \
-  "sicrano:autoridade:Dr. Sicrano:Juiz Eleitoral"
+  "sicrano:juiz:Dr. Sicrano:Juiz Eleitoral" \
+  "fulana.adm:adm_predio:Fulana:Administradora de Prédio:L2"
 ```
 
-Formato: `usuario[:perfil][:Nome de exibição][:Cargo]`. Contas existentes são mantidas. Depois, prefira enviar a cada pessoa o **link de acesso** em vez da senha.
+Formato: `usuario[:perfil][:Nome de exibição][:Cargo][:lugar]`. O lugar é o número da seção (presidente) ou `L` + número do local (administrador de prédio). Contas existentes são mantidas. Depois, prefira enviar a cada pessoa o **link de acesso** em vez da senha.
 
 ## 📱 Aplicativo
 

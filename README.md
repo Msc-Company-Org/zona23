@@ -93,7 +93,7 @@ bun run check
 bun test
 ```
 
-Os testes usam dados isolados e cobrem persistência, uploads, filtros, paginação, edição, downloads e proteção administrativa. Inclui login, link de acesso de uso único, perfis, expiração da senha inicial e redirecionamentos. A validação de 06/10/2026 passou com **16 testes de integração**.
+Os testes usam dados isolados e cobrem persistência, uploads, filtros, paginação, edição, downloads e proteção administrativa. Inclui login, link de acesso de uso único, perfis, expiração da senha inicial e redirecionamentos. A validação de 06/10/2026 passou com **20 testes de integração**.
 
 Mudanças de interface também precisam de conferência visual no celular e no computador. Testes do servidor não substituem essa revisão.
 
@@ -124,6 +124,8 @@ Leia o [guia de contribuição](CONTRIBUTING.md). Uma boa proposta explica o pro
 | [Textos e navegação](docs/textos-e-navegacao.md) | Para manter títulos, botões e ícones consistentes. |
 | [Arquitetura](docs/arquitetura.md) | Para entender dados, rotas e desempenho. |
 | [Governança e continuidade](docs/governanca.md) | Para entender versões, acessos, responsabilidades e próximos passos. |
+| [Área da equipe](docs/area-da-equipe.md) | Para entender perfis, acesso, módulos e cadastro das contas. |
+| [Planejamento](docs/planejamento.md) | Para ver funcionalidades, workflows por perfil e cronograma. |
 | [Identidade visual](docs/identidade.md) | Para consultar a origem dos ativos visuais. |
 | [Publicação e recuperação](deploy/README.md) | Para publicar, verificar e recuperar uma versão. |
 | [Histórico de mudanças](CHANGELOG.md) | Para acompanhar as entregas. |
