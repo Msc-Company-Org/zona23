@@ -1,11 +1,14 @@
 import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
-import { unlink } from "node:fs/promises";
+import { unlink, rename } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { gzipSync, brotliCompressSync } from "node:zlib";
 import sharp from "sharp";
 
 const MAX_FILE = 25 * 1024 * 1024;
+const VIEW_SIZE = 1600;
 const normalize = (value) =>
   value
     .normalize("NFD")
@@ -87,29 +90,33 @@ export function createApp({
     bucket.count++;
     rate.set(ip, bucket);
   }
+  // Fotos e pessoas numa consulta só: a galeria não faz uma ida ao banco por card.
+  const PHOTO_COLUMNS = `f.id,f.title,f.description,f.date,f.filename,f.author,f.created_at,
+    (SELECT json_group_array(json_object('id',id,'name',name,'reference',reference)) FROM
+      (SELECT p.id,p.name,p.reference FROM people p JOIN photo_people pp ON p.id=pp.person_id
+       WHERE pp.photo_id=f.id ORDER BY p.normalized)) AS people`;
+  function shape(row) {
+    row.people = JSON.parse(row.people || "[]");
+    row.src = `/media/${row.filename}`;
+    row.view = `/media/${row.id}.view.webp`;
+    row.thumbnail = `/media/${row.id}.thumb.webp`;
+    delete row.filename;
+    return row;
+  }
   function photo(id) {
     const result = db
-      .query(
-        "SELECT id,title,description,date,filename,author,created_at FROM photos WHERE id=?",
-      )
+      .query(`SELECT ${PHOTO_COLUMNS} FROM photos f WHERE f.id=?`)
       .get(id);
     if (!result) throw new InputError("Foto não encontrada.", 404);
-    result.people = db
-      .query(
-        "SELECT p.id,p.name,p.reference FROM people p JOIN photo_people pp ON p.id=pp.person_id WHERE pp.photo_id=? ORDER BY p.normalized",
-      )
-      .all(id);
-    result.src = `/media/${result.filename}`;
-    result.thumbnail = `/media/${id}.thumb.webp`;
-    delete result.filename;
-    return result;
+    return shape(result);
   }
   function metadata(body) {
     const title = textValue(body.title ?? "", "Título", 160);
     const description = textValue(body.description ?? "", "Descrição", 2000);
-    const date = textValue(body.date ?? "", "Data", 10, true);
-    if (!validDate(date))
-      throw new InputError("Informe uma data válida para a foto.");
+    // Data é opcional: foto sem data entra no fim da linha do tempo.
+    const date = textValue(body.date ?? "", "Data", 10);
+    if (date && !validDate(date))
+      throw new InputError("Confira a data da foto ou deixe em branco.");
     if (
       !Array.isArray(body.people) ||
       body.people.length > 50 ||
@@ -129,6 +136,81 @@ export function createApp({
       status,
       headers: { ...securityHeaders, "Cache-Control": "no-store" },
     });
+  // HTML, JS e CSS ficam em memória, comprimidos e com hash na URL (cache longo).
+  const texts = {};
+  function load(file, type) {
+    const body = Buffer.from(readFileSync(join(publicRoot, file)));
+    return {
+      type,
+      body,
+      gzip: gzipSync(body, { level: 9 }),
+      br: brotliCompressSync(body),
+      etag: `"${hash(body).slice(0, 16)}"`,
+    };
+  }
+  for (const [file, type] of [
+    ["app.js", "text/javascript;charset=utf-8"],
+    ["style.css", "text/css;charset=utf-8"],
+  ]) {
+    const entry = load(file, type);
+    entry.version = entry.etag.slice(1, 11);
+    entry.immutable = true;
+    texts["/" + file] = entry;
+  }
+  {
+    let html = readFileSync(join(publicRoot, "index.html"), "utf8");
+    for (const file of ["app.js", "style.css"])
+      html = html.replace(`/${file}"`, `/${file}?v=${texts["/" + file].version}"`);
+    const body = Buffer.from(html);
+    texts["/"] = {
+      type: "text/html;charset=utf-8",
+      body,
+      gzip: gzipSync(body, { level: 9 }),
+      br: brotliCompressSync(body),
+      etag: `"${hash(body).slice(0, 16)}"`,
+    };
+  }
+  function text(req, entry) {
+    const accept = req.headers.get("Accept-Encoding") || "";
+    const encoding = /\bbr\b/.test(accept) ? "br" : /\bgzip\b/.test(accept) ? "gzip" : "";
+    const headers = {
+      ...securityHeaders,
+      "Content-Type": entry.type,
+      ETag: entry.etag,
+      Vary: "Accept-Encoding",
+      "Cache-Control": entry.immutable
+        ? "public,max-age=31536000,immutable"
+        : "no-cache",
+    };
+    if (req.headers.get("If-None-Match") === entry.etag)
+      return new Response(null, { status: 304, headers });
+    if (encoding) headers["Content-Encoding"] = encoding;
+    const body = encoding ? entry[encoding] : entry.body;
+    return new Response(req.method === "HEAD" ? null : body, { headers });
+  }
+  // Versão de tela (1600 px) gerada sob demanda: o visualizador não baixa o original de até 25 MB.
+  const pendingViews = new Map();
+  async function ensureView(id) {
+    const target = join(media, `${id}.view.webp`);
+    if (await Bun.file(target).exists()) return;
+    if (!pendingViews.has(id))
+      pendingViews.set(
+        id,
+        (async () => {
+          const row = db.query("SELECT filename FROM photos WHERE id=?").get(id);
+          if (!row) return;
+          const output = await sharp(join(media, row.filename), {
+            limitInputPixels: 40000000,
+          })
+            .resize(VIEW_SIZE, VIEW_SIZE, { fit: "inside", withoutEnlargement: true })
+            .webp({ quality: 82 })
+            .toBuffer();
+          await Bun.write(target + ".tmp", output);
+          await rename(target + ".tmp", target);
+        })().finally(() => pendingViews.delete(id)),
+      );
+    await pendingViews.get(id);
+  }
   async function fetch(req, server) {
     try {
       const url = new URL(req.url),
@@ -156,7 +238,7 @@ export function createApp({
         return json({
           ...db
             .query(
-              "SELECT COUNT(*) AS photos, COUNT(DISTINCT date) AS dates, MIN(date) AS firstDate, MAX(date) AS lastDate FROM photos",
+              "SELECT COUNT(*) AS photos, COUNT(DISTINCT NULLIF(date,'')) AS dates, MIN(NULLIF(date,'')) AS firstDate, MAX(NULLIF(date,'')) AS lastDate FROM photos",
             )
             .get(),
           people: db.query("SELECT COUNT(*) AS count FROM people").get().count,
@@ -206,7 +288,7 @@ export function createApp({
           throw new InputError(
             "Confira o período: a data inicial deve vir antes da final.",
           );
-        const where = `WHERE (?='' OR f.date>=?) AND (?='' OR f.date<=?)
+        const where = `WHERE (?='' OR (f.date<>'' AND f.date>=?)) AND (?='' OR (f.date<>'' AND f.date<=?))
           AND (?='' OR EXISTS(SELECT 1 FROM photo_people pp JOIN people p ON p.id=pp.person_id WHERE pp.photo_id=f.id AND instr(p.normalized,?)>0))
           AND (?='' OR EXISTS(SELECT 1 FROM photo_people pp WHERE pp.photo_id=f.id AND pp.person_id=?))`;
         const args = [from, from, to, to, q, q, person, person];
@@ -219,18 +301,18 @@ export function createApp({
         );
         const order =
           url.searchParams.get("order") === "oldest" ? "ASC" : "DESC";
-        const ids = db
+        const rows = db
           .query(
-            `SELECT f.id FROM photos f ${where} ORDER BY f.date ${order},f.created_at ${order},f.id LIMIT 48 OFFSET ?`,
+            `SELECT ${PHOTO_COLUMNS} FROM photos f ${where} ORDER BY f.date='',f.date ${order},f.created_at ${order},f.id LIMIT 48 OFFSET ?`,
           )
           .all(...args, offset);
         const total = db
           .query(`SELECT COUNT(*) AS count FROM photos f ${where}`)
           .get(...args).count;
         return json({
-          photos: ids.map((row) => photo(row.id)),
+          photos: rows.map(shape),
           total,
-          nextOffset: offset + ids.length < total ? offset + ids.length : null,
+          nextOffset: offset + rows.length < total ? offset + rows.length : null,
         });
       }
       const detail = path.match(/^\/api\/photos\/([a-f0-9-]{36})$/);
@@ -280,7 +362,7 @@ export function createApp({
           );
         const values = metadata(JSON.parse(form.get("metadata") || "{}"));
         const author = textValue(form.get("author") || "", "Seu nome", 120);
-        let original, thumbnail, format;
+        let original, thumbnail, view, format;
         try {
           const input = Buffer.from(await file.arrayBuffer());
           const info = await sharp(input, {
@@ -300,6 +382,10 @@ export function createApp({
             .resize(640, 640, { fit: "inside", withoutEnlargement: true })
             .webp({ quality: 80 })
             .toBuffer();
+          view = await sharp(original)
+            .resize(VIEW_SIZE, VIEW_SIZE, { fit: "inside", withoutEnlargement: true })
+            .webp({ quality: 82 })
+            .toBuffer();
         } catch {
           throw new InputError(
             "Não foi possível ler a imagem. Use uma foto JPG, PNG ou WebP de até 40 megapixels.",
@@ -308,18 +394,21 @@ export function createApp({
         const id = crypto.randomUUID(),
           key = randomBytes(32).toString("hex"),
           filename = `${id}.${format}`;
-        const paths = [join(media, filename), join(media, `${id}.thumb.webp`)];
+        const paths = [
+          join(media, filename),
+          join(media, `${id}.thumb.webp`),
+          join(media, `${id}.view.webp`),
+        ];
+        const bytes = original.length + thumbnail.length + view.length;
         try {
           await Bun.write(paths[0], original);
           await Bun.write(paths[1], thumbnail);
+          await Bun.write(paths[2], view);
           db.transaction(() => {
             const used = db
               .query("SELECT COALESCE(SUM(bytes),0) AS total FROM photos")
               .get().total;
-            if (
-              used + original.length + thumbnail.length >
-              maxStorageMB * 1024 * 1024
-            )
+            if (used + bytes > maxStorageMB * 1024 * 1024)
               throw new InputError(
                 "O acervo atingiu o limite de armazenamento. Avise a organização.",
                 507,
@@ -330,7 +419,7 @@ export function createApp({
               values.description,
               values.date,
               filename,
-              original.length + thumbnail.length,
+              bytes,
               author,
               hash(key),
               new Date().toISOString(),
@@ -351,14 +440,13 @@ export function createApp({
         throw new InputError("Recurso não encontrado.", 404);
       if (!["GET", "HEAD"].includes(req.method))
         throw new InputError("Método não permitido.", 405);
+      if (texts[path]) return text(req, texts[path]);
+      const view = path.match(/^\/media\/([a-f0-9-]{36})\.view\.webp$/);
+      if (view) await ensureView(view[1]);
       let target;
-      if (/^\/media\/[a-f0-9-]{36}(\.thumb)?\.(jpg|png|webp)$/.test(path))
+      if (/^\/media\/[a-f0-9-]{36}(\.thumb|\.view)?\.(jpg|png|webp)$/.test(path))
         target = join(media, path.slice(7));
-      else if (path === "/") target = join(publicRoot, "index.html");
-      else if (
-        ["/app.js", "/style.css"].includes(path) ||
-        /^\/assets\/[a-z0-9-]+\.(svg|woff2)$/.test(path)
-      )
+      else if (/^\/assets\/[a-z0-9-]+\.(svg|woff2)$/.test(path))
         target = join(publicRoot, path.slice(1));
       else throw new InputError("Página não encontrada.", 404);
       const asset = Bun.file(target);
@@ -370,7 +458,7 @@ export function createApp({
           "Content-Type": asset.type,
           "Cache-Control": path.startsWith("/media/")
             ? "public,max-age=31536000,immutable"
-            : "no-cache",
+            : "public,max-age=2592000",
         },
       });
     } catch (error) {

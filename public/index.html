@@ -2,371 +2,476 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#1b305a" />
     <meta
       name="description"
-      content="Acervo colaborativo de fotografias da 23ª Zona Eleitoral, em Marechal Hermes. Encontre pessoas, datas e memórias."
+      content="As fotos da Zona 23 de Marechal Hermes (TRE-RJ) num lugar só. Ache quem trabalhou com você e mande as fotos que estão no seu celular."
     />
-    <title>Zona 23 · Acervo de fotos</title>
+    <meta property="og:title" content="Zon23 · Fotos da Zona 23 de Marechal Hermes" />
+    <meta
+      property="og:description"
+      content="Ache você e a equipe nas fotos da Zona 023. Mande as suas também."
+    />
+    <title>Zon23 · Fotos da Zona 23 de Marechal Hermes</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/assets/inter-bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/assets/inter-regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="stylesheet" href="/style.css" />
     <script src="/app.js" defer></script>
   </head>
   <body>
-    <a class="skip" href="#main">Pular para o acervo</a>
-    <div class="institutional">
-      <div class="wrap">
-        <span>23ª ZONA ELEITORAL · MARECHAL HERMES</span
-        ><span>Consulta e envio públicos</span>
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <symbol id="i-camera" viewBox="0 0 24 24">
+        <path
+          d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.3-2h5l1.3 2h1.7A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linejoin="round"
+        />
+        <circle cx="12" cy="12.5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="17" cy="9" r="1" fill="currentColor" />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2" />
+        <path d="m15 15 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24">
+        <rect x="4" y="5.5" width="16" height="14.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <rect x="13.5" y="13" width="3" height="3" rx=".8" fill="currentColor" />
+      </symbol>
+      <symbol id="i-people" viewBox="0 0 24 24">
+        <circle cx="9" cy="8.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M15.5 5.6a3 3 0 0 1 0 5.8M17.5 14.3c1.6.6 2.7 2.2 3 4.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-user-plus" viewBox="0 0 24 24">
+        <circle cx="10" cy="8.5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M4 19.5c.6-3.4 3-5.4 6-5.4 1.4 0 2.6.4 3.6 1.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M18 13.5v6M15 16.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-download" viewBox="0 0 24 24">
+        <path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24">
+        <path d="m14.5 5.5 4 4M4.5 19.5l1-4.5L16 4.5a1.4 1.4 0 0 1 2 0l1.5 1.5a1.4 1.4 0 0 1 0 2L9 18.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-close" viewBox="0 0 24 24">
+        <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-left" viewBox="0 0 24 24">
+        <path d="m14.5 5.5-6.5 6.5 6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-right" viewBox="0 0 24 24">
+        <path d="m9.5 5.5 6.5 6.5-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24">
+        <path d="M4 7h9M17 7h3M4 17h3M11 17h9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+        <circle cx="15" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.9" />
+        <circle cx="9" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="1.9" />
+      </symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24">
+        <rect x="8.5" y="8.5" width="11" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M15.5 5.5A2 2 0 0 0 13.5 4.5H6.5a2 2 0 0 0-2 2v7a2 2 0 0 0 1 1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-link" viewBox="0 0 24 24">
+        <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-out" viewBox="0 0 24 24">
+        <path d="M9 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19h11a1.5 1.5 0 0 0 1.5-1.5V15M13 5h6v6M19 5l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <!-- Marca da Zon23: urna estilizada, número da zona e o trilho da estação. -->
+      <symbol id="mark" viewBox="0 0 48 48">
+        <rect width="48" height="48" rx="13" fill="#1b305a" />
+        <rect x="13" y="8.5" width="22" height="4" rx="2" fill="#ffda59" />
+        <text x="24" y="32" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="19" font-weight="800" fill="#fff" letter-spacing="-1">23</text>
+        <path d="M10 39h28" stroke="#47c77d" stroke-width="3.2" stroke-linecap="round" />
+      </symbol>
+      <!-- Vazio: moldura de foto com a urna -->
+      <symbol id="art-empty" viewBox="0 0 120 96">
+        <rect x="14" y="14" width="64" height="58" rx="6" fill="#fff" stroke="#c7d8f2" stroke-width="2" transform="rotate(-8 46 43)" />
+        <rect x="38" y="16" width="66" height="60" rx="6" fill="#fff" stroke="#1b305a" stroke-width="2.4" transform="rotate(5 71 46)" />
+        <g transform="rotate(5 71 46)">
+          <rect x="45" y="23" width="52" height="36" rx="3" fill="#e9f0fc" />
+          <circle cx="57" cy="34" r="5" fill="#ffda59" />
+          <path d="m45 55 15-13 10 9 9-7 18 15H45z" fill="#4671c8" />
+          <path d="M45 59h52" stroke="#47c77d" stroke-width="3" />
+        </g>
+      </symbol>
+    </svg>
+
+    <a class="skip" href="#main">Pular para as fotos</a>
+
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <a href="/" class="brand" aria-label="Zon23 · início">
+          <svg class="brand-mark" aria-hidden="true"><use href="#mark" /></svg>
+          <span class="brand-text">
+            <strong>Zon<span>23</span></strong>
+            <small>TRE · Marechal Hermes</small>
+          </span>
+        </a>
+        <button class="btn btn-primary upload-trigger topbar-cta" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-camera" /></svg>
+          <span>Mandar fotos</span>
+        </button>
       </div>
-    </div>
-    <header class="header wrap">
-      <a href="/" class="brand" aria-label="Zona 23 · Início do acervo">
-        <span class="zone-mark" aria-hidden="true">23</span>
-        <span class="header-title"
-          ><strong>Zona 23</strong><span>Marechal Hermes</span></span
-        >
-      </a>
-      <button class="button primary upload-trigger">
-        <span class="plus" aria-hidden="true">+</span> Enviar fotos
-      </button>
     </header>
-    <main id="main" class="wrap">
-      <section class="intro" aria-labelledby="title">
-        <div class="intro-copy">
-          <p class="eyebrow">ACERVO FOTOGRÁFICO</p>
-          <h1 id="title">Fotos da Zona 23</h1>
-          <p>Marechal Hermes · Rio de Janeiro</p>
-        </div>
-        <div
-          class="zone-card"
-          aria-label="Zona 23, Marechal Hermes, Rio de Janeiro"
-        >
-          <div class="zone-number"><span>ZONA</span><strong>23</strong></div>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="title">
+        <div class="wrap hero-inner">
+          <div class="hero-copy">
+            <p class="kicker"><span class="dot" aria-hidden="true"></span>Zona 023 · Marechal Hermes</p>
+            <h1 id="title">A Zona 23 <em>tem rosto.</em></h1>
+            <p class="lede">
+              Ache você e a equipe nas fotos da TRE Marechal Hermes. Tem foto
+              parada no celular? Manda pra cá.
+            </p>
+            <div class="hero-actions">
+              <button class="btn btn-primary btn-lg upload-trigger" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-camera" /></svg>
+                Mandar fotos
+              </button>
+              <a class="btn btn-ghost-light btn-lg" href="#busca">
+                <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+                Procurar alguém
+              </a>
+            </div>
+            <dl class="stats" aria-label="Números do acervo">
+              <div><dd id="stat-photos">–</dd><dt>fotos</dt></div>
+              <div><dd id="stat-people">–</dd><dt>pessoas</dt></div>
+              <div><dd id="stat-dates">–</dd><dt>datas</dt></div>
+            </dl>
+          </div>
+          <svg class="hero-art" viewBox="0 0 320 240" aria-hidden="true" focusable="false">
+            <circle cx="170" cy="118" r="104" fill="#ffffff" opacity=".08" />
+            <circle cx="170" cy="118" r="70" fill="#ffffff" opacity=".07" />
+            <g transform="rotate(-9 92 92)">
+              <rect x="40" y="40" width="104" height="112" rx="8" fill="#fff" />
+              <rect x="49" y="49" width="86" height="72" rx="4" fill="#ffda59" />
+              <circle cx="72" cy="72" r="9" fill="#fff" />
+              <path d="m49 121 30-30 18 17 14-11 24 24z" fill="#1b305a" opacity=".85" />
+              <rect x="49" y="130" width="50" height="6" rx="3" fill="#c7d8f2" />
+            </g>
+            <g transform="rotate(7 236 86)">
+              <rect x="190" y="34" width="92" height="100" rx="8" fill="#fff" />
+              <rect x="198" y="42" width="76" height="62" rx="4" fill="#47c77d" />
+              <circle cx="236" cy="66" r="11" fill="#fff" opacity=".9" />
+              <path d="M214 104c3-14 12-21 22-21s19 7 22 21z" fill="#fff" opacity=".9" />
+              <rect x="198" y="113" width="44" height="6" rx="3" fill="#c7d8f2" />
+            </g>
+            <!-- urna -->
+            <g>
+              <path d="M104 118h132l14 72H90z" fill="#e9f0fc" />
+              <path d="M104 118h132l14 72H90z" fill="none" stroke="#162648" stroke-width="3" stroke-linejoin="round" />
+              <rect x="114" y="128" width="62" height="42" rx="4" fill="#1b305a" />
+              <text x="145" y="158" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="25" font-weight="800" fill="#ffda59" letter-spacing="-1">023</text>
+              <g fill="#1b305a">
+                <rect x="186" y="129" width="10" height="7" rx="1.5" />
+                <rect x="200" y="129" width="10" height="7" rx="1.5" />
+                <rect x="214" y="129" width="10" height="7" rx="1.5" />
+                <rect x="187" y="140" width="10" height="7" rx="1.5" />
+                <rect x="201" y="140" width="10" height="7" rx="1.5" />
+                <rect x="215" y="140" width="10" height="7" rx="1.5" />
+                <rect x="188" y="151" width="10" height="7" rx="1.5" />
+                <rect x="202" y="151" width="10" height="7" rx="1.5" />
+                <rect x="216" y="151" width="10" height="7" rx="1.5" />
+              </g>
+              <rect x="189" y="163" width="13" height="8" rx="1.5" fill="#fff" stroke="#1b305a" stroke-width="1.5" />
+              <rect x="205" y="163" width="23" height="8" rx="1.5" fill="#47c77d" />
+            </g>
+            <!-- trilho da estação de Marechal Hermes -->
+            <g stroke="#ffffff" stroke-linecap="round">
+              <path d="M20 206h280M20 220h280" stroke-width="3" opacity=".55" />
+              <path d="M40 200v26M72 200v26M104 200v26M136 200v26M168 200v26M200 200v26M232 200v26M264 200v26M296 200v26" stroke-width="3" opacity=".25" />
+            </g>
+          </svg>
         </div>
       </section>
-      <section id="collection" aria-labelledby="collection-title">
-        <div class="collection-top">
-          <div>
-            <h2 id="collection-title">Fotos e pessoas</h2>
-          </div>
-          <dl class="stats">
-            <div>
-              <dt>Fotos</dt>
-              <dd id="stat-photos">—</dd>
-            </div>
-            <div>
-              <dt>Pessoas</dt>
-              <dd id="stat-people">—</dd>
-            </div>
-            <div>
-              <dt>Datas</dt>
-              <dd id="stat-dates">—</dd>
-            </div>
-          </dl>
-        </div>
-        <div class="tabs" role="tablist" aria-label="Seções do acervo">
-          <button
-            id="gallery-tab"
-            role="tab"
-            aria-selected="true"
-            aria-controls="gallery-panel"
-          >
-            Fotografias</button
-          ><button
-            id="people-tab"
-            role="tab"
-            aria-selected="false"
-            aria-controls="people-panel"
-            tabindex="-1"
-          >
-            Pessoas cadastradas
-          </button>
-        </div>
-        <div id="gallery-panel" role="tabpanel" aria-labelledby="gallery-tab">
-          <form id="search-form" class="search-form">
-            <label class="name-filter"
-              >Nome da pessoa<input
-                id="filter-name"
-                type="search"
-                placeholder="Buscar por nome"
-                maxlength="120" /></label
-            ><label
-              >A partir de<input
-                id="filter-from"
-                type="date"
-                min="1800-01-01" /></label
-            ><label
-              >Até<input id="filter-to" type="date" min="1800-01-01" /></label
-            ><button class="button navy" type="submit">
-              <span aria-hidden="true">⌕</span> Pesquisar
-            </button>
-          </form>
-          <div class="results-toolbar">
-            <p id="result-summary" role="status">Carregando fotografias…</p>
-            <div>
-              <button id="clear-filters" class="quiet" hidden>
-                Limpar filtros</button
-              ><label class="sort"
-                >Ordenar por<select id="sort">
-                  <option value="newest">Data mais recente</option>
-                  <option value="oldest">Data mais antiga</option>
-                </select></label
-              >
+
+      <section id="collection" class="collection" aria-label="Acervo">
+        <div class="toolbar">
+          <div class="wrap">
+            <div class="tabs" role="tablist" aria-label="Seções do acervo">
+              <button id="gallery-tab" role="tab" aria-selected="true" aria-controls="gallery-panel">
+                <svg class="icon" aria-hidden="true"><use href="#i-camera" /></svg>Fotos
+              </button>
+              <button id="people-tab" role="tab" aria-selected="false" aria-controls="people-panel" tabindex="-1">
+                <svg class="icon" aria-hidden="true"><use href="#i-people" /></svg>Pessoas
+              </button>
             </div>
           </div>
-          <div id="gallery" class="gallery" aria-busy="true"></div>
-          <button id="load-more" class="button outline load-more" hidden>
-            Carregar mais fotos
-          </button>
         </div>
-        <div
-          id="people-panel"
-          role="tabpanel"
-          aria-labelledby="people-tab"
-          hidden
-        >
-          <div class="directory-top">
-            <p>Os nomes cadastrados podem ser usados em outras fotos.</p>
-            <button id="directory-add" class="button outline">
-              + Cadastrar pessoa
-            </button>
+
+        <div class="wrap">
+          <div id="gallery-panel" class="panel" role="tabpanel" aria-labelledby="gallery-tab">
+            <form id="search-form" class="search" role="search">
+              <div class="search-row" id="busca">
+                <label class="field-icon">
+                  <span class="sr-only">Nome da pessoa</span>
+                  <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+                  <input id="filter-name" type="search" placeholder="Quem você procura?" maxlength="120" enterkeyhint="search" autocomplete="off" />
+                </label>
+                <button id="toggle-period" class="btn btn-soft btn-icon-text" type="button" aria-expanded="false" aria-controls="period">
+                  <svg class="icon" aria-hidden="true"><use href="#i-calendar" /></svg>
+                  <span>Período</span>
+                </button>
+              </div>
+              <div id="period" class="period" hidden>
+                <label>De<input id="filter-from" type="date" min="1800-01-01" /></label>
+                <label>Até<input id="filter-to" type="date" min="1800-01-01" /></label>
+                <button class="btn btn-navy" type="submit">Filtrar</button>
+              </div>
+            </form>
+
+            <div class="results-bar">
+              <p id="result-summary" role="status">Carregando fotos…</p>
+              <div class="results-actions">
+                <button id="clear-filters" class="link" type="button" hidden>Limpar</button>
+                <div class="segmented" role="group" aria-label="Ordem das fotos">
+                  <button type="button" data-order="newest" aria-pressed="true">Recentes</button>
+                  <button type="button" data-order="oldest" aria-pressed="false">Antigas</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="gallery" class="gallery" aria-busy="true"></div>
+            <button id="load-more" class="btn btn-outline load-more" type="button" hidden>Ver mais fotos</button>
           </div>
-          <label class="directory-search"
-            >Buscar pessoa<input
-              type="search"
-              id="directory-search"
-              placeholder="Nome da pessoa"
-          /></label>
-          <div id="directory" class="directory"></div>
+
+          <div id="people-panel" class="panel" role="tabpanel" aria-labelledby="people-tab" hidden>
+            <div class="people-head">
+              <label class="field-icon">
+                <span class="sr-only">Buscar pessoa</span>
+                <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+                <input type="search" id="directory-search" placeholder="Buscar nome" autocomplete="off" enterkeyhint="search" />
+              </label>
+              <button id="directory-add" class="btn btn-outline" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-user-plus" /></svg>
+                <span>Incluir pessoa</span>
+              </button>
+            </div>
+            <p class="people-note">Toque num nome para ver as fotos dessa pessoa.</p>
+            <div id="directory" class="directory"></div>
+          </div>
         </div>
       </section>
     </main>
-    <footer class="wrap">
-      <span><strong>Zona 23</strong> · Marechal Hermes</span>
-      <a
-        class="institution-reference"
-        href="https://www.tre-rj.jus.br/"
-        target="_blank"
-        rel="noopener"
-      >
-        <img
-          src="/assets/tre-rj.svg"
-          alt="Tribunal Regional Eleitoral-RJ"
-          width="82"
-          height="32"
-        />
-        <span>Portal do TRE-RJ <span aria-hidden="true">↗</span></span>
-      </a>
+
+    <footer class="footer">
+      <div class="wrap footer-inner">
+        <p>
+          <strong>Zon23</strong> · feito pela turma da 23ª Zona Eleitoral,
+          Marechal Hermes.
+        </p>
+        <a class="tre-link" href="https://www.tre-rj.jus.br/" target="_blank" rel="noopener">
+          <img src="/assets/tre-rj.svg" alt="TRE-RJ" width="82" height="32" loading="lazy" />
+          <span>Portal do TRE-RJ</span>
+          <svg class="icon" aria-hidden="true"><use href="#i-out" /></svg>
+        </a>
+      </div>
     </footer>
 
-    <dialog
-      id="upload-dialog"
-      class="upload-dialog"
-      aria-labelledby="upload-title"
-    >
-      <div class="dialog-top">
-        <div>
-          <h2 id="upload-title">Enviar fotos</h2>
-        </div>
-        <button
-          class="close"
-          data-close="upload-dialog"
-          aria-label="Fechar envio"
-        >
-          ×
-        </button>
-      </div>
-      <form id="upload-form">
-        <div class="upload-layout">
-          <div class="file-side">
-            <label class="dropzone" id="dropzone"
-              ><span class="upload-icon" aria-hidden="true">↑</span
-              ><strong>Selecione suas fotos</strong
-              ><span>ou arraste os arquivos aqui</span
-              ><small>JPG, PNG ou WebP · até 25 MB por foto</small
-              ><input
-                id="file-input"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-            /></label>
-            <div id="file-list" class="file-list"></div>
-            <img id="file-preview" alt="Prévia da foto selecionada" hidden />
+    <button class="fab upload-trigger" type="button" aria-label="Mandar fotos">
+      <svg class="icon" aria-hidden="true"><use href="#i-camera" /></svg>
+      <span>Mandar fotos</span>
+    </button>
+
+    <dialog id="upload-dialog" class="sheet upload-dialog" aria-labelledby="upload-title">
+      <form id="upload-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div>
+            <p class="kicker-dark" id="upload-kicker">Zon23</p>
+            <h2 id="upload-title">Mandar fotos</h2>
           </div>
-          <div class="metadata-side">
-            <p id="file-hint" class="hint">
-              Selecione uma foto para preencher as informações.
-            </p>
-            <label
-              >Data da fotografia <span class="required">*</span
-              ><input
-                id="photo-date"
-                type="date"
-                min="1800-01-01"
-                required /></label
-            ><label
-              >Título <span class="optional">opcional</span
-              ><input
-                id="photo-title"
-                maxlength="160"
-                placeholder="Ex.: Encontro da equipe" /></label
-            ><label
-              >Descrição <span class="optional">opcional</span
-              ><textarea
-                id="photo-description"
-                maxlength="2000"
-                rows="2"
-                placeholder="Local, evento ou contexto da foto"
-              ></textarea>
-            </label>
+          <button class="icon-btn" type="button" data-close="upload-dialog" aria-label="Fechar">
+            <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+          </button>
+        </div>
+
+        <div class="sheet-body">
+          <label class="dropzone" id="dropzone">
+            <svg class="drop-icon" aria-hidden="true"><use href="#i-camera" /></svg>
+            <strong>Escolher fotos</strong>
+            <span>da galeria ou da câmera · até 20 por vez</span>
+            <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+          </label>
+
+          <div id="queue" class="queue" hidden>
+            <div class="queue-strip" id="file-list" role="list"></div>
+          </div>
+
+          <div id="editor" class="editor" hidden>
+            <img id="file-preview" class="preview" alt="Foto selecionada" />
+            <p id="file-hint" class="step"></p>
+
             <div class="people-picker">
-              <label for="person-search">Quem aparece nesta foto?</label>
-              <p class="hint">
-                Busque um nome cadastrado ou inclua uma nova pessoa.
+              <p class="field-label" id="people-label">
+                <svg class="icon" aria-hidden="true"><use href="#i-people" /></svg>
+                Quem aparece?
               </p>
-              <div id="selected-people" class="chips"></div>
-              <input
-                id="person-search"
-                type="search"
-                placeholder="Buscar pessoa pelo nome"
-                autocomplete="off"
-                maxlength="120"
-              />
+              <div id="selected-people" class="chips" aria-labelledby="people-label"></div>
+              <label class="field-icon">
+                <span class="sr-only">Buscar pessoa</span>
+                <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+                <input id="person-search" type="search" placeholder="Digite um nome" autocomplete="off" maxlength="120" enterkeyhint="search" />
+              </label>
               <div id="person-results" class="person-results"></div>
-              <button id="add-person" type="button" class="text-link">
-                + Cadastrar uma pessoa
-              </button>
-              <p id="no-people-hint" class="hint">
-                Você também pode enviar sem identificar pessoas.
-              </p>
             </div>
+
+            <label class="field">
+              <span class="field-label">
+                <svg class="icon" aria-hidden="true"><use href="#i-calendar" /></svg>
+                Quando foi? <span class="optional">se souber</span>
+              </span>
+              <input id="photo-date" type="date" min="1800-01-01" />
+            </label>
+
+            <label class="field">
+              <span class="field-label">Título <span class="optional">opcional</span></span>
+              <input id="photo-title" maxlength="160" placeholder="Ex.: Equipe no 2º turno" enterkeyhint="next" />
+            </label>
+
+            <label class="field">
+              <span class="field-label">Algo a contar? <span class="optional">opcional</span></span>
+              <textarea id="photo-description" maxlength="2000" rows="2" placeholder="Local, mesa, eleição…"></textarea>
+            </label>
+
+            <button id="apply-all" class="btn btn-soft apply-all" type="button" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-copy" /></svg>
+              <span>Usar data e pessoas em todas</span>
+            </button>
+          </div>
+
+          <div id="upload-extra" class="upload-extra" hidden>
+            <label class="field">
+              <span class="field-label">Seu nome <span class="optional">aparece como crédito</span></span>
+              <input id="author" maxlength="120" autocomplete="name" placeholder="Quem está mandando" />
+            </label>
+            <label class="check">
+              <input id="public-confirm" type="checkbox" />
+              <span>Sei que as fotos e os nomes ficam visíveis para qualquer pessoa.</span>
+            </label>
+          </div>
+          <p id="upload-error" class="error" role="alert" hidden></p>
+        </div>
+
+        <div class="sheet-foot">
+          <div id="upload-progress" class="progress" role="status" hidden>
+            <span id="upload-progress-text"></span>
+            <progress id="upload-progress-bar" max="100" value="0"></progress>
+          </div>
+          <div class="foot-actions">
+            <button class="btn btn-outline" type="button" data-close="upload-dialog">Cancelar</button>
+            <button id="submit-upload" class="btn btn-primary btn-grow" type="submit">Publicar</button>
           </div>
         </div>
-        <div class="upload-bottom">
-          <label
-            >Seu nome
-            <span class="optional">opcional, aparece como crédito</span
-            ><input
-              id="author"
-              maxlength="120"
-              autocomplete="name"
-              placeholder="Quem está compartilhando" /></label
-          ><label class="check"
-            ><input id="public-confirm" type="checkbox" required /><span
-              >Entendo que as fotos e os nomes identificados ficarão visíveis
-              para qualquer pessoa.</span
-            ></label
-          >
-          <p id="upload-error" class="error" role="alert" hidden></p>
-          <p id="upload-progress" role="status" hidden></p>
-          <div class="dialog-actions">
-            <button
-              class="button outline"
-              type="button"
-              data-close="upload-dialog"
-            >
-              Cancelar</button
-            ><button id="submit-upload" class="button primary" type="submit">
-              Publicar no acervo
+      </form>
+    </dialog>
+
+    <dialog id="person-dialog" class="sheet person-dialog" aria-labelledby="person-title">
+      <form id="person-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div>
+            <p class="kicker-dark">Zona 023</p>
+            <h2 id="person-title">Incluir pessoa</h2>
+          </div>
+          <button class="icon-btn" type="button" data-close="person-dialog" aria-label="Fechar">
+            <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+          </button>
+        </div>
+        <div class="sheet-body">
+          <label class="field">
+            <span class="field-label">Nome completo</span>
+            <input id="person-name" required maxlength="120" autocomplete="off" autocapitalize="words" enterkeyhint="next" />
+          </label>
+          <label class="field">
+            <span class="field-label">Apelido ou função <span class="optional">para não confundir xarás</span></span>
+            <input id="person-reference" maxlength="80" placeholder="Ex.: Mesa 112, cartório" enterkeyhint="done" />
+          </label>
+          <p class="error" id="person-error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot">
+          <div class="foot-actions">
+            <button class="btn btn-outline" type="button" data-close="person-dialog">Cancelar</button>
+            <button id="save-person" class="btn btn-navy btn-grow" type="submit">Salvar</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="photo-dialog" class="viewer" aria-labelledby="detail-title">
+      <div class="viewer-top">
+        <span id="detail-position"></span>
+        <div class="viewer-tools">
+          <button id="detail-share" class="icon-btn icon-btn-dark" type="button" aria-label="Copiar link da foto">
+            <svg class="icon" aria-hidden="true"><use href="#i-link" /></svg>
+          </button>
+          <button class="icon-btn icon-btn-dark" type="button" data-close="photo-dialog" aria-label="Fechar foto">
+            <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+          </button>
+        </div>
+      </div>
+      <div class="viewer-body">
+        <div class="viewer-stage" id="viewer-stage">
+          <img id="detail-image" alt="" />
+          <button id="previous-photo" class="nav-btn nav-prev" type="button" aria-label="Foto anterior">
+            <svg class="icon" aria-hidden="true"><use href="#i-left" /></svg>
+          </button>
+          <button id="next-photo" class="nav-btn nav-next" type="button" aria-label="Próxima foto">
+            <svg class="icon" aria-hidden="true"><use href="#i-right" /></svg>
+          </button>
+        </div>
+        <div class="viewer-info">
+          <p class="date-pill" id="detail-date"></p>
+          <h2 id="detail-title"></h2>
+          <p id="detail-description" class="detail-description"></p>
+          <div class="detail-people">
+            <p class="field-label">
+              <svg class="icon" aria-hidden="true"><use href="#i-people" /></svg>
+              Nesta foto
+            </p>
+            <div id="detail-people" class="chips"></div>
+          </div>
+          <p id="detail-author" class="credit"></p>
+          <div class="viewer-actions">
+            <a id="detail-download" class="btn btn-outline" download>
+              <svg class="icon" aria-hidden="true"><use href="#i-download" /></svg>
+              Baixar original
+            </a>
+            <button id="detail-edit" class="btn btn-soft" type="button" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-edit" /></svg>
+              Corrigir dados
             </button>
           </div>
         </div>
-      </form>
-    </dialog>
-    <dialog
-      id="person-dialog"
-      class="person-dialog"
-      aria-labelledby="person-title"
-    >
-      <div class="dialog-top">
-        <div>
-          <h2 id="person-title">Cadastrar pessoa</h2>
-        </div>
-        <button
-          class="close"
-          data-close="person-dialog"
-          aria-label="Fechar cadastro"
-        >
-          ×
-        </button>
-      </div>
-      <form id="person-form">
-        <p>
-          O nome ficará disponível para identificar esta pessoa nas próximas
-          fotos.
-        </p>
-        <label
-          >Nome completo <span class="required">*</span
-          ><input
-            id="person-name"
-            required
-            maxlength="120"
-            autocomplete="off" /></label
-        ><label
-          >Como diferenciar esta pessoa? <span class="optional">opcional</span
-          ><input
-            id="person-reference"
-            maxlength="80"
-            placeholder="Ex.: equipe ou função"
-        /></label>
-        <p class="hint">
-          Use a identificação quando houver pessoas com o mesmo nome.
-        </p>
-        <p class="error" id="person-error" role="alert" hidden></p>
-        <div class="dialog-actions">
-          <button
-            class="button outline"
-            type="button"
-            data-close="person-dialog"
-          >
-            Cancelar</button
-          ><button id="save-person" class="button navy" type="submit">
-            Salvar pessoa
-          </button>
-        </div>
-      </form>
-    </dialog>
-    <dialog
-      id="photo-dialog"
-      class="photo-dialog"
-      aria-labelledby="detail-title"
-    >
-      <div class="dialog-top">
-        <span id="detail-position"></span
-        ><button
-          class="close"
-          data-close="photo-dialog"
-          aria-label="Fechar fotografia"
-        >
-          ×
-        </button>
-      </div>
-      <div class="photo-detail">
-        <div class="detail-image">
-          <img id="detail-image" alt="" />
-          <div class="photo-nav">
-            <button id="previous-photo" aria-label="Foto anterior">←</button
-            ><button id="next-photo" aria-label="Próxima foto">→</button>
-          </div>
-        </div>
-        <div class="detail-info">
-          <p class="eyebrow" id="detail-date"></p>
-          <h2 id="detail-title"></h2>
-          <p id="detail-description"></p>
-          <h3>Pessoas nesta fotografia</h3>
-          <div id="detail-people" class="chips"></div>
-          <p id="detail-author" class="hint"></p>
-          <a id="detail-download" class="button outline" download
-            >Baixar foto <span aria-hidden="true">↓</span></a
-          ><button id="detail-edit" class="quiet" hidden>
-            Editar informações
-          </button>
-          <p id="edit-hint" class="hint" hidden>
-            Você pode corrigir os dados das fotos enviadas neste aparelho.
-          </p>
-        </div>
       </div>
     </dialog>
+
     <div id="toast" class="toast" role="status" hidden></div>
   </body>
 </html>

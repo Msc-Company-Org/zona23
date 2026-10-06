@@ -22,14 +22,20 @@ copiar o exemplo e ajustar os valores. Bun carrega `.env` automaticamente.
 ## Fluxo
 
 - Fotos JPG, PNG ou WebP, até 25 MB e 40 megapixels. Até 20 fotos em um envio pelo navegador.
-- Cada arquivo tem sua própria data obrigatória, título, descrição e conjunto de pessoas.
+- Cada arquivo tem sua própria data (opcional), título, descrição e conjunto de pessoas.
+  Foto sem data aparece no fim da linha do tempo e fica fora dos filtros por período.
+  No envio de várias fotos, "Usar data e pessoas em todas" replica esses campos.
 - Nomes ficam em SQLite e são reutilizados por todos; busca ignora acentos e caixa.
 - Nome completo mais identificação opcional distingue homônimos. Identidade normalizada
   igual reutiliza o registro existente, evitando duplicação acidental.
 - Consulta combina pessoa/nome e período inclusivo; ordenação pela data da foto.
-- Galeria usa miniaturas e paginação em lotes de 48. Ampliação, download e link individual.
-- Fotos sem pessoas identificadas também são aceitas. A data pertence à fotografia,
-  e não à data do envio.
+- Galeria usa miniaturas e paginação em lotes de 48, com rolagem infinita. A ampliação usa uma
+  versão de tela WebP de até 1600 px (`<id>.view.webp`), gerada no envio ou sob demanda para
+  fotos antigas; o download continua entregando a cópia completa. Link individual por foto.
+- HTML, JS e CSS saem da memória comprimidos (brotli/gzip) com ETag; JS e CSS têm hash na URL
+  e cache imutável. Mudanças em `public/` exigem reiniciar o processo.
+- Fotos sem pessoas identificadas também são aceitas. A data, quando informada, pertence
+  à fotografia, e não à data do envio.
 - Quem envia pode corrigir as informações a partir do mesmo navegador. Uma chave de
   edição é entregue apenas no envio; seu hash fica no servidor. A chave original fica
   no armazenamento do navegador. Perder esse armazenamento perde essa possibilidade de edição.
@@ -75,6 +81,12 @@ de apresentação removidos. Fluxos de consulta, pessoas e envio conferidos no n
 sem rolagem horizontal em 320 px e desktop; `bun run check` aprovado.
 O foco passou a ser a Zona 23: identificação própria no cabeçalho, título “Fotos da
 Zona 23” e TRE-RJ como referência institucional secundária no rodapé.
+
+Revisão mobile-first em 06/10/2026: marca própria Zon23 (urna estilizada com o trilho da estação
+de Marechal Hermes), ícones SVG próprios em sprite no `index.html`, folhas de baixo no celular,
+botão flutuante de envio, visualizador com deslizar para os lados e botão Voltar do celular
+fechando janelas. O texto alterna Zona 23, Zon23, Zona 023, TRE Marechal Hermes e 23ª ZE.
+Campos com 16 px para evitar zoom no iOS. Conferido em Chromium headless a 320, 390 e 1366 px.
 
 ## Verificação e entrega
 

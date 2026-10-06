@@ -287,3 +287,63 @@ test("paginação não repete nem omite fotos do mesmo dia", async () => {
     s.cleanup();
   }
 });
+
+test("foto sem data é aceita, fica no fim da linha do tempo e fora do filtro por período", async () => {
+  const s = sandbox();
+  try {
+    const undated = await s.request("/api/photos", "POST", upload(""));
+    expect(undated.status).toBe(201);
+    expect(undated.data.photo.date).toBe("");
+    const dated = await s.request("/api/photos", "POST", upload("2024-06-01"));
+    for (const order of ["newest", "oldest"])
+      expect(
+        (await s.request("/api/photos?order=" + order)).data.photos.map((p) => p.id),
+      ).toEqual([dated.data.photo.id, undated.data.photo.id]);
+    expect((await s.request("/api/photos?from=1900-01-01")).data.total).toBe(1);
+    expect((await s.request("/api/photos?to=2030-01-01")).data.total).toBe(1);
+    expect((await s.request("/api/stats")).data).toMatchObject({ photos: 2, dates: 1 });
+    const fixed = await s.request(
+      "/api/photos/" + undated.data.photo.id,
+      "PATCH",
+      { date: "2022-10-02", people: [] },
+      { "X-Edit-Key": undated.data.editKey },
+    );
+    expect(fixed.data.photo.date).toBe("2022-10-02");
+    const cleared = await s.request(
+      "/api/photos/" + undated.data.photo.id,
+      "PATCH",
+      { date: "", people: [] },
+      { "X-Edit-Key": undated.data.editKey },
+    );
+    expect(cleared.data.photo.date).toBe("");
+  } finally {
+    s.cleanup();
+  }
+});
+
+test("versão de tela é servida e recriada se faltar; páginas saem comprimidas com cache", async () => {
+  const s = sandbox();
+  try {
+    const sent = (await s.request("/api/photos", "POST", upload("2024-06-01"))).data.photo;
+    rmSync(join(s.dataDir, "media", sent.id + ".view.webp"));
+    const view = await s.app.fetch(new Request("http://localhost" + sent.view));
+    expect(view.status).toBe(200);
+    expect((await sharp(Buffer.from(await view.arrayBuffer())).metadata()).format).toBe("webp");
+    const home = await s.app.fetch(
+      new Request("http://localhost/", { headers: { "Accept-Encoding": "gzip, br" } }),
+    );
+    expect(home.headers.get("Content-Encoding")).toBe("br");
+    const html = await (await s.app.fetch(new Request("http://localhost/"))).text();
+    const script = html.match(/\/app\.js\?v=[a-f0-9]+/)[0];
+    const asset = await s.app.fetch(new Request("http://localhost" + script));
+    expect(asset.headers.get("Cache-Control")).toContain("immutable");
+    const again = await s.app.fetch(
+      new Request("http://localhost" + script, {
+        headers: { "If-None-Match": asset.headers.get("ETag") },
+      }),
+    );
+    expect(again.status).toBe(304);
+  } finally {
+    s.cleanup();
+  }
+});
