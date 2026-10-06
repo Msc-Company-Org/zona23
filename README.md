@@ -1,5 +1,7 @@
 # 📸 Memórias da 023ª Zona Eleitoral
 
+![Arte do acervo Memórias da 023ª Zona Eleitoral](public/assets/zon023-compartilhar-v1.jpg)
+
 **Cartório TRE-RJ · Marechal Hermes**
 
 Um acervo colaborativo para reunir fotografias, identificar as pessoas e preservar a memória da equipe da 023ª Zona Eleitoral. Consulte, contribua e reencontre momentos no celular ou no computador.
