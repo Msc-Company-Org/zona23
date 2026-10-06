@@ -48,17 +48,17 @@ let SITE = {};
 try {
   SITE = JSON.parse($("#site-settings")?.textContent || "{}");
 } catch {}
-const ZONE = (SITE.zone_names || "Zona 23, Zon23, Zona 023, TRE Marechal Hermes, 23ª ZE")
+const ZONE = (SITE.zone_names || "Zona 023, 023ª Zona Eleitoral, Cartório TRE-RJ, Marechal Hermes, Acervo Zona 023")
   .split(",")
   .map((name) => name.trim())
   .filter(Boolean);
-while (ZONE.length < 4) ZONE.push(ZONE[0] || "Zona 23");
+while (ZONE.length < 4) ZONE.push(ZONE[0] || "Zona 023");
 const UNTITLED = [
-  "Registro da Zon23",
+  "Registro da Zona 023",
   "Na Zona 023",
-  "Momento da Zona 23",
+  "Momento da Zona 023",
   "TRE Marechal Hermes",
-  "Arquivo da 23ª ZE",
+  "Arquivo da 023ª ZE",
 ];
 const pick = (list, key = Math.random() * 1e9) => list[seed(key) % list.length];
 const titleOf = (photo) => photo.title || pick(UNTITLED, photo.id);
@@ -182,8 +182,8 @@ function route() {
     else link.removeAttribute("aria-current");
   }
   document.title = download
-    ? "Baixar fotos · Zon23"
-    : "Zon23 · Fotos da Zona 23 de Marechal Hermes";
+    ? "Baixar fotos · 023ª Zona Eleitoral"
+    : "Memórias da 023ª Zona Eleitoral | Cartório TRE-RJ · Marechal Hermes";
   if (download) loadDownloads();
   track("page", download ? "/baixar" : "/");
   syncFab();
@@ -213,7 +213,7 @@ document.addEventListener("click", (event) => {
 function openMenu(open) {
   setOpen($("#menu"), open);
   $("#menu-button").setAttribute("aria-expanded", String(open));
-  $("#menu-button").setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
+  $("#menu-button").setAttribute("aria-label", open ? "Fechar menu de navegação" : "Abrir menu de navegação");
   $("#menu-button use").setAttribute("href", open ? "#i-close" : "#i-menu");
   $("#menu-scrim").hidden = !open;
   document.documentElement.classList.toggle("menu-open", open);
@@ -412,9 +412,9 @@ async function loadPhotos(append = false) {
               '<button class="btn btn-outline" id="empty-clear" type="button">Limpar busca</button>',
             )
           : empty(
-              "A Zon23 ainda está sem fotos",
-              "Tem alguma da Zona 23 no celular? Seja a primeira pessoa a mandar.",
-              `<button class="btn btn-primary upload-trigger" type="button">${icon("camera")}Mandar fotos</button>`,
+              "O acervo ainda não tem fotos",
+              "Tem alguma da Zona 023 no celular? Seja a primeira pessoa a mandar.",
+              `<button class="btn btn-primary upload-trigger" type="button">${icon("camera")}Enviar fotos</button>`,
             );
     }
     summary();
@@ -626,6 +626,9 @@ $("#select-download").addEventListener("click", (event) => {
 
 /* ---------- Abas e pessoas ---------- */
 function changeTab(which, focus = false) {
+  if (location.pathname !== "/baixar") document.title = which === "people"
+    ? "Pessoas do acervo · 023ª Zona Eleitoral"
+    : "Memórias da 023ª Zona Eleitoral | Cartório TRE-RJ · Marechal Hermes";
   const people = which === "people";
   $(".tabs").dataset.active = people ? "people" : "gallery";
   for (const [id, active] of [
@@ -943,7 +946,7 @@ function prepareDialog(edit = null) {
   $("#upload-form").reset();
   $("#upload-progress").hidden = true;
   $("#upload-kicker").textContent = edit ? titleOf(edit) : pick(ZONE.slice(0, 4));
-  $("#upload-title").textContent = edit ? "Corrigir dados" : "Mandar fotos";
+  $("#upload-title").textContent = edit ? "Corrigir dados" : "Enviar fotos";
   $("#dropzone").hidden = Boolean(edit);
   $("#queue").hidden = Boolean(edit);
   $("#upload-extra").hidden = true;
@@ -1290,7 +1293,7 @@ function showPhoto(photo, direction = 0) {
   $("#detail-position").textContent =
     index >= 0 && total > 1 ? `${index + 1} de ${total}` : pick(ZONE, photo.id);
   setViewerImage(photo, direction);
-  $("#detail-image").alt = photo.title || "Foto do acervo da Zona 23";
+  $("#detail-image").alt = photo.title || "Foto do acervo da Zona 023";
   $("#detail-date").innerHTML = `${icon("calendar")}${esc(dateLabel(photo.date))}`;
   $("#detail-date").classList.toggle("undated", !photo.date);
   $("#detail-title").textContent = titleOf(photo);

@@ -1,66 +1,93 @@
-# Publicação Zona 23
+# 🚀 Publicar e operar o acervo
 
-Endereço: https://zona23.msccompany.com.br/.
-Publicado em 06/10/2026, por autorização do titular neste chat.
+Este guia separa o código, a imagem em execução e os dados persistentes. Um push no GitHub não publica o site automaticamente.
 
-## Serviço
+## 📍 Endereços e estado
 
-- VPS Hostinger `srv1654842`, acessada por `ssh hostinger-msc` (Tailscale).
-- Código da aplicação: commit original `c883fad` da worktree MSC, imagem `msc/zona23:c883fad`.
-  O repositório independente `Msc-Company-Org/zona23` foi criado em 06/10/2026;
-  o histórico Git novo possui seus próprios hashes.
-- Pacote Git SHA256: `e755639ccd18be1ec385aa9c76cfdf6977b1591b9e979d1e1f214ba985fc66d2`.
-- Fontes na VPS: `/srv/msc/src/tre-memoria/c883fad`.
-- Compose próprio: `/srv/msc/stack/zona23.compose.yaml`, projeto `zona23`.
-- Container: `zona23-acervo-1`, rede `web`, porta 3023 sem publicação direta no host.
-- Dados persistentes: `/srv/msc/data/zona23`, proprietário UID/GID 1000.
-- Traefik existente roteia o subdomínio e emite certificado Let's Encrypt.
-- Registro A: `zona23.msccompany.com.br` → `76.13.163.168`, TTL 300.
-  A zona autoritativa ainda está no Google Cloud DNS, `zone-msccompany-com-br`,
-  projeto `msc-company-platform`; incluir este registro na futura migração DNS.
-- `TRUST_PROXY=false`: limite de 120 escritas/hora considera o IP do proxy,
-  compartilhado pelos visitantes. A aplicação não aceita cabeçalhos de IP arbitrários.
+| Item | Estado confirmado em 06/10/2026 |
+| --- | --- |
+| Site disponível | https://zona23.msccompany.com.br/ |
+| Novo domínio | `zon023.com.br`, registro aceito e ainda em ativação |
+| DNS preparado | A do domínio raiz para a VPS; `www` como CNAME do domínio raiz |
+| Serviço | `acervo`, projeto Compose `zona23`, container `zona23-acervo-1` |
+| Porta | `3023`, interna à rede do proxy |
+| Publicação | Docker e Traefik, com HTTPS |
 
-```sh
-docker compose -f /srv/msc/stack/zona23.compose.yaml ps
-docker compose -f /srv/msc/stack/zona23.compose.yaml logs --tail 100 acervo
-docker compose -f /srv/msc/stack/zona23.compose.yaml up -d --wait
-```
+O compose neste diretório é um **modelo configurável**. O arquivo efetivo da produção é mantido no servidor. Identificadores de acesso, tokens e senhas não pertencem à documentação pública.
 
-## Backup
+## 🧰 Preparar uma versão
 
-Script: `/srv/msc/bin/backup-zona23.sh`; cron próprio `/etc/cron.d/zona23-backup`,
-diariamente às 07:15 UTC (04:15 de Brasília). Logs: `/var/log/zona23-backup.log`.
-Snapshot consistente de SQLite por `VACUUM INTO`, seguido da cópia de `media/`.
-As imagens publicadas são imutáveis nesta versão; correções alteram apenas metadados.
-O processo usa trava `flock` e verifica hashes. A primeira execução passou.
-
-Backups locais: `/srv/msc/backups/zona23/<data-UTC>/`, com `acervo.sqlite`,
-`media.tar.gz` e `SHA256SUMS`. Diretórios com mais de três dias são removidos
-após um backup bem-sucedido. Não foi configurada cópia externa neste deploy.
-
-Para restaurar, verificar `sha256sum -c SHA256SUMS`, parar apenas este compose,
-preservar todo o diretório atual de dados e recriar um diretório vazio com UID/GID
-1000. Copiar o snapshot como `acervo.sqlite`, extrair `media.tar.gz` nesse diretório
-e reiniciar. Não misturar WAL/SHM antigos com o banco restaurado.
-
-## Reversão
-
-Para retirar o acervo do ar sem perder fotos:
+1. Confira branch, alterações locais e versão em produção.
+2. Preserve trabalho não commitado antes de trocar de branch.
+3. Execute testes e verificação de sintaxe.
+4. Faça backup consistente do banco **e** das mídias.
+5. Gere uma imagem identificada pelo commit.
 
 ```sh
-docker compose -f /srv/msc/stack/zona23.compose.yaml stop acervo
+git status --short --branch
+bun install --frozen-lockfile
+bun run check
+bun test
+git diff --check
 ```
 
-Banco e mídias permanecem no volume. Reativar com `up -d --wait`.
-Nenhuma alteração foi feita no compose principal ou nos serviços existentes.
+## ⚙️ Configurar o serviço
 
-## Verificação
+No modelo `compose.yaml`, defina:
 
-- Imagem construída na VPS com Bun 1.4.2 e Sharp 0.34.5.
-- 6 testes / 91 verificações passaram dentro da imagem Linux, com dados isolados.
-- Container saudável; HTTPS válido, home e APIs retornando 200.
-- Home, assets e formulário de envio conferidos no navegador público.
-- API inicial: zero fotos, zero pessoas. Dados sintéticos de teste não publicados.
-- Site MSC e `/capsula/` retornaram 200 após a ativação.
-- Evidência visual local: `local/evidence/publicado.png`.
+- `ZONA23_IMAGE`: imagem construída e identificada pela versão.
+- `ZONA23_DATA_DIR`: diretório persistente, gravável pelo UID/GID 1000.
+- `ZONA23_HOST`: domínio utilizado pelo router.
+- `ZONA23_PUBLIC_ORIGIN`: origem HTTPS exata; aceita lista separada por vírgula na aplicação.
+
+A rede externa `web` e o resolvedor TLS `letsencrypt` precisam existir no proxy. Não publique a porta da aplicação diretamente na internet.
+
+`TRUST_PROXY=false` mantém o comportamento conservador: o limite de escritas considera o IP do proxy, compartilhado pelos visitantes. Só altere após verificar que o proxy sobrescreve os cabeçalhos recebidos e impede acesso direto.
+
+## 📦 Publicar
+
+Use o caminho do compose efetivo do ambiente. O exemplo abaixo usa o arquivo deste diretório:
+
+```sh
+docker compose -p zona23 -f deploy/compose.yaml config -q
+docker compose -p zona23 -f deploy/compose.yaml up -d --no-deps --no-build acervo
+docker compose -p zona23 -f deploy/compose.yaml ps
+```
+
+Atualize apenas o serviço do acervo. Evite reiniciar a stack inteira para uma mudança nesta aplicação.
+
+## ✅ Conferir depois
+
+- Container em execução e saudável.
+- HTTPS válido no endereço publicado.
+- Página inicial, `/baixar`, `/api/stats` e recursos estáticos funcionando.
+- Galeria e formulário conferidos no navegador.
+- Quantidade de fotos preservada.
+- Commit, imagem e backup registrados no controle operacional privado.
+
+Ao trocar de domínio, verifique primeiro o registro, depois os servidores DNS, os registros A/CNAME e finalmente o certificado. Um registro aceito pelo provedor ainda pode não resolver na internet.
+
+## 💾 Backup e recuperação
+
+O backup precisa incluir um snapshot consistente de `acervo.sqlite` e o diretório `media/`, com verificação de integridade. O SQLite em uso não deve ser copiado isoladamente sem tratar WAL e consistência.
+
+O script histórico `backup.sh` usa `VACUUM INTO`, copia mídias e verifica hashes. **Ele também remove backups com mais de três dias.** Revise a retenção e as regras do ambiente antes de instalar ou executar esse script; sua presença no Git não confirma que esteja instalado.
+
+Em produção, a administração pode excluir mídias. Por isso, faça a cópia com escritas suspensas ou use snapshot do volume para manter banco e arquivos consistentes. Mantenha uma cópia externa e teste restauração antes de depender da rotina.
+
+Para recuperar:
+
+1. Confira os hashes do backup.
+2. Pare apenas o serviço do acervo.
+3. Preserve integralmente os dados atuais para investigação ou retorno.
+4. Restaure banco e mídias em um diretório separado e vazio, com as permissões corretas.
+5. Não misture arquivos WAL/SHM antigos com o banco restaurado.
+6. Aponte o serviço para o conjunto restaurado e valide antes de reabrir escritas.
+
+## ↩️ Voltar à versão anterior
+
+Preserve a imagem anterior e o compose antes de publicar. Se houver regressão, volte a imagem do serviço para essa versão e reinicie somente o acervo. Confirme a compatibilidade das migrações de banco; reverter a imagem não desfaz alterações nos dados.
+
+Não use `down -v` nem apague volumes, bancos ou backups para resolver uma falha de publicação.
+
+[← Voltar ao projeto](../README.md)

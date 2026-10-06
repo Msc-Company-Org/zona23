@@ -6,24 +6,24 @@ import { join } from "node:path";
 const SESSION_HOURS = 12;
 const COOKIE = "z23_session";
 export const SETTINGS = {
-  hero_kicker: { label: "Linha acima do título", max: 60, value: "Zona 023 · Marechal Hermes" },
-  hero_title: { label: "Título principal", max: 60, value: "A Zona 23" },
-  hero_highlight: { label: "Destaque amarelo do título", max: 40, value: "tem rosto." },
+  hero_kicker: { label: "Linha acima do título", max: 60, value: "Cartório TRE-RJ · Marechal Hermes" },
+  hero_title: { label: "Título principal", max: 60, value: "Memórias da" },
+  hero_highlight: { label: "Destaque amarelo do título", max: 40, value: "023ª Zona Eleitoral" },
   hero_lede: {
-    label: "Texto de apresentação",
+    label: "Subtítulo opcional",
     max: 240,
     value:
-      "Ache você e a equipe nas fotos da TRE Marechal Hermes. Tem foto parada no celular? Manda pra cá.",
+      "",
   },
   zone_names: {
     label: "Variações do nome (separadas por vírgula)",
     max: 200,
-    value: "Zona 23, Zon23, Zona 023, TRE Marechal Hermes, 23ª ZE",
+    value: "Zona 023, 023ª Zona Eleitoral, Cartório TRE-RJ, Marechal Hermes, Acervo Zona 023",
   },
   footer_text: {
     label: "Texto do rodapé",
     max: 120,
-    value: "Feito pela turma da 23ª ZE, Marechal Hermes.",
+    value: "Acervo colaborativo da 023ª Zona Eleitoral · Marechal Hermes.",
   },
 };
 // Dia no fuso de Brasília (sem horário de verão desde 2019).

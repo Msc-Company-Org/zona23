@@ -260,7 +260,7 @@ export function createApp({
   }
   const escapeHtml = (value) =>
     String(value).replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
-  function page(file, values = {}) {
+  function page(file, values = {}, title = "") {
     let html = readFileSync(join(publicRoot, file), "utf8");
     for (const asset of ["app.js", "style.css", "admin.js", "admin.css"])
       html = html.replace(`/${asset}"`, `/${asset}?v=${texts["/" + asset].version}"`);
@@ -279,6 +279,9 @@ export function createApp({
       "<!--settings-json-->",
       `<script type="application/json" id="site-settings">${JSON.stringify(values).replace(/</g, "\\u003c")}</script>`,
     );
+    if (title) html = html
+      .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
+      .replace(/(<meta property="og:title" content=")[^"]*/, `$1${escapeHtml(title)}`);
     const body = Buffer.from(html);
     return {
       type: "text/html;charset=utf-8",
@@ -323,15 +326,17 @@ export function createApp({
     onSettings: renderHome,
   });
   function renderHome() {
-    texts["/"] = texts["/baixar"] = page("index.html", admin.settings());
+    const settings = admin.settings();
+    texts["/"] = page("index.html", settings);
+    texts["/baixar"] = page("index.html", settings, "Baixar fotos · 023ª Zona Eleitoral");
   }
   renderHome();
   {
     const body = Buffer.from(
       JSON.stringify({
-        name: "Zon23 · Fotos da Zona 23",
-        short_name: "Zon23",
-        description: "As fotos da Zona 23 de Marechal Hermes num lugar só.",
+        name: "Memórias da 023ª Zona Eleitoral",
+        short_name: "Zona 023",
+        description: "As fotos da Zona 023 de Marechal Hermes num lugar só.",
         lang: "pt-BR",
         start_url: "/",
         display: "standalone",
@@ -362,6 +367,7 @@ export function createApp({
   const iconSvg = readFileSync(join(publicRoot, "assets/icon.svg"));
   const iconsReady = Promise.all(
     [
+      ["/assets/favicon-32.png", 32, 0],
       ["/assets/icon-180.png", 180, 0],
       ["/assets/icon-192.png", 192, 0],
       ["/assets/icon-512.png", 512, 0],

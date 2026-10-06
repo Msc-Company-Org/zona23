@@ -3053,3 +3053,7 @@ select {
 .event-pill:active {
   transform: scale(0.95);
 }
+
+
+/* Sem espaço vazio quando o subtítulo opcional estiver em branco. */
+.hero .lede:empty { display: none; }

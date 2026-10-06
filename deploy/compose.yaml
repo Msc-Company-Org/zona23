@@ -1,18 +1,18 @@
 name: zona23
 services:
   acervo:
-    image: msc/zona23:c883fad
+    image: ${ZONA23_IMAGE:?Defina a imagem da versão}
     restart: unless-stopped
     networks: [web]
     environment:
       HOST: 0.0.0.0
       PORT: "3023"
       DATA_DIR: /data
-      PUBLIC_ORIGIN: https://zona23.msccompany.com.br
+      PUBLIC_ORIGIN: ${ZONA23_PUBLIC_ORIGIN:?Defina a origem HTTPS}
       TRUST_PROXY: "false"
       MAX_STORAGE_MB: "10240"
     volumes:
-      - /srv/msc/data/zona23:/data
+      - ${ZONA23_DATA_DIR:?Defina o diretório de dados}:/data
     mem_limit: 768m
     pids_limit: 128
     logging:
@@ -27,7 +27,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: web
-      traefik.http.routers.zona23.rule: Host(`zona23.msccompany.com.br`)
+      traefik.http.routers.zona23.rule: Host(`${ZONA23_HOST:?Defina o domínio}`)
       traefik.http.routers.zona23.entrypoints: websecure
       traefik.http.routers.zona23.tls.certresolver: letsencrypt
       traefik.http.services.zona23.loadbalancer.server.port: "3023"

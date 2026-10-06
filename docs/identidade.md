@@ -1,7 +1,7 @@
 # Identidade visual e fontes
 
 Consulta em 06/10/2026 ao [portal do TRE-RJ](https://www.tre-rj.jus.br/).
-O recorte de Marechal Hermes e 23ª ZE foi indicado pelo usuário e também consta na
+O recorte de Marechal Hermes e 023ª ZE foi indicado pelo usuário e também consta na
 [notícia oficial de rodízio de juízes de abril de 2026](https://www.tre-rj.jus.br/comunicacao/noticias/2026/Abril/tre-rj-abre-editais-de-rodizio-de-juizas-es-eleitorais-na-capital-e-no-interior).
 
 | Ativo | Fonte | Aplicação |
