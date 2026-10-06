@@ -1,6 +1,41 @@
 // Locais de votação e seções da 23ª Zona Eleitoral (informação pública: endereços e seções
 // são divulgados pela Justiça Eleitoral). Contatos de direção e de pessoas não ficam aqui.
 // Fonte: Planejamento Logístico 2026 do cartório; 225 seções, conferidas com a lista do TSE.
+const ENDERECOS = {
+  "E.M. Madre Benedita": "Rua Osman Lins, 516|21670-450",
+  "C.E. Joel de Oliveira": "Rua Pastor José Ramalho, 98|21670-200",
+  "E.M. Juracy Silveira": "Rua Pastor José Ramalho, 98|21670-200",
+  "E.M. Lia Braga de Faria": "Rua Nova Trento, 327|21670-440",
+  "E.M. Baden Powell": "Rua Nova Trento, 28|21670-440",
+  "Colégio Pio XII – Matiola": "Rua Matiola, 305|21670-410",
+  "E.M. Rose Klabin": "Rua Reginópolis, 135|21675-440",
+  "E.M. Oswaldo Goeldi": "Rua Antônio Maria, s/n|21675-180",
+  "CIEP João do Rio": "Rua Pinheiro Bittencourt, s/n|21675-130",
+  "E.M. Isaías Alves": "Rua Dom José de Souza, s/n (Jardim Santo Antônio)|21675-040",
+  "E.M. Emílio Carlos": "Rua Pinheiro Bittencourt, s/n|21675-130",
+  "Rede Elite – Shopping Jardim Guadalupe": "Avenida Brasil, 22.155|21670-000",
+  "E.M. Prof. Álvaro Espinheira": "Rua Nelson Meireles Neto, s/n|21660-520",
+  "Colégio Mercedário Pio XII – Mercês": "Rua Francisco Portela, 126|21660-010",
+  "Colégio Marechal Lott": "Rua Clodoaldo de Freitas, 65|21660-300",
+  "E.M. Gilberto Amado": "Rua Professor Valdemar Raythe, s/n|21665-280",
+  "E.M. Bélgica": "Rua Francolim, 50|21660-130",
+  "E.M. Maurice Maeterlinck": "Rua Bétula, 50|21660-100",
+  "E.E.I. Ernani Cardoso": "Rua Francolim, 50|21660-080",
+  "E.M. Piauí": "Avenida Brasil, 23.364|21660-001",
+  "Centro Educacional Santa Mônica": "Rua Divisória, 79|21331-250",
+  "Centro Tecnológico Rio (CT-Rio)": "Rua Divisória, 48|21331-250",
+  "E.M. Francisco Palheta": "Rua Abílio dos Santos, 100|21331-290",
+  "E.M. Miguel de Cervantes": "Rua Abílio dos Santos, 170|21331-290",
+  "E.E. Prof. José Accioli": "Rua Costa Filho, 500|21610-570",
+  "Centro Educacional Triângulo": "Rua João Vicente, 1.355|21331-260",
+  "Colégio Progressão": "Rua João Vicente, 1.521|21610-210",
+  "Colégio Américo de Oliveira": "Avenida Engenheiro Assis Ribeiro, 433|21610-220",
+  "E.M. Evangelina Duarte Batista": "Praça 15 de Novembro, 28|21610-490",
+  "E.M. Santos Dumont": "Praça 15 de Novembro, 29|21610-490",
+  "E.T.E. Visconde de Mauá (FAETEC)": "Rua João Vicente, 1.775|21610-210",
+  "E.M. Rosa da Fonseca": "Praça Marechal Hermes, s/n|21615-140"
+};
+
 export const LOCAIS = [
   ["A", "1309", "E.M. Madre Benedita", "Guadalupe", "14º", [166, 167, 168, 359, 427, 469]],
   ["A", "1260", "C.E. Joel de Oliveira", "Deodoro", "14º", [145, 146, 147, 148, 149, 150, 366, 428, 587]],
@@ -34,14 +69,9 @@ export const LOCAIS = [
   ["L", "1686", "E.M. Santos Dumont", "Marechal Hermes", "9º", [522, 523, 524, 525, 526, 527, 528, 529, 530]],
   ["M", "", "E.T.E. Visconde de Mauá (FAETEC)", "Marechal Hermes", "14º", [543, 544, 545, 546, 547]],
   ["N", "1759", "E.M. Rosa da Fonseca", "Vila Militar", "14º", [580, 581, 582, 583, 584]],
-].map(([area, codigo, nome, bairro, bpm, secoes], index) => ({
-  id: index + 1,
-  area,
-  codigo,
-  nome,
-  bairro,
-  bpm,
-  secoes,
-}));
+].map(([area, codigo, nome, bairro, bpm, secoes], index) => {
+  const [endereco, cep] = ENDERECOS[nome].split("|");
+  return { id: index + 1, area, codigo, nome, bairro, bpm, endereco, cep, secoes };
+});
 
 export const SECAO_LOCAL = new Map(LOCAIS.flatMap((local) => local.secoes.map((secao) => [secao, local])));

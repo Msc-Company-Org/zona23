@@ -1,9 +1,21 @@
 /* Área da equipe: sessão, primeiro acesso, menus por perfil e telas da equipe.
    Usa os utilitários de admin.js ($, $$, esc, icon, api, toast, confirmBox, errorAt, initials, seed). */
 
-const ROLE_LABEL = { admin: "Administração", equipe: "Equipe", autoridade: "Autoridade" };
-const EDITORS = ["admin", "equipe"];
-const isJudge = () => /ju[ií]z/i.test(me?.title || "");
+const ROLE_LABEL = {
+  admin: "Administração do sistema",
+  chefe: "Chefe do Cartório",
+  equipe: "Equipe do Cartório",
+  juiz: "Juízo Eleitoral",
+  promotor: "Promotoria Eleitoral",
+  ase: "Auxiliar de Serviços Eleitorais",
+  presidente: "Presidente de Seção",
+  adm_predio: "Administração de Prédio",
+};
+const GESTAO = ["admin", "chefe"];
+const EDITORS = ["admin", "chefe", "equipe"];
+const AUTORIDADES = ["juiz", "promotor"];
+const CAMPO = ["ase", "presidente", "adm_predio"];
+const isJudge = () => me?.role === "juiz";
 
 // Módulos: os marcados com `soon` mostram o que vem e a data prevista.
 const MODULES = {
@@ -16,6 +28,59 @@ const MODULES = {
   eventos: { label: "Eventos", icon: "event" },
   pessoas: { label: "Pessoas", icon: "people" },
   textos: { label: "Textos do site", icon: "text" },
+  demandas: { label: "Demandas", icon: "ticket" },
+  totalizacao: { label: "Totalização", icon: "ballot" },
+  locais: { label: "Locais e seções", icon: "school" },
+  documentos: { label: "Documentos", icon: "doc" },
+  declaracoes: {
+    label: "Declarações",
+    icon: "certificate",
+    soon: "16/10",
+    group: "Eleições 2026",
+    lede: "Declarações de comparecimento geradas em lote, no modelo do cartório, a partir da presença registrada.",
+    features: [
+      ["certificate", "Em lote", "Todas as declarações do dia, do turno ou de uma função em um único PDF."],
+      ["check-circle", "Sem erro de local", "Nome, função, local e data vêm da presença registrada, sem redigitar."],
+      ["chat-send", "Para quem saiu antes", "Envio individual pelo WhatsApp a quem foi liberado antes de receber."],
+    ],
+  },
+  "minha-escala": {
+    label: "Minha escala",
+    icon: "shift",
+    soon: "12/10",
+    group: "Auxiliar de Serviços Eleitorais",
+    lede: "Os dias em que você foi escalado, o horário de chegada e o que vai fazer.",
+    features: [
+      ["clock", "Horário do dia", "Chegada, saída e atividade, sem procurar no grupo."],
+      ["alert", "Seus dias X/10", "Quantas convocações você já cumpriu nos dois turnos."],
+      ["swap", "Pedir troca", "Pedido de troca de dia com resposta do cartório."],
+      ["certificate", "Suas declarações", "Declaração de cada dia trabalhado para baixar."],
+    ],
+  },
+  "minha-secao": {
+    label: "Minha seção",
+    icon: "ballot",
+    soon: "21/10",
+    group: "Presidente de seção",
+    lede: "Sua seção, a sala, a equipe de mesários e o que fazer no sábado e no domingo.",
+    features: [
+      ["school", "Local e sala", "Endereço, sala e quem administra o prédio."],
+      ["check-circle", "Checklist", "Teste da urna, material conferido, zerésima e encerramento, sem foto no grupo."],
+      ["doc", "Orientações", "Respostas rápidas às dúvidas mais comuns do dia."],
+    ],
+  },
+  "meu-local": {
+    label: "Meu local",
+    icon: "school",
+    soon: "21/10",
+    group: "Administração de prédio",
+    lede: "O seu colégio: seções, presidentes, guarda das urnas e o checklist do sábado e do domingo.",
+    features: [
+      ["check-circle", "Checklist do local", "Urnas recebidas e testadas, salas trancadas, policiamento, mídias e material recolhido."],
+      ["clock", "Filas após 17h", "A estimativa da maior fila no formato pedido pelo TRE."],
+      ["users", "Presenças", "Administradores e coletores presentes ou ausentes."],
+    ],
+  },
   tarefas: {
     label: "Tarefas",
     icon: "tasks",
@@ -43,7 +108,7 @@ const MODULES = {
     ],
   },
   frequencia: {
-    label: "Frequência",
+    label: "Presença",
     icon: "attendance",
     soon: "16/10",
     group: "Eleições 2026",
@@ -64,18 +129,6 @@ const MODULES = {
       ["badge", "Todas as funções", "Presidentes, mesários, administradores de prédio, coletores, coordenadores e técnicos."],
       ["swap", "Dispensa e substituição", "Pedido, decisão e substituto sugerido, com histórico."],
       ["upload", "Importação do ELO", "Relatório do sistema importado em planilha, sem CPF nem título."],
-    ],
-  },
-  locais: {
-    label: "Locais e seções",
-    icon: "school",
-    soon: "16/10",
-    group: "Eleições 2026",
-    lede: "Os 32 locais de votação e as 225 seções da zona, com salas, guarda das urnas e contatos.",
-    features: [
-      ["school", "Por área", "Locais agrupados de A a N, com batalhão, número de seções e acessibilidade."],
-      ["ballot", "Seção e sala", "Troca de sala registrada na hora, como em uma interdição por chuva."],
-      ["truck", "Roteiros", "Base para distribuição e recolhimento de urnas e materiais."],
     ],
   },
   situacao: {
@@ -117,26 +170,60 @@ const MODULES = {
 };
 
 function navGroups() {
-  if (me.role === "autoridade")
+  if (AUTORIDADES.includes(me.role))
     return [
       { items: ["inicio"] },
-      { label: "Acompanhamento", items: [isJudge() ? "decisoes" : "acompanhamento", "situacao", "convocacoes", "agenda"] },
-      { label: "Cartório", items: ["equipe"] },
+      { label: "Acompanhamento", items: [isJudge() ? "decisoes" : "acompanhamento", "totalizacao", "demandas", "situacao", "locais", "convocacoes"] },
+      { label: "Cartório", items: ["agenda", "documentos", "equipe"] },
+    ];
+  if (me.role === "ase")
+    return [
+      { items: ["inicio"] },
+      { label: "Meu trabalho", items: ["minha-escala", "declaracoes", "agenda"] },
+      { label: "Consulta", items: ["locais", "documentos", "equipe"] },
+    ];
+  if (me.role === "presidente")
+    return [
+      { items: ["inicio"] },
+      { label: "Dia da eleição", items: ["minha-secao", "demandas"] },
+      { label: "Consulta", items: ["documentos", "agenda", "equipe"] },
+    ];
+  if (me.role === "adm_predio")
+    return [
+      { items: ["inicio"] },
+      { label: "Dia da eleição", items: ["meu-local", "demandas"] },
+      { label: "Consulta", items: ["locais", "documentos", "agenda", "equipe"] },
     ];
   return [
     { items: ["inicio"] },
-    { label: "Trabalho", items: ["tarefas", "agenda"] },
-    { label: "Eleições 2026", items: ["escala", "frequencia", "convocacoes", "locais", "situacao"] },
+    { label: "Dia da eleição", items: ["demandas", "totalizacao", "situacao"] },
+    { label: "Trabalho", items: ["tarefas", "agenda", "documentos"] },
+    { label: "Eleições 2026", items: ["escala", "frequencia", "declaracoes", "convocacoes", "locais"] },
     { label: "Memórias", items: ["painel", "fotos", "eventos", "pessoas", "textos"] },
     { label: "Cartório", items: ["equipe"] },
   ];
 }
-// Rótulos curtos para a barra inferior do celular.
-const TAB_LABEL = { situacao: "Eleição", decisoes: "Decidir", acompanhamento: "Acompanhar", escala: "Escala" };
-const tabKeys = () =>
-  me.role === "autoridade"
-    ? ["inicio", isJudge() ? "decisoes" : "acompanhamento", "situacao", "agenda"]
-    : ["inicio", "tarefas", "escala", "situacao"];
+// Barra inferior do celular: atalhos por perfil e rótulos curtos.
+const TAB_KEYS = {
+  juiz: ["inicio", "decisoes", "totalizacao", "demandas"],
+  promotor: ["inicio", "acompanhamento", "totalizacao", "demandas"],
+  ase: ["inicio", "minha-escala", "declaracoes", "documentos"],
+  presidente: ["inicio", "minha-secao", "demandas", "documentos"],
+  adm_predio: ["inicio", "meu-local", "demandas", "locais"],
+};
+const tabKeys = () => TAB_KEYS[me.role] || ["inicio", "demandas", "totalizacao", "tarefas"];
+const TAB_LABEL = {
+  situacao: "Situação",
+  decisoes: "Decidir",
+  acompanhamento: "Acompanhar",
+  escala: "Escala",
+  totalizacao: "Totalização",
+  "minha-escala": "Escala",
+  "minha-secao": "Seção",
+  "meu-local": "Local",
+  locais: "Locais",
+  declaracoes: "Declarações",
+};
 const allowedSections = () => [...navGroups().flatMap((group) => group.items), "conta"];
 
 let installPrompt = null;
@@ -157,11 +244,13 @@ const firstName = (person) => plainName(person).split(" ")[0];
 const userAvatar = (person, extra = "") =>
   `<span class="avatar c${seed(person.id || person.username) % 4}${extra}" aria-hidden="true">${esc(initials(plainName(person)))}</span>`;
 const roleChip = (person) =>
-  person.role === "admin"
-    ? `<span class="chip chip-tag chip-navy">Administração</span>`
-    : person.role === "autoridade"
+  GESTAO.includes(person.role)
+    ? `<span class="chip chip-tag chip-navy">${person.role === "chefe" ? "Chefia" : "Administração"}</span>`
+    : AUTORIDADES.includes(person.role)
       ? `<span class="chip chip-tag chip-yellow">Autoridade</span>`
-      : "";
+      : CAMPO.includes(person.role)
+        ? `<span class="chip chip-tag chip-green">${{ ase: "ASE", presidente: "Presidente", adm_predio: "ADM de prédio" }[person.role]}</span>`
+        : "";
 const dateLong = (date) =>
   new Date(date + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 const daysBetween = (from, to) => Math.round((Date.parse(to + "T12:00:00Z") - Date.parse(from + "T12:00:00Z")) / 86400000);
@@ -326,26 +415,25 @@ function startOnboarding() {
   $("#ob-avatar").textContent = initials(plainName(me));
   $("#ob-hello").textContent = `Olá, ${first}!`;
   $("#ob-title").textContent = me.title || ROLE_LABEL[me.role];
-  const highlights =
-    me.role === "autoridade"
-      ? [
-          ["gavel", isJudge() ? "O que aguarda sua decisão ou assinatura" : "Ocorrências que pedem acompanhamento"],
-          ["radar", "A sala de situação do dia da eleição"],
-          ["calendar", "A agenda do cartório e das audiências"],
-        ]
-      : [
-          ["tasks", "Tarefas com responsável e prazo"],
-          ["shift", "Escala de ASE com o limite de 10 dias"],
-          ["badge", "Convocações, frequência e declarações"],
-          ["radar", "Sala de situação no dia da eleição"],
-        ];
+  const highlights = {
+    juiz: [["gavel", "O que aguarda sua decisão ou assinatura"], ["ballot", "A totalização da zona, seção por seção"], ["ticket", "As demandas do dia da eleição"]],
+    promotor: [["scale", "Ocorrências que pedem acompanhamento"], ["ballot", "A totalização da zona, seção por seção"], ["ticket", "As demandas do dia da eleição"]],
+    ase: [["shift", "Seus dias, horários e atividades"], ["certificate", "Suas declarações de trabalho"], ["doc", "Orientações e documentos do cartório"]],
+    presidente: [["ballot", "Sua seção, sala e checklist do dia"], ["ticket", "Pedidos ao cartório sem lotar o grupo"], ["doc", "Orientações para mesários"]],
+    adm_predio: [["school", "Seu local, seções e checklist"], ["ticket", "Demandas ao cartório: título, seção, material"], ["doc", "Orientações e avisos"]],
+  }[me.role] || [
+    ["ticket", "Demandas do dia da eleição, do pedido à resposta"],
+    ["ballot", "Totalização da 23ª ZE, seção por seção"],
+    ["shift", "Escala de ASE, presença e declarações"],
+    ["school", "Locais, seções e documentos num lugar só"],
+  ];
   $("#ob-highlights").innerHTML = highlights.map(([name, text]) => `<li>${icon(name)}<span>${esc(text)}</span></li>`).join("");
   $("#ob-current-field").hidden = me.linkFresh;
   $("#ob-phone").value = formatPhone(me.phone);
   $("#ob-email").value = me.email || "";
   $("#ob-tour").innerHTML = tabKeys()
     .slice(1)
-    .concat(me.role === "autoridade" ? [] : ["convocacoes"])
+    .concat(EDITORS.includes(me.role) ? ["locais"] : [])
     .map((key) => {
       const item = MODULES[key];
       return `<div class="tour-card">${icon(item.icon)}<div><strong>${esc(item.label)}</strong><small>${item.soon ? `Em breve · ${item.soon}` : "Disponível"}</small></div></div>`;
@@ -525,7 +613,12 @@ function go(name) {
     eventos: loadEvents,
     pessoas: loadPeople,
     textos: loadSettings,
+    demandas: loadDemandas,
+    totalizacao: loadTotalizacao,
+    locais: loadLocais,
+    documentos: loadDocumentos,
   };
+  clearInterval(refreshTimer);
   if (MODULES[name]?.soon) renderModule(name);
   else loaders[name]?.();
 }
@@ -542,6 +635,8 @@ async function loadHome() {
     homeData = await api("/api/equipe/inicio");
     $("#hello-date").textContent = dateLong(homeData.today);
     renderCountdown();
+    if (homeData.local)
+      $("#hello-sub").textContent = `${me.title || ROLE_LABEL[me.role]} · ${homeData.local.nome}${me.secao ? ` · seção ${me.secao}` : ""}`;
     renderTimeline($("#home-marcos"), homeData.marcos.slice(0, 5));
     $("#home-team").innerHTML = homeData.team
       .map(
@@ -589,7 +684,7 @@ function renderTimeline(list, marcos) {
 function renderHomeModules() {
   const keys = navGroups()
     .flatMap((group) => group.items)
-    .filter((key) => !["inicio", "painel", "eventos", "pessoas", "textos"].includes(key));
+    .filter((key) => !["inicio", "painel", "eventos", "pessoas", "textos", "fotos"].includes(key));
   $("#home-modules").innerHTML = keys
     .map((key) => {
       const item = MODULES[key];
@@ -714,7 +809,7 @@ $("#mc-delete").addEventListener("click", async () => {
 let team = [],
   editingUser = null;
 async function loadTeam() {
-  const admin = me.role === "admin";
+  const admin = GESTAO.includes(me.role);
   $("#user-new").hidden = !admin;
   $("#team-sub").textContent = admin
     ? "Contas da equipe, cargos e links de acesso."
@@ -768,6 +863,10 @@ function openUser(person = null) {
   $("#us-phone").value = formatPhone(person?.phone);
   $("#us-email").value = person?.email || "";
   $("#us-active-line").hidden = !person;
+  syncUserPlace().then(() => {
+    $("#us-local").value = person?.localId ? String(person.localId) : "";
+    $("#us-secao").value = person?.secao || "";
+  });
   $("#us-active").checked = person ? person.active : true;
   $("#us-link").hidden = !person;
   errorAt("#us-error");
@@ -782,6 +881,8 @@ $("#user-form").addEventListener("submit", async (event) => {
     role: $("#us-role").value,
     phone: $("#us-phone").value,
     email: $("#us-email").value,
+    localId: $("#us-lugar").hidden ? null : $("#us-local").value || null,
+    secao: $("#us-secao-field").hidden || $("#us-lugar").hidden ? null : $("#us-secao").value || null,
   };
   try {
     if (editingUser) {
@@ -896,5 +997,471 @@ $("#sessions-revoke").addEventListener("click", async () => {
   }
 });
 $("#replay-onboarding").addEventListener("click", startOnboarding);
+
+/* ---------- Locais (cache compartilhado por demandas, contas e locais) ---------- */
+let locaisCache = null;
+async function getLocais() {
+  if (!locaisCache) locaisCache = (await api("/api/eleicao/locais")).locais;
+  return locaisCache;
+}
+const mapsUrl = (local) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${local.endereco}, ${local.bairro}, Rio de Janeiro - RJ, ${local.cep}`)}`;
+const hora = (iso) => (iso ? iso.slice(11, 16) : "");
+const sinceLabel = (iso) => {
+  if (!iso) return "";
+  const minutes = Math.round((Date.now() - Date.parse(iso)) / 60000);
+  return minutes < 1 ? "agora" : minutes < 60 ? `há ${minutes} min` : minutes < 1440 ? `há ${Math.round(minutes / 60)} h` : new Date(iso).toLocaleDateString("pt-BR");
+};
+let refreshTimer = null;
+
+/* ---------- Demandas ---------- */
+let demandas = [],
+  demandaTipos = {},
+  dmStatus = "ativas",
+  viewing = null;
+const DM_STATUS = {
+  aberta: ["Aberta", "chip-yellow"],
+  em_atendimento: ["Em atendimento", "chip-blue"],
+  concluida: ["Concluída", "chip-green"],
+  cancelada: ["Cancelada", ""],
+};
+const DM_ICON = {
+  localizar_eleitor: "search",
+  material: "box",
+  urna: "ballot",
+  mesario: "users",
+  infraestrutura: "school",
+  policiamento: "police",
+  filas: "clock",
+  procedimento: "help",
+  outro: "ticket",
+};
+async function loadDemandas() {
+  const cartorio = EDITORS.includes(me.role);
+  $("#dm-new").hidden = !(cartorio || ["presidente", "adm_predio"].includes(me.role));
+  $("#dm-sub").textContent = cartorio
+    ? "Pedidos dos locais de votação: título, seção, material, urna, mesário, estrutura. Registre, assuma e conclua com a resposta."
+    : AUTORIDADES.includes(me.role)
+      ? "Acompanhe os pedidos dos locais e o atendimento do cartório."
+      : "Peça ao cartório o que precisar. A resposta chega aqui, sem lotar o grupo.";
+  try {
+    const data = await api("/api/eleicao/demandas");
+    demandas = data.demandas;
+    demandaTipos = data.tipos;
+    $("#dm-count-ativas").textContent = (data.contagem.aberta || 0) + (data.contagem.em_atendimento || 0);
+    $("#dm-count-concluida").textContent = data.contagem.concluida || 0;
+    renderDemandas();
+  } catch (error) {
+    $("#dm-list").innerHTML = `<p class="error">${esc(error.message)}</p>`;
+  }
+  clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => section === "demandas" && !$("#dm-view").open && !$("#dm-dialog").open && loadDemandas(), 30000);
+}
+function renderDemandas() {
+  const list = demandas.filter((d) =>
+    dmStatus === "ativas" ? ["aberta", "em_atendimento"].includes(d.status) : !dmStatus || d.status === dmStatus,
+  );
+  $("#dm-list").innerHTML = list.length
+    ? list
+        .map((d) => {
+          const [label, chip] = DM_STATUS[d.status];
+          return `<button type="button" class="dm-card prio-${d.prioridade} st-${d.status}" data-demanda="${d.id}">
+            <span class="dm-icon">${icon(DM_ICON[d.tipo] || "ticket")}</span>
+            <span class="dm-main">
+              <span class="dm-top"><b>#${d.numero}</b> ${esc(d.tipoNome)}${d.prioridade !== "normal" ? ` <span class="chip chip-tag chip-red">${d.prioridade === "urgente" ? "Urgente" : "Alta"}</span>` : ""}</span>
+              <strong>${esc(d.descricao)}</strong>
+              <small>${esc([d.local?.nome, d.secao ? `seção ${d.secao}` : "", d.solicitante].filter(Boolean).join(" · "))}</small>
+              ${d.resposta ? `<small class="dm-answer">${icon("check-circle")}${esc(d.resposta)}</small>` : ""}
+            </span>
+            <span class="dm-side"><span class="chip chip-tag ${chip}">${label}</span><small>${sinceLabel(d.criada_em)}</small>${d.responsavel_nome ? `<small>${esc(d.responsavel_nome.replace(/^(dra?|sra?)\.?\s+/i, "").split(" ")[0])}</small>` : ""}</span>
+          </button>`;
+        })
+        .join("")
+    : `<div class="empty-state">${icon("ticket")}<strong>${dmStatus === "ativas" ? "Nenhuma demanda em aberto" : "Nada por aqui"}</strong><p>No dia da eleição, cada pedido dos locais vira um cartão com responsável e resposta.</p></div>`;
+}
+for (const button of $$("[data-dm-status]"))
+  button.addEventListener("click", () => {
+    dmStatus = button.dataset.dmStatus;
+    for (const other of $$("[data-dm-status]")) other.setAttribute("aria-pressed", String(other === button));
+    renderDemandas();
+  });
+$("#dm-new").addEventListener("click", async () => {
+  const cartorio = EDITORS.includes(me.role);
+  const tipos = Object.keys(demandaTipos).length ? demandaTipos : (await api("/api/eleicao/demandas")).tipos;
+  $("#dm-tipos").innerHTML = Object.entries(tipos)
+    .map(([key, label], index) => `<label class="dm-tipo"><input type="radio" name="dm-tipo" value="${key}"${index === 0 ? " checked" : ""} />${icon(DM_ICON[key])}<span>${esc(label)}</span></label>`)
+    .join("");
+  const locais = await getLocais();
+  $("#dm-local").innerHTML = `<option value="">Escolha</option>` + locais.map((l) => `<option value="${l.id}">${esc(l.nome)}</option>`).join("");
+  $("#dm-lugar").hidden = !cartorio;
+  $("#dm-origem").hidden = !cartorio;
+  $("#dm-form").reset();
+  $("#dm-form [name=dm-tipo]").checked = true;
+  syncEleitorField();
+  errorAt("#dm-error");
+  $("#dm-dialog").showModal();
+});
+function syncEleitorField() {
+  $("#dm-eleitor-field").hidden = $("#dm-form [name=dm-tipo]:checked")?.value !== "localizar_eleitor";
+}
+$("#dm-tipos").addEventListener("change", syncEleitorField);
+$("#dm-secao").addEventListener("input", async () => {
+  const secao = Number($("#dm-secao").value);
+  const local = (await getLocais()).find((l) => l.secoes.some((x) => x.secao === secao));
+  if (local) $("#dm-local").value = String(local.id);
+});
+$("#dm-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  errorAt("#dm-error");
+  try {
+    await api("/api/eleicao/demandas", {
+      method: "POST",
+      body: {
+        tipo: $("#dm-form [name=dm-tipo]:checked")?.value,
+        descricao: $("#dm-descricao").value,
+        localId: $("#dm-local").value,
+        secao: $("#dm-secao").value,
+        dadosEleitor: $("#dm-eleitor-field").hidden ? "" : $("#dm-eleitor").value,
+        solicitante: $("#dm-solicitante").value,
+        canal: $("#dm-canal").value,
+        prioridade: $("#dm-prioridade").value,
+      },
+    });
+    $("#dm-dialog").close();
+    toast("Demanda registrada.");
+    loadDemandas();
+  } catch (error) {
+    errorAt("#dm-error", error.message);
+  }
+});
+$("#dm-list").addEventListener("click", (event) => {
+  const card = event.target.closest("[data-demanda]");
+  if (card) openDemanda(demandas.find((d) => d.id === card.dataset.demanda));
+});
+function openDemanda(d) {
+  viewing = d;
+  const cartorio = EDITORS.includes(me.role);
+  const [label] = DM_STATUS[d.status];
+  $("#dv-kicker").textContent = `#${d.numero} · ${label}`;
+  $("#dv-title").textContent = d.tipoNome;
+  const linha = (nome, valor) => (valor ? `<div><dt>${nome}</dt><dd>${esc(valor)}</dd></div>` : "");
+  const quandoLabel = (iso) => (iso ? `${new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}` : "");
+  $("#dv-info").innerHTML = `<p class="dv-desc">${esc(d.descricao)}</p><dl>
+    ${linha("Local", d.local?.nome)}${linha("Seção", d.secao)}${linha("Quem pediu", d.solicitante)}${linha("Chegou por", d.canal)}
+    ${linha("Dados do eleitor", d.dados_eleitor)}${linha("Aberta", `${quandoLabel(d.criada_em)} · ${d.aberta_por_nome || ""}`)}
+    ${linha("Responsável", d.responsavel_nome)}${linha("Concluída", quandoLabel(d.concluida_em))}${!cartorio ? linha("Resposta", d.resposta) : ""}</dl>`;
+  $("#dv-resposta").value = d.resposta || "";
+  $("#dv-resposta-field").hidden = !cartorio;
+  const botao = (acao, texto, classe) => `<button class="btn ${classe}" type="button" data-acao="${acao}">${texto}</button>`;
+  $("#dv-actions").innerHTML = cartorio
+    ? d.status === "aberta"
+      ? botao("cancelar", "Cancelar", "btn-outline") + botao("assumir", "Assumir", "btn-outline") + botao("concluir", "Concluir", "btn-primary btn-grow")
+      : d.status === "em_atendimento"
+        ? botao("atualizar", "Salvar resposta", "btn-outline") + botao("concluir", "Concluir", "btn-primary btn-grow")
+        : botao("reabrir", "Reabrir", "btn-outline btn-grow")
+    : d.status === "aberta" && d.aberta_por === me.id
+      ? botao("cancelar", "Cancelar pedido", "btn-outline btn-grow")
+      : `<button class="btn btn-outline btn-grow" type="button" data-close>Fechar</button>`;
+  errorAt("#dv-error");
+  $("#dm-view").showModal();
+}
+$("#dv-actions").addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-acao]");
+  if (!button || !viewing) return;
+  try {
+    await api(`/api/eleicao/demandas/${viewing.id}`, {
+      method: "PATCH",
+      body: { acao: button.dataset.acao, resposta: $("#dv-resposta").value },
+    });
+    $("#dm-view").close();
+    toast({ assumir: "Demanda assumida.", concluir: "Demanda concluída.", cancelar: "Demanda cancelada.", reabrir: "Demanda reaberta.", atualizar: "Resposta salva." }[button.dataset.acao]);
+    loadDemandas();
+  } catch (error) {
+    errorAt("#dv-error", error.message);
+  }
+});
+
+/* ---------- Totalização ---------- */
+let tt = null;
+async function loadTotalizacao(pleito = $("#tt-pleito").value || "") {
+  try {
+    tt = await api("/api/eleicao/totalizacao" + (pleito ? `?pleito=${pleito}` : ""));
+    renderTotalizacao();
+  } catch (error) {
+    $("#tt-body").innerHTML = `<p class="error">${esc(error.message)}</p>`;
+  }
+  clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => section === "totalizacao" && loadTotalizacao(), 60000);
+}
+function renderTotalizacao() {
+  if (!tt.atual) {
+    $("#tt-body").innerHTML = `<div class="empty-state">${icon("ballot")}<strong>Aguardando o TSE</strong><p>Os dados aparecem quando o portal de resultados publica o pleito.</p></div>`;
+    return;
+  }
+  $("#tt-pleito").innerHTML = tt.pleitos.map((p) => `<option value="${p.pleito}"${p.pleito === tt.atual.pleito ? " selected" : ""}>${esc(p.rotulo)}</option>`).join("");
+  const pct = Math.round((tt.totalizadas / tt.total) * 1000) / 10;
+  const R = 54,
+    C = 2 * Math.PI * R;
+  // Gráfico de seções acumuladas por horário (barras de 10 minutos).
+  const max = tt.total;
+  const W = 420,
+    H = 190,
+    n = Math.max(tt.serie.length, 1),
+    bw = Math.min(40, (W - 40) / n - 6);
+  const bars = tt.serie
+    .map((p, i) => {
+      const h = Math.max(2, (p.acumulado / max) * (H - 40));
+      const x = 30 + i * ((W - 40) / n);
+      return `<g><rect class="tt-bar" x="${x}" y="${H - 22 - h}" width="${bw}" height="${h}" rx="5"><title>${p.hora}: ${p.acumulado} seções</title></rect>
+        <text class="tt-x" x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${p.hora}</text>
+        <text class="tt-v" x="${x + bw / 2}" y="${H - 28 - h}" text-anchor="middle">${p.acumulado}</text></g>`;
+    })
+    .join("");
+  const locais = [...tt.locais].sort((a, b) => a.totalizadas / a.total - b.totalizadas / b.total || a.nome.localeCompare(b.nome));
+  $("#tt-body").innerHTML = `
+    <div class="tt-grid">
+      <article class="tt-hero">
+        <svg class="tt-ring" viewBox="0 0 128 128" aria-hidden="true">
+          <circle cx="64" cy="64" r="${R}" class="tt-ring-bg" />
+          <circle cx="64" cy="64" r="${R}" class="tt-ring-fg" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - tt.totalizadas / tt.total)}" />
+        </svg>
+        <div>
+          <p class="cd-kicker">${icon("ballot")}${esc(tt.atual.rotulo)}</p>
+          <strong class="tt-count">${tt.totalizadas}<span>/${tt.total}</span></strong>
+          <p class="cd-sub">seções totalizadas · ${String(pct).replace(".", ",")}%</p>
+          <p class="cd-detail">${tt.primeira ? `Primeira às ${hora(tt.primeira)} · última às ${hora(tt.ultima)}` : "Nenhuma seção totalizada ainda"} · consultado ${sinceLabel(tt.atual.consultado_em)}</p>
+          ${tt.atual.erro ? `<p class="tt-error">${icon("alert")}${esc(tt.atual.erro)}</p>` : ""}
+        </div>
+      </article>
+      <article class="a-card tt-chart">
+        <div class="card-head"><h2>${icon("clock")}Seções totalizadas ao longo da noite</h2></div>
+        ${tt.serie.length ? `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Seções acumuladas por horário">${bars}</svg>` : `<p class="empty-line">O gráfico aparece com as primeiras seções.</p>`}
+      </article>
+    </div>
+    <h2 class="tt-sub">Por local de votação</h2>
+    <div class="tt-locais">${locais
+      .map((l) => {
+        const done = l.totalizadas === l.total;
+        return `<details class="tt-local${done ? " done" : ""}">
+          <summary>
+            <span class="tt-area">${l.area}</span>
+            <span class="tt-name"><strong>${esc(l.nome)}</strong><small>${l.totalizadas}/${l.total} seções${l.ultima ? ` · última às ${hora(l.ultima)}` : ""}</small></span>
+            <span class="tt-meter"><span style="width:${(l.totalizadas / l.total) * 100}%"></span></span>
+          </summary>
+          <div class="tt-secoes">${l.secoes
+            .map((x) => `<span class="tt-secao ${x.status === "Totalizada" ? "ok" : x.status === "Aguardando" ? "wait" : "rec"}" title="${esc(x.status)}"><b>${x.secao}</b>${x.recebido ? hora(x.recebido) : "—"}</span>`)
+            .join("")}</div>
+        </details>`;
+      })
+      .join("")}</div>
+    <p class="muted small tt-source">Fonte: portal público de resultados do TSE (arquivos de urna por seção, município 60011, zona 0023). O horário é o do recebimento do boletim pelo TSE.</p>`;
+}
+$("#tt-pleito").addEventListener("change", () => loadTotalizacao($("#tt-pleito").value));
+$("#tt-refresh").addEventListener("click", async () => {
+  $("#tt-refresh").disabled = true;
+  try {
+    tt = await api("/api/eleicao/totalizacao/atualizar" + ($("#tt-pleito").value ? `?pleito=${$("#tt-pleito").value}` : ""), { method: "POST" });
+    renderTotalizacao();
+    toast("Totalização atualizada.");
+  } catch (error) {
+    toast(error.message, false);
+  } finally {
+    $("#tt-refresh").disabled = false;
+  }
+});
+
+/* ---------- Locais e seções ---------- */
+let editingLocal = null;
+async function loadLocais() {
+  try {
+    locaisCache = (await api("/api/eleicao/locais")).locais;
+    renderLocais();
+  } catch (error) {
+    $("#lc-list").innerHTML = `<p class="error">${esc(error.message)}</p>`;
+  }
+}
+function renderLocais() {
+  const q = normalizeText($("#lc-search").value);
+  const canEdit = EDITORS.includes(me.role);
+  const list = locaisCache.filter(
+    (l) => !q || normalizeText(`${l.nome} ${l.bairro} ${l.endereco}`).includes(q) || l.secoes.some((x) => String(x.secao) === q),
+  );
+  $("#lc-sub").textContent = `${locaisCache.length} colégios · ${locaisCache.reduce((n, l) => n + l.secoes.length, 0)} seções · áreas A a N`;
+  $("#lc-list").innerHTML = list.length
+    ? list
+        .map(
+          (l) => `<article class="lc-card">
+          <header>
+            <span class="tt-area">${l.area}</span>
+            <div><strong>${esc(l.nome)}</strong><small>${esc(l.endereco)} · ${esc(l.bairro)} · ${esc(l.bpm)} BPM</small></div>
+          </header>
+          <div class="lc-secoes">${l.secoes.map((x) => `<span class="lc-secao${String(x.secao) === q ? " hit" : ""}"><b>${x.secao}</b>${x.sala ? esc(x.sala) : ""}</span>`).join("")}</div>
+          ${l.guarda || l.acessibilidade || l.observacao ? `<p class="lc-info">${[l.guarda && `Guarda: ${l.guarda}`, l.acessibilidade && `Acessibilidade: ${l.acessibilidade}`, l.observacao].filter(Boolean).map(esc).join(" · ")}</p>` : ""}
+          <footer>
+            <span class="muted small">${l.secoes.length} seções${l.demandasAbertas ? ` · <b class="lc-alert">${l.demandasAbertas} demanda(s) aberta(s)</b>` : ""}</span>
+            <span class="lc-actions">
+              <a class="icon-btn" href="${mapsUrl(l)}" target="_blank" rel="noopener" aria-label="Abrir no mapa">${icon("out")}</a>
+              ${canEdit ? `<button class="icon-btn" type="button" data-local="${l.id}" aria-label="Editar local">${icon("edit")}</button>` : ""}
+            </span>
+          </footer>
+        </article>`,
+        )
+        .join("")
+    : `<div class="empty-state">${icon("school")}<strong>Nenhum local encontrado</strong><p>Busque pelo número da seção, o nome do colégio ou o bairro.</p></div>`;
+}
+const normalizeText = (value) => value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
+$("#lc-search").addEventListener("input", () => locaisCache && renderLocais());
+$("#lc-list").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-local]");
+  if (!button) return;
+  editingLocal = locaisCache.find((l) => l.id === Number(button.dataset.local));
+  $("#lc-title").textContent = editingLocal.nome;
+  $("#lc-kicker").textContent = `Área ${editingLocal.area} · ${editingLocal.bairro}`;
+  $("#lc-guarda").value = editingLocal.guarda;
+  $("#lc-acess").value = editingLocal.acessibilidade;
+  $("#lc-obs").value = editingLocal.observacao;
+  $("#lc-salas").innerHTML = editingLocal.secoes
+    .map((x) => `<label class="lc-sala"><b>${x.secao}</b><input data-sala="${x.secao}" maxlength="60" value="${esc(x.sala)}" placeholder="Sala" /></label>`)
+    .join("");
+  errorAt("#lc-error");
+  $("#lc-dialog").showModal();
+});
+$("#lc-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  errorAt("#lc-error");
+  try {
+    await api(`/api/eleicao/locais/${editingLocal.id}`, {
+      method: "PATCH",
+      body: { guarda: $("#lc-guarda").value, acessibilidade: $("#lc-acess").value, observacao: $("#lc-obs").value },
+    });
+    for (const input of $$("[data-sala]")) {
+      const atual = editingLocal.secoes.find((x) => x.secao === Number(input.dataset.sala));
+      if (atual.sala !== input.value.trim())
+        await api(`/api/eleicao/secoes/${input.dataset.sala}`, { method: "PATCH", body: { sala: input.value, observacao: atual.observacao } });
+    }
+    $("#lc-dialog").close();
+    toast("Local atualizado.");
+    loadLocais();
+  } catch (error) {
+    errorAt("#lc-error", error.message);
+  }
+});
+
+/* ---------- Documentos ---------- */
+let docs = [],
+  docCategorias = {},
+  editingDoc = null;
+const DOC_ICON = { pdf: "doc", xls: "dashboard", xlsx: "dashboard", csv: "dashboard", ods: "dashboard", jpg: "photos", jpeg: "photos", png: "photos" };
+const VIS_LABEL = { cartorio: "Só o cartório", autoridades: "Cartório e autoridades", todos: "Todos" };
+async function loadDocumentos() {
+  try {
+    const data = await api("/api/documentos");
+    docs = data.documentos;
+    docCategorias = data.categorias;
+    $("#doc-new").hidden = !data.podeEnviar;
+    const grupos = {};
+    for (const d of docs) (grupos[d.categoria] ||= []).push(d);
+    $("#doc-list").innerHTML = docs.length
+      ? Object.entries(docCategorias)
+          .filter(([key]) => grupos[key])
+          .map(
+            ([key, label]) => `<section class="doc-group"><h2>${esc(label)}</h2>${grupos[key]
+              .map(
+                (d) => `<article class="doc-card">
+                <span class="doc-icon ext-${d.extensao}">${icon(DOC_ICON[d.extensao] || "doc")}<b>${d.extensao.toUpperCase()}</b></span>
+                <div class="doc-main"><strong>${esc(d.titulo)}</strong>${d.descricao ? `<p>${esc(d.descricao)}</p>` : ""}
+                  <small>${size(d.bytes)} · ${new Date(d.criado_em).toLocaleDateString("pt-BR")}${data.podeEnviar ? ` · ${VIS_LABEL[d.visibilidade]}` : ""}</small></div>
+                <div class="doc-actions">
+                  ${d.extensao === "pdf" ? `<a class="icon-btn" href="${d.url}?ver" target="_blank" rel="noopener" aria-label="Abrir">${icon("eye")}</a>` : ""}
+                  <a class="icon-btn" href="${d.url}" aria-label="Baixar">${icon("download")}</a>
+                  ${data.podeEnviar ? `<button class="icon-btn" type="button" data-doc="${d.id}" aria-label="Editar">${icon("edit")}</button>` : ""}
+                </div>
+              </article>`,
+              )
+              .join("")}</section>`,
+          )
+          .join("")
+      : `<div class="empty-state">${icon("doc")}<strong>Biblioteca vazia</strong><p>${data.podeEnviar ? "Envie o planejamento logístico, manuais e avisos." : "Os documentos do cartório aparecem aqui."}</p></div>`;
+  } catch (error) {
+    $("#doc-list").innerHTML = `<p class="error">${esc(error.message)}</p>`;
+  }
+}
+function openDoc(doc = null) {
+  editingDoc = doc;
+  $("#doc-title").textContent = doc ? "Editar documento" : "Enviar arquivo";
+  $("#doc-file-field").hidden = Boolean(doc);
+  $("#doc-file").value = "";
+  $("#doc-titulo").value = doc?.titulo || "";
+  $("#doc-descricao").value = doc?.descricao || "";
+  $("#doc-categoria").innerHTML = Object.entries(docCategorias).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
+  $("#doc-categoria").value = doc?.categoria || "orientacoes";
+  $("#doc-visibilidade").value = doc?.visibilidade || "cartorio";
+  $("#doc-delete").hidden = !doc;
+  $("#doc-submit").textContent = doc ? "Salvar" : "Enviar";
+  errorAt("#doc-error");
+  $("#doc-dialog").showModal();
+}
+$("#doc-new").addEventListener("click", () => openDoc());
+$("#doc-list").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-doc]");
+  if (button) openDoc(docs.find((d) => d.id === button.dataset.doc));
+});
+$("#doc-file").addEventListener("change", () => {
+  const file = $("#doc-file").files[0];
+  if (file && !$("#doc-titulo").value) $("#doc-titulo").value = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
+});
+$("#doc-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  errorAt("#doc-error");
+  const button = $("#doc-submit");
+  button.disabled = true;
+  try {
+    if (editingDoc) {
+      await api(`/api/documentos/${editingDoc.id}`, {
+        method: "PATCH",
+        body: { titulo: $("#doc-titulo").value, descricao: $("#doc-descricao").value, categoria: $("#doc-categoria").value, visibilidade: $("#doc-visibilidade").value },
+      });
+    } else {
+      const file = $("#doc-file").files[0];
+      if (!file) throw new Error("Escolha um arquivo.");
+      const form = new FormData();
+      form.set("arquivo", file);
+      for (const key of ["titulo", "descricao", "categoria", "visibilidade"]) form.set(key, $("#doc-" + key).value);
+      const response = await fetch("/api/documentos", { method: "POST", body: form });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Não foi possível enviar.");
+    }
+    $("#doc-dialog").close();
+    toast(editingDoc ? "Documento atualizado." : "Documento enviado.");
+    loadDocumentos();
+  } catch (error) {
+    errorAt("#doc-error", error.message);
+  } finally {
+    button.disabled = false;
+  }
+});
+$("#doc-delete").addEventListener("click", async () => {
+  if (!editingDoc || !(await confirmBox("Excluir documento?", `“${editingDoc.titulo}” sai da biblioteca de todos.`))) return;
+  try {
+    await api(`/api/documentos/${editingDoc.id}`, { method: "DELETE" });
+    $("#doc-dialog").close();
+    toast("Documento excluído.");
+    loadDocumentos();
+  } catch (error) {
+    errorAt("#doc-error", error.message);
+  }
+});
+
+/* ---------- Contas: local e seção de quem é de campo ---------- */
+async function syncUserPlace() {
+  const role = $("#us-role").value;
+  const campo = ["presidente", "adm_predio", "ase"].includes(role);
+  $("#us-lugar").hidden = !["presidente", "adm_predio"].includes(role);
+  $("#us-secao-field").hidden = role !== "presidente";
+  if (!campo) return;
+  if ($("#us-local").options.length < 2)
+    $("#us-local").innerHTML = `<option value="">—</option>` + (await getLocais()).map((l) => `<option value="${l.id}">${esc(l.nome)}</option>`).join("");
+}
+$("#us-role").addEventListener("change", syncUserPlace);
 
 boot();

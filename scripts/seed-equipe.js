@@ -4,7 +4,9 @@
 //   INITIAL_PASSWORD='…' DATA_DIR=/data bun scripts/seed-equipe.js \
 //     "fulano:admin:Fulano:Chefe do Cartório" "beltrana::Beltrana:Servidora do Cartório"
 //
-// Formato de cada pessoa: usuario[:perfil][:Nome de exibição][:Cargo]; perfil = admin, equipe ou autoridade.
+// Formato de cada pessoa: usuario[:perfil][:Nome de exibição][:Cargo][:lugar]
+//   perfil: admin, chefe, equipe, juiz, promotor, ase, presidente ou adm_predio
+//   lugar (opcional): número da seção do presidente (ex.: 145) ou L + número do local (ex.: L2)
 import { createApp } from "../src/app.js";
 
 const password = process.env.INITIAL_PASSWORD || "";
@@ -16,9 +18,11 @@ if (!password || !people.length) {
 const app = createApp({ dataDir: process.env.DATA_DIR || "./local/data" });
 let created = 0;
 for (const entry of people) {
-  const [username, role = "", name = "", title = ""] = entry.split(":");
+  const [username, role = "", name = "", title = "", lugar = ""] = entry.split(":");
+  const localId = /^L\d+$/i.test(lugar) ? Number(lugar.slice(1)) : null;
+  const secao = /^\d+$/.test(lugar) ? Number(lugar) : null;
   try {
-    app.auth.createUser({ username, role: role || "equipe", name, title, password, initialDays: Number(process.env.INITIAL_DAYS || 7) });
+    app.auth.createUser({ username, role: role || "equipe", name, title, password, initialDays: Number(process.env.INITIAL_DAYS || 7), localId, secao });
     created++;
     console.log(`criada: ${username}`);
   } catch (error) {

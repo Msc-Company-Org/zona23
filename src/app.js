@@ -47,7 +47,7 @@ const securityHeaders = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "same-origin",
   "Content-Security-Policy":
-    "default-src 'self'; img-src 'self' blob:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+    "default-src 'self'; img-src 'self' blob: data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 };
 
