@@ -119,18 +119,8 @@ const MODULES = {
       ["certificate", "Declarações em lote", "Todas as declarações do dia ou do turno em PDF, já no modelo do cartório."],
     ],
   },
-  convocacoes: {
-    label: "Convocações",
-    icon: "badge",
-    soon: "16/10",
-    group: "Eleições 2026",
-    lede: "Quem trabalha em cada local e seção, e o caminho das dispensas e substituições.",
-    features: [
-      ["badge", "Todas as funções", "Presidentes, mesários, administradores de prédio, coletores, coordenadores e técnicos."],
-      ["swap", "Dispensa e substituição", "Pedido, decisão e substituto sugerido, com histórico."],
-      ["upload", "Importação do ELO", "Relatório do sistema importado em planilha, sem CPF nem título."],
-    ],
-  },
+  convocacoes: { label: "Convocações", icon: "badge" },
+
   situacao: {
     label: "Sala de situação",
     icon: "radar",
@@ -617,6 +607,7 @@ function go(name) {
     totalizacao: loadTotalizacao,
     locais: loadLocais,
     documentos: loadDocumentos,
+    convocacoes: loadConvocacoes,
   };
   clearInterval(refreshTimer);
   if (MODULES[name]?.soon) renderModule(name);
@@ -1286,19 +1277,20 @@ function renderLocais() {
   const list = locaisCache.filter(
     (l) => !q || normalizeText(`${l.nome} ${l.bairro} ${l.endereco}`).includes(q) || l.secoes.some((x) => String(x.secao) === q),
   );
-  $("#lc-sub").textContent = `${locaisCache.length} colégios · ${locaisCache.reduce((n, l) => n + l.secoes.length, 0)} seções · áreas A a N`;
+  const fmt = (n) => n.toLocaleString("pt-BR");
+  $("#lc-sub").textContent = `${locaisCache.length} colégios · ${locaisCache.reduce((n, l) => n + l.secoes.length, 0)} seções · ${fmt(locaisCache.reduce((n, l) => n + l.eleitores, 0))} eleitores aptos · áreas A a N`;
   $("#lc-list").innerHTML = list.length
     ? list
         .map(
           (l) => `<article class="lc-card">
           <header>
             <span class="tt-area">${l.area}</span>
-            <div><strong>${esc(l.nome)}</strong><small>${esc(l.endereco)} · ${esc(l.bairro)} · ${esc(l.bpm)} BPM</small></div>
+            <div><strong>${esc(l.nome)}</strong><small>${esc(l.endereco)} · ${esc(l.bairro)} · ${esc(l.bpm)} BPM · código ${esc(l.codigo)}</small></div>
           </header>
-          <div class="lc-secoes">${l.secoes.map((x) => `<span class="lc-secao${String(x.secao) === q ? " hit" : ""}"><b>${x.secao}</b>${x.sala ? esc(x.sala) : ""}</span>`).join("")}</div>
+          <div class="lc-secoes">${l.secoes.map((x) => `<span class="lc-secao${String(x.secao) === q ? " hit" : ""}${x.acessivel ? " acess" : ""}" title="${x.aptos} eleitores aptos${x.acessivel ? " · seção acessível" : ""}"><b>${x.secao}${x.acessivel ? '<i aria-label="acessível">♿</i>' : ""}</b>${x.sala ? esc(x.sala) : `${x.aptos} aptos`}</span>`).join("")}</div>
           ${l.guarda || l.acessibilidade || l.observacao ? `<p class="lc-info">${[l.guarda && `Guarda: ${l.guarda}`, l.acessibilidade && `Acessibilidade: ${l.acessibilidade}`, l.observacao].filter(Boolean).map(esc).join(" · ")}</p>` : ""}
           <footer>
-            <span class="muted small">${l.secoes.length} seções${l.demandasAbertas ? ` · <b class="lc-alert">${l.demandasAbertas} demanda(s) aberta(s)</b>` : ""}</span>
+            <span class="muted small">${l.secoes.length} seções · ${fmt(l.eleitores)} eleitores${l.demandasAbertas ? ` · <b class="lc-alert">${l.demandasAbertas} demanda(s) aberta(s)</b>` : ""}</span>
             <span class="lc-actions">
               <a class="icon-btn" href="${mapsUrl(l)}" target="_blank" rel="noopener" aria-label="Abrir no mapa">${icon("out")}</a>
               ${canEdit ? `<button class="icon-btn" type="button" data-local="${l.id}" aria-label="Editar local">${icon("edit")}</button>` : ""}
@@ -1463,5 +1455,92 @@ async function syncUserPlace() {
     $("#us-local").innerHTML = `<option value="">—</option>` + (await getLocais()).map((l) => `<option value="${l.id}">${esc(l.nome)}</option>`).join("");
 }
 $("#us-role").addEventListener("change", syncUserPlace);
+
+/* ---------- Convocações e presença ---------- */
+let cv = null;
+const CV_PRESENCA = { presente: ["Presente", "chip-green"], faltou: ["Faltou", "chip-red"], substituido: ["Substituído", "chip-blue"] };
+async function loadConvocacoes() {
+  try {
+    cv = await api("/api/eleicao/convocacoes");
+    renderConvocacoes();
+  } catch (error) {
+    $("#cv-list").innerHTML = `<p class="error">${esc(error.message)}</p>`;
+  }
+}
+function renderConvocacoes() {
+  const r = cv.resumo;
+  const fmt = (n) => (n || 0).toLocaleString("pt-BR");
+  const kpi = (name, value, label, hero = false) =>
+    `<div class="kpi${hero ? " hero" : ""}"><span class="kpi-icon">${icon(name)}</span><strong>${value}</strong><span>${label}</span></div>`;
+  const marcadas = (r.presenca.presente || 0) + (r.presenca.faltou || 0) + (r.presenca.substituido || 0);
+  $("#cv-kpis").innerHTML = r.total
+    ? [
+        kpi("badge", fmt(r.total), `convocados · ${Object.keys(r.funcao).join(", ")}`, true),
+        kpi("check-circle", fmt(r.situacao.Nomeado), "nomeados"),
+        kpi("swap", fmt(r.situacao.Dispensado), "dispensados"),
+        kpi("attendance", `${fmt(marcadas)}/${fmt(r.situacao.Nomeado)}`, `presença registrada · ${fmt(r.presenca.faltou)} falta(s)`),
+      ].join("")
+    : "";
+  $("#cv-sub").textContent = r.total
+    ? `Pleito ${cv.pleito} · importado do ELO/Convoca+. Presença registrada pelo cartório no dia.`
+    : "Quem trabalha em cada local, a situação no ELO e a presença no dia.";
+  const q = normalizeText($("#cv-busca").value);
+  const situacao = $("#cv-situacao").value;
+  const presenca = $("#cv-presenca").value;
+  const lista = cv.convocacoes.filter(
+    (c) =>
+      (!q || normalizeText(`${c.nome} ${c.local?.nome || ""}`).includes(q)) &&
+      (!situacao || c.situacao === situacao) &&
+      (!presenca || (presenca === "pendente" ? !c.presenca && c.situacao === "Nomeado" : c.presenca === presenca)),
+  );
+  const grupos = new Map();
+  for (const c of lista) {
+    const chave = c.local?.nome || "Sem local";
+    if (!grupos.has(chave)) grupos.set(chave, { local: c.local, itens: [] });
+    grupos.get(chave).itens.push(c);
+  }
+  const canEdit = EDITORS.includes(me.role);
+  $("#cv-list").innerHTML = lista.length
+    ? [...grupos.values()]
+        .map(
+          ({ local, itens }) => `<details class="cv-local" open>
+          <summary><span class="tt-area">${local?.area || "—"}</span><span class="tt-name"><strong>${esc(local?.nome || "Sem local")}</strong><small>${itens.length} pessoa(s) · ${itens.filter((c) => c.presenca === "presente").length} presente(s)</small></span></summary>
+          <ul class="cv-pessoas">${itens
+            .map((c) => {
+              const [plabel, pchip] = CV_PRESENCA[c.presenca] || [];
+              return `<li class="cv-pessoa${c.situacao === "Dispensado" ? " off" : ""}">
+                <span class="cv-nome"><strong>${esc(c.nome)}</strong><small>${esc(c.funcao)} · ${esc(c.situacao)}${c.resposta && c.resposta !== "Confirmado" ? ` · ${esc(c.resposta)}` : ""}</small></span>
+                ${
+                  canEdit && c.situacao === "Nomeado"
+                    ? `<span class="segmented cv-presenca" role="group" aria-label="Presença de ${esc(c.nome)}">${["presente", "faltou", "substituido"]
+                        .map((p) => `<button type="button" data-cv="${c.id}" data-p="${p}" aria-pressed="${c.presenca === p}">${CV_PRESENCA[p][0]}</button>`)
+                        .join("")}</span>`
+                    : plabel
+                      ? `<span class="chip chip-tag ${pchip}">${plabel}</span>`
+                      : ""
+                }
+              </li>`;
+            })
+            .join("")}</ul>
+        </details>`,
+        )
+        .join("")
+    : `<div class="empty-state">${icon("badge")}<strong>${cv.resumo.total ? "Ninguém com esses filtros" : "Nenhuma convocação importada"}</strong><p>${cv.resumo.total ? "Mude a busca ou os filtros." : "A lista vem do relatório de mesários do ELO/Convoca+, importado pelo cartório."}</p></div>`;
+}
+for (const id of ["#cv-busca", "#cv-situacao", "#cv-presenca"]) $(id).addEventListener("input", () => cv && renderConvocacoes());
+$("#cv-list").addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-cv]");
+  if (!button) return;
+  const item = cv.convocacoes.find((c) => c.id === button.dataset.cv);
+  const presenca = item.presenca === button.dataset.p ? "" : button.dataset.p;
+  try {
+    await api(`/api/eleicao/convocacoes/${item.id}`, { method: "PATCH", body: { presenca } });
+    item.presenca = presenca;
+    cv.resumo.presenca = cv.convocacoes.reduce((acc, c) => ((acc[c.presenca || "—"] = (acc[c.presenca || "—"] || 0) + 1), acc), {});
+    renderConvocacoes();
+  } catch (error) {
+    toast(error.message, false);
+  }
+});
 
 boot();

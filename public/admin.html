@@ -574,6 +574,24 @@
           <div id="lc-list" class="lc-list"></div>
         </section>
 
+        <!-- Convocações -->
+        <section id="convocacoes" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Eleições 2026 · ELO/Convoca+</p>
+              <h1>Convocações</h1>
+              <p class="muted" id="cv-sub">Quem trabalha em cada local, a situação no ELO e a presença no dia.</p>
+            </div>
+          </div>
+          <div id="cv-kpis" class="kpis cv-kpis"></div>
+          <div class="cv-filters">
+            <label class="field-icon"><svg class="icon" aria-hidden="true"><use href="#i-search" /></svg><input id="cv-busca" type="search" placeholder="Nome ou colégio" autocomplete="off" /></label>
+            <select id="cv-situacao" aria-label="Situação"><option value="">Todas as situações</option><option value="Nomeado">Nomeados</option><option value="Dispensado">Dispensados</option></select>
+            <select id="cv-presenca" aria-label="Presença"><option value="">Toda presença</option><option value="pendente">Sem registro</option><option value="presente">Presentes</option><option value="faltou">Faltaram</option><option value="substituido">Substituídos</option></select>
+          </div>
+          <div id="cv-list" class="cv-list"></div>
+        </section>
+
         <!-- Documentos -->
         <section id="documentos" class="a-section" hidden>
           <div class="a-head">

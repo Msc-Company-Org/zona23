@@ -46,7 +46,7 @@ test("locais e seções: 32 locais, 225 seções e edição só pelo cartório",
     const equipe = await s.pessoa("servidora", "equipe");
     const presidente = await s.pessoa("presidente1", "presidente", { secao: 145 });
     const locais = await s.request("/api/eleicao/locais", "GET", undefined, presidente);
-    expect(locais.data.total).toEqual({ locais: 32, secoes: 225 });
+    expect(locais.data.total).toEqual({ locais: 32, secoes: 225, eleitores: 79560 });
     expect((await s.request("/api/eleicao/secoes/145", "PATCH", { sala: "Sala 03" }, presidente)).status).toBe(403);
     expect((await s.request("/api/eleicao/secoes/145", "PATCH", { sala: "Sala 03" }, equipe)).status).toBe(200);
     expect((await s.request("/api/eleicao/secoes/999", "PATCH", { sala: "x" }, equipe)).status).toBe(404);
@@ -140,3 +140,36 @@ test("documentos: upload pelo cartório, download conforme a visibilidade e sem 
     s.close();
   }
 }, 40000);
+
+test("convocações: importação sem título, repetição atualiza e presença só pelo cartório", async () => {
+  const { importarConvocacoes } = await import("../src/eleicao.js");
+  const s = sandbox();
+  try {
+    const registros = [
+      { local_codigo: "1660", funcao_codigo: "13", funcao: "Coletor de Justificativa", situacao: "Nomeado", nome: "Pessoa Fictícia Um", resposta: "Confirmado", edital: "0022/2026" },
+      { local_codigo: "1660", funcao_codigo: "13", funcao: "Coletor de Justificativa", situacao: "Dispensado", nome: "Pessoa Fictícia Dois", resposta: "Pedido de dispensa", edital: "0022/2026" },
+    ];
+    expect(importarConvocacoes(s.app.db, "3220", registros)).toEqual({ novos: 2, atualizados: 0 });
+    expect(importarConvocacoes(s.app.db, "3220", registros)).toEqual({ novos: 0, atualizados: 2 });
+    const equipe = await s.pessoa("servidor", "equipe");
+    const adm = await s.pessoa("adm1", "adm_predio", { localId: 26 });
+    const juiz = await s.pessoa("juiz1", "juiz");
+    expect((await s.request("/api/eleicao/convocacoes", "GET", undefined, adm)).status).toBe(403);
+    const lista = (await s.request("/api/eleicao/convocacoes", "GET", undefined, juiz)).data;
+    expect(lista.resumo).toMatchObject({ total: 2, situacao: { Nomeado: 1, Dispensado: 1 } });
+    expect(lista.convocacoes[0].local.nome).toBe("Centro Educacional Triângulo");
+    expect(JSON.stringify(lista)).not.toContain("chave");
+    const id = lista.convocacoes.find((c) => c.situacao === "Nomeado").id;
+    expect((await s.request(`/api/eleicao/convocacoes/${id}`, "PATCH", { presenca: "faltou" }, juiz)).status).toBe(403);
+    expect((await s.request(`/api/eleicao/convocacoes/${id}`, "PATCH", { presenca: "talvez" }, equipe)).status).toBe(400);
+    expect((await s.request(`/api/eleicao/convocacoes/${id}`, "PATCH", { presenca: "faltou" }, equipe)).status).toBe(200);
+    importarConvocacoes(s.app.db, "3220", registros);
+    expect((await s.request("/api/eleicao/convocacoes", "GET", undefined, equipe)).data.resumo.presenca.faltou).toBe(1);
+    // Locais trazem aptos e acessibilidade do ELO.
+    const locais = (await s.request("/api/eleicao/locais", "GET", undefined, equipe)).data;
+    expect(locais.total.eleitores).toBe(79560);
+    expect(locais.locais.find((l) => l.codigo === "1368").nome).toContain("Elite");
+  } finally {
+    s.close();
+  }
+}, 30000);

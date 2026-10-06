@@ -6,11 +6,13 @@
 //   "documentos": [{ "arquivo": "planejamento.pdf", "titulo": "…", "categoria": "planejamento",
 //                    "visibilidade": "autoridades", "descricao": "…", "origem": "…" }],
 //   "marcos":     [{ "date": "2026-10-14", "time": "08:00", "title": "…", "detail": "…", "kind": "preparacao" }],
-//   "salas":      { "145": "Sala 03" }
+//   "salas":      { "145": "Sala 03" },
+//   "convocacoes": [{ "pleito": "3220", "arquivo": "convocacoes.json", "origem": "ELO · Relatório de Mesários" }]
 // }
 // Arquivos são procurados ao lado do manifesto. Itens repetidos são ignorados.
 import { dirname, join } from "node:path";
 import { createApp } from "../src/app.js";
+import { importarConvocacoes } from "../src/eleicao.js";
 
 const manifesto = process.argv[2];
 if (!manifesto) {
@@ -20,7 +22,7 @@ if (!manifesto) {
 const base = dirname(manifesto);
 const carga = await Bun.file(manifesto).json();
 const app = createApp({ dataDir: process.env.DATA_DIR || "./local/data" });
-const contagem = { documentos: 0, marcos: 0, salas: 0, ignorados: 0 };
+const contagem = { documentos: 0, marcos: 0, salas: 0, convocacoes: 0, ignorados: 0 };
 
 for (const doc of carga.documentos || []) {
   try {
@@ -48,6 +50,12 @@ for (const [secao, sala] of Object.entries(carga.salas || {})) {
     .query("INSERT INTO secoes_info (secao,sala,updated_at) VALUES (?,?,?) ON CONFLICT(secao) DO UPDATE SET sala=excluded.sala")
     .run(Number(secao), String(sala).slice(0, 60), new Date().toISOString());
   contagem.salas++;
+}
+for (const lote of carga.convocacoes || []) {
+  const registros = await Bun.file(join(base, lote.arquivo)).json();
+  const { novos, atualizados } = importarConvocacoes(app.db, String(lote.pleito), registros, lote.origem || "");
+  contagem.convocacoes += novos;
+  contagem.ignorados += atualizados;
 }
 await app.ready;
 app.close();

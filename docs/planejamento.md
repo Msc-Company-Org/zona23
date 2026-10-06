@@ -42,7 +42,7 @@ L = lê · E = edita · P = próprio (só o que é seu) · — = não vê
 | Escala ASE | E (aprovar trocas) | E | — | — | P | — | — | 📅 12/10 |
 | Presença | E | E | — | — | P | P (mesários) | P (local) | 📅 16/10 |
 | Declarações | E | E | — | — | P | P | P | 📅 16/10 |
-| Convocações | E (aprovar) | E | L | L | — | — | — | 📅 16/10 |
+| Convocações e presença | E (aprovar) | E | L | L | — | — | — | ✅ lista e presença · 📅 dispensas |
 | Sala de situação | E | E | L | L | — | P (seção) | P (local) | 📅 21/10 |
 | Para decidir | E (encaminhar) | E | E (decidir) | — | — | — | — | 📅 16/10 |
 | Acompanhamento | E | E | — | E | — | — | — | 📅 21/10 |
@@ -192,12 +192,13 @@ Ler grupos ou automatizar o WhatsApp pessoal não está nos planos: viola os ter
 | Dado | Origem | Onde fica | Estado |
 | --- | --- | --- | --- |
 | 32 locais, 225 seções, áreas, BPM, endereços | Planejamento Logístico 2026; seções conferidas com o TSE | Código (`src/locais.js`), por serem públicos | ✅ |
-| Salas por seção, guarda das urnas | Planejamento Logístico 2026 | Banco (importação privada) | 📅 importar |
+| Códigos, bairros, eleitores aptos (79.560) e seções acessíveis | ELO · Endereço das Seções (06/10/2026) | Código (`src/locais.js`) | ✅ |
+| Salas por seção (224 de 225) | Planejamento Logístico 2026 | Banco (importação privada) | ✅ carga pronta |
 | Totalização por seção | Portal do TSE | Banco (automático) | ✅ |
 | Datas do turno (preparação, conferência, entrega, eleição) | Planejamento e avisos do cartório | Agenda | ✅ estrutura · 📅 lançar |
 | Roteiros de distribuição e recolhimento | Planejamento Logístico 2026 | Banco | 📅 |
 | Escala de ASE | Texto do WhatsApp | Banco (importação) | 📅 |
-| Convocados | Relatório do ELO | Banco (importação) | 📅, depende do relatório |
+| Convocados | ELO/Convoca+ · Relatório de Mesários por Situação | Banco (importação privada, sem título) | ✅ coletores do 1º turno (123) · 📅 demais funções |
 | Documentos (planejamento, avisos, e-book) | Drive e grupos | Biblioteca | ✅ envio · 📅 carga inicial |
 
 ## 8. Cronograma até o 2º turno (25/10)

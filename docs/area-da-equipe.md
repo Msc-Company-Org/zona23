@@ -70,10 +70,11 @@ A apresentação pode ser revista em *Perfil → Rever a apresentação*.
 | Início, Agenda, Equipe, Perfil | Disponíveis. |
 | Demandas do dia da eleição | Disponível: abrir, assumir, responder e concluir. |
 | Totalização | Disponível: portal público do TSE, seção por seção. |
-| Locais e seções | Disponível: 32 locais e 225 seções, endereços, salas e mapa. |
+| Locais e seções | Disponível: 32 locais, 225 seções e 79.560 eleitores aptos (ELO), endereços, seções acessíveis, salas e mapa. |
+| Convocações | Disponível: lista importada do ELO/Convoca+ (sem título de eleitor), situação e presença do dia. |
 | Documentos | Disponível: biblioteca com categorias e visibilidade por perfil. |
 | Memórias (acervo) | Disponível para chefia e equipe. |
-| Tarefas, Escala, Presença, Declarações, Convocações, Sala de situação, Para decidir | Em preparação; veja o [planejamento](planejamento.md). |
+| Tarefas, Escala, Declarações, Sala de situação, Para decidir | Em preparação; veja o [planejamento](planejamento.md). |
 
 ## 🛠️ Criar as contas
 

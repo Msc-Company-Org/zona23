@@ -848,3 +848,26 @@
 }
 .a-card h2 { display: flex; align-items: center; gap: 8px; }
 .a-card h2 > .icon { width: 20px; height: 20px; flex: none; color: var(--blue); }
+.lc-secao b i { font-style: normal; font-size: 11px; margin-left: 2px; }
+.lc-secao.acess { box-shadow: inset 0 0 0 1px #cddcf6; }
+
+/* ---------- Convocações ---------- */
+.cv-kpis { margin-bottom: 14px; }
+.cv-filters { display: grid; gap: 8px; margin-bottom: 14px; }
+.cv-filters select { min-height: 46px; border-radius: 12px; border: 1px solid var(--line-strong); padding: 0 10px; background: #fff; }
+.cv-list { display: grid; gap: 10px; }
+.cv-local { border-radius: var(--r-lg); background: #fff; border: 1px solid var(--line); overflow: hidden; }
+.cv-local summary { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: center; padding: 10px 12px; cursor: pointer; list-style: none; }
+.cv-local summary::-webkit-details-marker { display: none; }
+.cv-pessoas { list-style: none; padding: 0 12px 10px; display: grid; gap: 6px; }
+.cv-pessoa { display: grid; gap: 6px; padding: 8px 10px; border-radius: var(--r); background: var(--bg); }
+.cv-pessoa.off { opacity: 0.6; }
+.cv-nome strong { display: block; font-size: 14px; }
+.cv-nome small { color: var(--muted); font-size: 12.5px; }
+.cv-presenca { display: flex; }
+.cv-presenca button { flex: 1; min-height: 34px; font-size: 12.5px; }
+@media (min-width: 640px) {
+  .cv-filters { grid-template-columns: minmax(0, 2fr) 1fr 1fr; }
+  .cv-pessoa { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .cv-presenca { min-width: 300px; }
+}
