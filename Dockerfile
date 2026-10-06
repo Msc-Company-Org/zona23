@@ -9,6 +9,7 @@ COPY --from=dependencies /app/node_modules ./node_modules
 COPY package.json ./
 COPY src ./src
 COPY public ./public
+COPY scripts ./scripts
 ENV HOST=0.0.0.0 PORT=3023 DATA_DIR=/data
 RUN mkdir /data && chown bun:bun /data
 USER bun

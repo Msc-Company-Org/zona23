@@ -5,11 +5,19 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="robots" content="noindex,nofollow" />
     <meta name="theme-color" content="#0b1630" />
-    <title>Área da equipe · 023ª Zona Eleitoral</title>
+    <title>Zona 023 · Equipe da 023ª Zona Eleitoral</title>
+    <meta name="description" content="Área da equipe do cartório da 023ª Zona Eleitoral · Marechal Hermes." />
+    <meta property="og:title" content="Zona 023 · Equipe da 023ª Zona Eleitoral" />
+    <meta property="og:description" content="Área de trabalho da equipe do cartório. As fotos ficam em Memórias da Zona 023." />
+    <meta property="og:type" content="website" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/assets/icon-180.png?v=023" />
     <link rel="icon" href="/assets/favicon.svg?v=023" type="image/svg+xml" />
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/admin.css" />
+    <link rel="stylesheet" href="/equipe.css" />
     <script src="/admin.js" defer></script>
+    <script src="/equipe.js" defer></script>
   </head>
   <body class="admin">
     <!--sprite-->
@@ -75,41 +83,369 @@
         <path d="M12 3 19.5 6v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z" fill="#ffda59" stroke="#1b305a" stroke-width="1.6" stroke-linejoin="round" />
         <path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#1b305a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </symbol>
+      <!-- Área da equipe: mesmo desenho (24×24, traço 1.8, currentColor) -->
+      <symbol id="i-home" viewBox="0 0 24 24">
+        <path d="M4 10.6 12 4l8 6.6V19a1.5 1.5 0 0 1-1.5 1.5H15v-5.2a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5.2H5.5A1.5 1.5 0 0 1 4 19z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-tasks" viewBox="0 0 24 24">
+        <rect x="4" y="3.5" width="16" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="m7.5 8.5 1.4 1.4 2.4-2.6M7.5 14.5l1.4 1.4 2.4-2.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M13.5 9h3M13.5 15h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-shift" viewBox="0 0 24 24">
+        <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M3.5 9.5h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <circle cx="9" cy="14.5" r="1.9" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <path d="M6 18.5c.6-1.3 1.7-2 3-2s2.4.7 3 2M14.5 13.5h3M14.5 16.5h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-attendance" viewBox="0 0 24 24">
+        <path d="M9 4.5H7A2.5 2.5 0 0 0 4.5 7v11A2.5 2.5 0 0 0 7 20.5h10a2.5 2.5 0 0 0 2.5-2.5V7A2.5 2.5 0 0 0 17 4.5h-2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="9" y="3" width="6" height="3.5" rx="1.2" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.6" />
+        <path d="m8.5 13.5 2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-certificate" viewBox="0 0 24 24">
+        <path d="M14 20.5H6.5A2 2 0 0 1 4.5 18.5v-13a2 2 0 0 1 2-2h8l4 4v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M8 9h5M8 12.5h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        <circle cx="17" cy="15" r="2.8" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.6" />
+        <path d="m15.6 17.5-.6 3.5 2-1.1 2 1.1-.6-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-badge" viewBox="0 0 24 24">
+        <rect x="4.5" y="6" width="15" height="14.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M10 6V4.2a.7.7 0 0 1 .7-.7h2.6a.7.7 0 0 1 .7.7V6" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <circle cx="12" cy="11.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <path d="M8.3 17.3c.7-1.5 2.1-2.3 3.7-2.3s3 .8 3.7 2.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-ballot" viewBox="0 0 24 24">
+        <path d="M4 12.5h16v6.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z" fill="currentColor" fill-opacity=".15" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M8 12.5V4.5h8v8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="m10 8.5 1.5 1.5 2.8-3M7 15.5h10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-school" viewBox="0 0 24 24">
+        <path d="M3.5 20.5h17M5.5 20.5V11L12 7l6.5 4v9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M12 7V3.2l3.5 1.4L12 6" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+        <path d="M10 20.5v-4h4v4M8.5 13h1M14.5 13h1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-radar" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6" />
+        <path d="M12 12 18 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+        <circle cx="15.5" cy="14.5" r="1.3" fill="currentColor" />
+      </symbol>
+      <symbol id="i-ticket" viewBox="0 0 24 24">
+        <path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5v2.2a2.3 2.3 0 0 0 0 4.6v2.2a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5v-2.2a2.3 2.3 0 0 0 0-4.6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M14 6.5v11" stroke="currentColor" stroke-width="1.5" stroke-dasharray="1.6 1.8" />
+        <path d="M7.5 10.5h3.5M7.5 13.5h2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-truck" viewBox="0 0 24 24">
+        <path d="M3 6.5h11v10H3zM14 9.5h3.6l3.4 3.6v3.4h-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <circle cx="7" cy="17.5" r="1.9" fill="#fff" stroke="currentColor" stroke-width="1.7" />
+        <circle cx="17" cy="17.5" r="1.9" fill="#fff" stroke="currentColor" stroke-width="1.7" />
+      </symbol>
+      <symbol id="i-gavel" viewBox="0 0 24 24">
+        <path d="m13.5 4.5 6 6M11.2 6.8l6 6M12.4 5.6l-3.6 3.6 6 6 3.6-3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="m11.8 12.2-7.3 7.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <path d="M13 20.5h7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-scale" viewBox="0 0 24 24">
+        <path d="M12 4v16M7.5 20.5h9M5 7.5h14M12 4.5 5 7.5M12 4.5l7 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="m5 7.5-2.5 6a2.6 2.6 0 0 0 5 0zM19 7.5l-2.5 6a2.6 2.6 0 0 0 5 0z" fill="currentColor" fill-opacity=".15" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-users" viewBox="0 0 24 24">
+        <circle cx="9" cy="8.5" r="3.3" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M3 19.5c.8-3.1 3.2-5 6-5s5.2 1.9 6 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path d="M15.5 5.6a3.2 3.2 0 0 1 0 6M17.6 14.8c1.6.7 2.8 2.3 3.3 4.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-user" viewBox="0 0 24 24">
+        <circle cx="12" cy="8.5" r="3.8" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M4.5 20c1-3.6 3.9-5.6 7.5-5.6s6.5 2 7.5 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-key" viewBox="0 0 24 24">
+        <circle cx="8" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="m10.9 12.1 8.6-8.6M16.5 6.5l2.5 2.5M14 9l2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-chat-send" viewBox="0 0 24 24">
+        <path d="M12 3.5a8.5 8.5 0 0 0-7.4 12.7L3.5 20.5l4.4-1.1A8.5 8.5 0 1 0 12 3.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="m8.5 12.5 6.5-3-2.4 6.6-1.4-2.6z" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24">
+        <path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M10 20.5a2.2 2.2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-swap" viewBox="0 0 24 24">
+        <path d="M4.5 8.5h14m0 0L15 5m3.5 3.5L15 12M19.5 15.5h-14m0 0L9 12m-3.5 3.5L9 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-qr" viewBox="0 0 24 24">
+        <rect x="4" y="4" width="6" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="14" y="4" width="6" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="4" y="14" width="6" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M14 14h2.5v2.5H14zM17.5 17.5H20V20h-2.5zM17.5 14H20M14 20h1.5" fill="currentColor" stroke="currentColor" stroke-width="1.2" />
+      </symbol>
+      <symbol id="i-phone-download" viewBox="0 0 24 24">
+        <rect x="6" y="2.5" width="12" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M12 7v7m0 0-2.8-2.8M12 14l2.8-2.8M10.5 18.5h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-doc" viewBox="0 0 24 24">
+        <path d="M14 3.5H7A2.5 2.5 0 0 0 4.5 6v12A2.5 2.5 0 0 0 7 20.5h10a2.5 2.5 0 0 0 2.5-2.5V9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M14 3.5V9h5.5M8 13h8M8 16.5h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-check-circle" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.5" fill="currentColor" fill-opacity=".15" stroke="currentColor" stroke-width="1.8" />
+        <path d="m8.3 12.3 2.6 2.6 5-5.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24">
+        <path d="M9 3.5h6l-1 5.5 3.5 3.5h-11L10 9z" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M12 12.5v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-police" viewBox="0 0 24 24">
+        <path d="M12 3 19.5 6v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="m12 8 1.2 2.5 2.7.3-2 1.8.6 2.7-2.5-1.4-2.5 1.4.6-2.7-2-1.8 2.7-.3z" fill="currentColor" />
+      </symbol>
+      <symbol id="i-more" viewBox="0 0 24 24">
+        <rect x="4" y="4" width="6.5" height="6.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="13.5" y="4" width="6.5" height="6.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="4" y="13.5" width="6.5" height="6.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="16.75" cy="16.75" r="3.3" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="1.8" />
+      </symbol>
+      <symbol id="i-memories" viewBox="0 0 24 24">
+        <rect x="3.5" y="6.5" width="13" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" transform="rotate(-6 10 13)" />
+        <path d="M9 4.6 18.8 3.5a2 2 0 0 1 2.2 1.8l1 9.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <path d="m5.2 16.6 3.5-3.4 2.5 2.3 2-1.6 2.8 2.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="1.8" />
+        <path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-box" viewBox="0 0 24 24">
+        <path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="m7.8 5.5 8.4 4" stroke="currentColor" stroke-width="1.5" opacity=".6" />
+      </symbol>
+      <symbol id="art-login" viewBox="0 0 240 180">
+        <ellipse cx="120" cy="162" rx="92" ry="10" fill="#0b1630" opacity=".35" />
+        <rect x="48" y="58" width="144" height="98" rx="16" fill="#fff" />
+        <rect x="48" y="58" width="144" height="30" rx="16" fill="#e9f0fc" />
+        <rect x="92" y="70" width="56" height="8" rx="4" fill="#1b305a" />
+        <rect x="64" y="102" width="70" height="38" rx="8" fill="#1b305a" />
+        <rect x="72" y="110" width="54" height="10" rx="3" fill="#4671c8" />
+        <g fill="#fff"><circle cx="76" cy="130" r="2.4" /><circle cx="86" cy="130" r="2.4" /><circle cx="96" cy="130" r="2.4" /><circle cx="106" cy="130" r="2.4" /><circle cx="116" cy="130" r="2.4" /></g>
+        <rect x="144" y="102" width="32" height="38" rx="8" fill="#47c77d" />
+        <path d="m152 121 5 5 10-11" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+        <g transform="translate(150 14)">
+          <path d="M14 30v-9a14 14 0 0 1 28 0v9" fill="none" stroke="#ffda59" stroke-width="7" stroke-linecap="round" />
+          <rect x="4" y="28" width="48" height="38" rx="10" fill="#ffda59" />
+          <circle cx="28" cy="45" r="5" fill="#1b305a" />
+          <path d="M28 49v8" stroke="#1b305a" stroke-width="4" stroke-linecap="round" />
+        </g>
+        <circle cx="38" cy="40" r="5" fill="#ffda59" opacity=".8" />
+        <circle cx="210" cy="104" r="4" fill="#47c77d" opacity=".9" />
+        <circle cx="26" cy="118" r="3" fill="#4671c8" />
+      </symbol>
     </svg>
 
-    <!-- Entrar -->
-    <section id="login-view" class="auth" hidden>
+    <!-- Entrar: tela inicial do domínio -->
+    <section id="login-view" class="auth auth-home" hidden>
       <div class="auth-glow" aria-hidden="true"></div>
-      <form id="login-form" class="auth-card" novalidate>
-        <svg class="auth-mark" aria-hidden="true"><use href="#mark" /></svg>
-        <p class="kicker-dark">Zona 023 · Equipe</p>
-        <h1>Área da equipe</h1>
-        <p class="auth-sub">Gestão das fotos da Zona 023.</p>
-        <label class="field">
-          <span class="field-label">Usuário</span>
-          <input id="login-user" autocomplete="username" autocapitalize="none" required />
+      <div class="auth-wrap">
+        <header class="auth-brand">
+          <svg class="brand-mark" aria-hidden="true"><use href="#mark" /></svg>
+          <span><strong>Zona <span>023</span></strong><small>023ª Zona Eleitoral · TRE-RJ</small></span>
+        </header>
+        <div class="auth-hero">
+          <svg class="auth-art" viewBox="0 0 240 180" aria-hidden="true"><use href="#art-login" /></svg>
+          <p class="auth-hero-text">O trabalho do cartório num lugar só: <strong>tarefas, escala, convocações e o dia da eleição.</strong></p>
+        </div>
+        <div class="auth-card">
+          <div>
+            <p class="kicker-dark">Cartório · Marechal Hermes</p>
+            <h1>Área da equipe</h1>
+          </div>
+          <div class="segmented auth-tabs" role="group" aria-label="Forma de entrar">
+            <button type="button" data-auth-tab="senha" aria-pressed="true">
+              <svg class="icon" aria-hidden="true"><use href="#i-key" /></svg>Senha
+            </button>
+            <button type="button" data-auth-tab="link" aria-pressed="false">
+              <svg class="icon" aria-hidden="true"><use href="#i-link" /></svg>Link de acesso
+            </button>
+          </div>
+          <form id="login-form" class="auth-panel" data-auth-panel="senha" novalidate>
+            <label class="field">
+              <span class="field-label">Usuário</span>
+              <input id="login-user" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Seu primeiro nome" required />
+            </label>
+            <label class="field">
+              <span class="field-label">Senha</span>
+              <span class="pass-field">
+                <input id="login-pass" type="password" autocomplete="current-password" required />
+                <button class="pass-toggle" type="button" aria-label="Mostrar senha" aria-pressed="false">
+                  <svg class="icon" aria-hidden="true"><use href="#i-eye" /></svg>
+                </button>
+              </span>
+            </label>
+            <label class="check-line">
+              <input id="login-remember" type="checkbox" checked />
+              <span><strong>Manter conectado neste aparelho</strong><small>Por 30 dias. Desmarque em computador compartilhado.</small></span>
+            </label>
+            <p id="login-error" class="error" role="alert" hidden></p>
+            <button class="btn btn-primary btn-lg" type="submit">
+              <svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg>Entrar
+            </button>
+          </form>
+          <form id="link-form" class="auth-panel" data-auth-panel="link" novalidate hidden>
+            <div id="link-mail" hidden>
+              <p class="muted">Receba no seu e-mail um link que entra sem senha. Ele vale por 15 minutos.</p>
+              <label class="field">
+                <span class="field-label">Usuário ou e-mail</span>
+                <input id="link-login" autocomplete="username" autocapitalize="none" spellcheck="false" />
+              </label>
+              <p id="link-error" class="error" role="alert" hidden></p>
+              <p id="link-sent" class="success-line" role="status" hidden></p>
+              <button class="btn btn-navy btn-lg" type="submit">
+                <svg class="icon" aria-hidden="true"><use href="#i-chat-send" /></svg>Enviar link
+              </button>
+            </div>
+            <div id="link-whatsapp" class="info-card">
+              <svg class="icon" aria-hidden="true"><use href="#i-chat-send" /></svg>
+              <div>
+                <strong>Peça seu link à chefia do cartório</strong>
+                <p>O link pessoal chega pelo WhatsApp, entra sem senha e só funciona uma vez.</p>
+              </div>
+            </div>
+          </form>
+        </div>
+        <nav class="auth-links" aria-label="Outros acessos">
+          <a href="/memorias"><svg class="icon" aria-hidden="true"><use href="#i-memories" /></svg>Memórias da Zona 023</a>
+          <a href="/app"><svg class="icon" aria-hidden="true"><use href="#i-phone-download" /></svg>Baixar o app</a>
+        </nav>
+        <p class="auth-note">Uso interno da equipe · Não substitui ELO, SEI e PJe.</p>
+      </div>
+    </section>
+
+    <!-- Link de acesso recebido -->
+    <section id="link-view" class="auth" hidden>
+      <div class="auth-glow" aria-hidden="true"></div>
+      <form id="magic-form" class="auth-card" novalidate>
+        <span class="auth-icon"><svg class="icon" aria-hidden="true"><use href="#i-link" /></svg></span>
+        <div>
+          <p class="kicker-dark">Zona 023 · Equipe</p>
+          <h1 id="magic-title">Seu link de acesso</h1>
+        </div>
+        <p class="auth-sub" id="magic-text">Toque em entrar para abrir a área da equipe neste aparelho.</p>
+        <label class="check-line" id="magic-remember-line">
+          <input id="magic-remember" type="checkbox" checked />
+          <span><strong>Manter conectado neste aparelho</strong><small>Desmarque em computador compartilhado.</small></span>
         </label>
-        <label class="field">
-          <span class="field-label">Senha</span>
-          <input id="login-pass" type="password" autocomplete="current-password" required />
-        </label>
-        <p id="login-error" class="error" role="alert" hidden></p>
-        <button class="btn btn-navy btn-lg" type="submit">
-          <svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg>Entrar
-        </button>
-        <a class="auth-back" href="/">Voltar para o site</a>
+        <p id="magic-error" class="error" role="alert" hidden></p>
+        <button id="magic-submit" class="btn btn-primary btn-lg" type="submit">Entrar agora</button>
+        <a class="auth-back" href="/">Ir para a tela de login</a>
       </form>
     </section>
 
-    <!-- Troca obrigatória de senha -->
+    <!-- Primeiro acesso -->
+    <section id="onboarding-view" class="onboard" hidden>
+      <header class="onboard-top">
+        <span class="onboard-brand"><svg class="brand-mark" aria-hidden="true"><use href="#mark" /></svg>Zona <b>023</b></span>
+        <ol id="ob-dots" class="ob-dots" aria-label="Etapas"></ol>
+        <button id="ob-skip" class="link link-light" type="button">Pular</button>
+      </header>
+      <div class="onboard-stage">
+        <article class="ob-step" data-step="welcome" hidden>
+          <span id="ob-avatar" class="ob-avatar" aria-hidden="true"></span>
+          <p class="kicker">Boas-vindas</p>
+          <h1 id="ob-hello">Olá!</h1>
+          <p id="ob-title" class="ob-chip"></p>
+          <p class="ob-lede">Aqui fica o trabalho da equipe da 023ª Zona Eleitoral, organizado por função e sempre à mão no celular.</p>
+          <ul id="ob-highlights" class="ob-list"></ul>
+          <button class="btn btn-primary btn-lg" type="button" data-ob-next>Começar</button>
+        </article>
+        <article class="ob-step" data-step="password" hidden>
+          <span class="ob-icon"><svg class="icon" aria-hidden="true"><use href="#i-key" /></svg></span>
+          <p class="kicker">Segurança</p>
+          <h1>Crie sua senha</h1>
+          <p class="ob-lede">A senha inicial é provisória. Use pelo menos 8 caracteres; uma frase curta é mais fácil de lembrar.</p>
+          <form id="ob-password-form" class="ob-form" novalidate>
+            <label class="field" id="ob-current-field">
+              <span class="field-label">Senha atual (a inicial)</span>
+              <input id="ob-current" type="password" autocomplete="current-password" />
+            </label>
+            <label class="field">
+              <span class="field-label">Nova senha</span>
+              <span class="pass-field">
+                <input id="ob-next" type="password" autocomplete="new-password" minlength="8" />
+                <button class="pass-toggle" type="button" aria-label="Mostrar senha" aria-pressed="false">
+                  <svg class="icon" aria-hidden="true"><use href="#i-eye" /></svg>
+                </button>
+              </span>
+            </label>
+            <div class="strength" aria-hidden="true"><span id="ob-strength"></span></div>
+            <p id="ob-strength-text" class="muted small" aria-live="polite">Força da senha</p>
+            <label class="field">
+              <span class="field-label">Repita a nova senha</span>
+              <input id="ob-repeat" type="password" autocomplete="new-password" />
+            </label>
+            <p id="ob-password-error" class="error" role="alert" hidden></p>
+            <button class="btn btn-primary btn-lg" type="submit">Salvar senha</button>
+          </form>
+        </article>
+        <article class="ob-step" data-step="contacts" hidden>
+          <span class="ob-icon"><svg class="icon" aria-hidden="true"><use href="#i-chat-send" /></svg></span>
+          <p class="kicker">Contato</p>
+          <h1>Como falamos com você?</h1>
+          <p class="ob-lede">O telefone serve para receber links de acesso pelo WhatsApp. O e-mail, para pedir um link sozinho quando o envio estiver ativo.</p>
+          <form id="ob-contact-form" class="ob-form" novalidate>
+            <label class="field">
+              <span class="field-label">Celular com DDD <span class="optional">WhatsApp</span></span>
+              <input id="ob-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(21) 9 0000-0000" />
+            </label>
+            <label class="field">
+              <span class="field-label">E-mail <span class="optional">opcional</span></span>
+              <input id="ob-email" type="email" inputmode="email" autocomplete="email" />
+            </label>
+            <p id="ob-contact-error" class="error" role="alert" hidden></p>
+            <button class="btn btn-primary btn-lg" type="submit">Continuar</button>
+            <button class="link link-light" type="button" data-ob-next>Agora não</button>
+          </form>
+        </article>
+        <article class="ob-step" data-step="app" hidden>
+          <span class="ob-icon"><svg class="icon" aria-hidden="true"><use href="#i-phone-download" /></svg></span>
+          <p class="kicker">No celular</p>
+          <h1>Leve a Zona 023 no bolso</h1>
+          <p class="ob-lede">Instale como aplicativo: abre direto na área da equipe, em tela cheia, sem procurar o link.</p>
+          <div class="ob-actions">
+            <a id="ob-apk" class="btn btn-primary btn-lg" href="/app" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-phone-download" /></svg>Baixar para Android
+            </a>
+            <button id="ob-install" class="btn btn-glass btn-lg" type="button" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-install" /></svg>Instalar pelo navegador
+            </button>
+            <p id="ob-ios" class="ob-hint" hidden>No iPhone: toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.</p>
+            <a class="link link-light" href="/app" target="_blank" rel="noopener">Ver todas as opções</a>
+          </div>
+          <button class="btn btn-outline-light btn-lg" type="button" data-ob-next>Continuar</button>
+        </article>
+        <article class="ob-step" data-step="ready" hidden>
+          <span class="ob-icon ob-icon-green"><svg class="icon" aria-hidden="true"><use href="#i-check-circle" /></svg></span>
+          <p class="kicker">Tudo pronto</p>
+          <h1>Seu espaço de trabalho</h1>
+          <p class="ob-lede">Os módulos chegam em etapas até o 2º turno. O que ainda está em preparação aparece marcado como <b>Em breve</b>.</p>
+          <div id="ob-tour" class="ob-tour"></div>
+          <button class="btn btn-primary btn-lg" type="button" id="ob-finish">Ir para o início</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- Troca obrigatória de senha (conta redefinida) -->
     <section id="password-view" class="auth" hidden>
       <div class="auth-glow" aria-hidden="true"></div>
       <form id="first-password-form" class="auth-card" novalidate>
         <svg class="auth-shield" aria-hidden="true"><use href="#i-shield" /></svg>
-        <p class="kicker-dark">Primeiro acesso</p>
-        <h1>Crie sua senha</h1>
-        <p class="auth-sub">A senha inicial é provisória. Use pelo menos 8 caracteres.</p>
-        <label class="field">
+        <p class="kicker-dark">Segurança</p>
+        <h1>Crie uma nova senha</h1>
+        <p class="auth-sub">Sua senha atual é provisória. Use pelo menos 8 caracteres.</p>
+        <label class="field" id="first-current-field">
           <span class="field-label">Senha atual</span>
           <input id="first-current" type="password" autocomplete="current-password" required />
         </label>
@@ -130,36 +466,182 @@
     <!-- Aplicação -->
     <div id="app-view" class="shell" hidden>
       <header class="a-top">
-        <a class="a-brand" href="/admin">
+        <a class="a-brand" href="/#inicio" data-go="inicio">
           <svg class="brand-mark" aria-hidden="true"><use href="#mark" /></svg>
-          <span><strong>Zona <span>023</span></strong><small>Equipe</small></span>
+          <span><strong>Zona <span>023</span></strong><small id="top-role">Equipe</small></span>
         </a>
         <div class="a-top-actions">
-          <a class="btn btn-glass btn-sm a-site" href="/" target="_blank" rel="noopener">
-            <svg class="icon" aria-hidden="true"><use href="#i-out" /></svg><span>Ver site</span>
-          </a>
-          <button class="icon-btn icon-btn-dark logout" type="button" aria-label="Sair">
-            <svg class="icon" aria-hidden="true"><use href="#i-logout" /></svg>
+          <button id="top-agenda" class="icon-btn icon-btn-dark" type="button" data-go="agenda" aria-label="Agenda">
+            <svg class="icon" aria-hidden="true"><use href="#i-calendar" /></svg>
           </button>
+          <button id="top-account" class="top-avatar" type="button" data-go="conta" aria-label="Meu perfil"></button>
         </div>
       </header>
 
-      <nav class="a-nav" aria-label="Seções">
-        <button type="button" data-section="painel"><svg class="icon" aria-hidden="true"><use href="#i-dashboard" /></svg><span>Painel</span></button>
-        <button type="button" data-section="fotos"><svg class="icon" aria-hidden="true"><use href="#i-photos" /></svg><span>Fotos</span></button>
-        <button type="button" data-section="eventos"><svg class="icon" aria-hidden="true"><use href="#i-event" /></svg><span>Eventos</span></button>
-        <button type="button" data-section="pessoas"><svg class="icon" aria-hidden="true"><use href="#i-people" /></svg><span>Pessoas</span></button>
-        <button type="button" data-section="textos"><svg class="icon" aria-hidden="true"><use href="#i-text" /></svg><span>Textos</span></button>
-        <button type="button" data-section="conta" class="nav-account"><svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg><span>Conta</span></button>
-      </nav>
+      <nav id="side-nav" class="side-nav" aria-label="Menu"></nav>
+      <nav id="tabbar" class="a-nav tabbar" aria-label="Atalhos"></nav>
 
       <main class="a-main" id="main">
+        <!-- Início -->
+        <section id="inicio" class="a-section" hidden>
+          <div class="hello">
+            <div>
+              <p class="kicker-dark" id="hello-date"></p>
+              <h1 id="hello-title">Olá</h1>
+              <p class="muted" id="hello-sub"></p>
+            </div>
+          </div>
+          <div class="home-grid">
+            <article id="countdown" class="countdown-card"></article>
+            <article class="a-card home-agenda">
+              <div class="card-head">
+                <h2><svg class="icon" aria-hidden="true"><use href="#i-calendar" /></svg>Próximos marcos</h2>
+                <button class="link" type="button" data-go="agenda">Agenda</button>
+              </div>
+              <ol id="home-marcos" class="timeline"></ol>
+            </article>
+            <article class="a-card home-modules">
+              <div class="card-head">
+                <h2><svg class="icon" aria-hidden="true"><use href="#i-more" /></svg>Seus módulos</h2>
+              </div>
+              <div id="home-modules" class="module-grid"></div>
+            </article>
+            <article class="a-card home-team">
+              <div class="card-head">
+                <h2><svg class="icon" aria-hidden="true"><use href="#i-users" /></svg>Equipe</h2>
+                <button class="link" type="button" data-go="equipe">Ver todos</button>
+              </div>
+              <div id="home-team" class="team-strip"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Módulo em preparação -->
+        <section id="modulo" class="a-section" hidden></section>
+
+
+        <!-- Demandas do dia da eleição -->
+        <section id="demandas" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Dia da eleição</p>
+              <h1>Demandas</h1>
+              <p class="muted" id="dm-sub">Pedidos dos locais de votação: título, seção, material, urna, mesário, estrutura. Registre, assuma e conclua com a resposta.</p>
+            </div>
+            <button id="dm-new" class="btn btn-primary btn-sm" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Nova demanda
+            </button>
+          </div>
+          <div class="segmented dm-filter" role="group" aria-label="Situação">
+            <button type="button" data-dm-status="ativas" aria-pressed="true">Em aberto <b id="dm-count-ativas">0</b></button>
+            <button type="button" data-dm-status="concluida" aria-pressed="false">Concluídas <b id="dm-count-concluida">0</b></button>
+            <button type="button" data-dm-status="" aria-pressed="false">Todas</button>
+          </div>
+          <div id="dm-list" class="dm-list"></div>
+        </section>
+
+        <!-- Totalização -->
+        <section id="totalizacao" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Dia da eleição · dados públicos do TSE</p>
+              <h1>Totalização</h1>
+              <p class="muted">Seções da 23ª ZE com boletim recebido e totalizado pelo TSE. Atualiza sozinho a cada 3 minutos.</p>
+            </div>
+            <div class="tt-actions">
+              <select id="tt-pleito" aria-label="Turno"></select>
+              <button id="tt-refresh" class="btn btn-outline btn-sm" type="button" data-edit>
+                <svg class="icon" aria-hidden="true"><use href="#i-clock" /></svg>Atualizar
+              </button>
+            </div>
+          </div>
+          <div id="tt-body"></div>
+        </section>
+
+        <!-- Locais e seções -->
+        <section id="locais" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Eleições 2026 · 23ª ZE</p>
+              <h1>Locais e seções</h1>
+              <p class="muted" id="lc-sub">Colégios, seções, salas, guarda das urnas e acessibilidade.</p>
+            </div>
+          </div>
+          <label class="field-icon lc-search">
+            <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+            <input id="lc-search" type="search" placeholder="Seção, colégio ou bairro" autocomplete="off" />
+          </label>
+          <div id="lc-list" class="lc-list"></div>
+        </section>
+
+        <!-- Convocações -->
+        <section id="convocacoes" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Eleições 2026 · ELO/Convoca+</p>
+              <h1>Convocações</h1>
+              <p class="muted" id="cv-sub">Quem trabalha em cada local, a situação no ELO e a presença no dia.</p>
+            </div>
+          </div>
+          <div id="cv-kpis" class="kpis cv-kpis"></div>
+          <div class="cv-filters">
+            <label class="field-icon"><svg class="icon" aria-hidden="true"><use href="#i-search" /></svg><input id="cv-busca" type="search" placeholder="Nome ou colégio" autocomplete="off" /></label>
+            <select id="cv-situacao" aria-label="Situação"><option value="">Todas as situações</option><option value="Nomeado">Nomeados</option><option value="Dispensado">Dispensados</option></select>
+            <select id="cv-presenca" aria-label="Presença"><option value="">Toda presença</option><option value="pendente">Sem registro</option><option value="presente">Presentes</option><option value="faltou">Faltaram</option><option value="substituido">Substituídos</option></select>
+          </div>
+          <div id="cv-list" class="cv-list"></div>
+        </section>
+
+        <!-- Documentos -->
+        <section id="documentos" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Biblioteca</p>
+              <h1>Documentos</h1>
+              <p class="muted">Planejamento, manuais, avisos, normas e modelos. Cada arquivo aparece só para os perfis escolhidos.</p>
+            </div>
+            <button id="doc-new" class="btn btn-primary btn-sm" type="button" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-upload" /></svg>Enviar arquivo
+            </button>
+          </div>
+          <div id="doc-list" class="doc-list"></div>
+        </section>
+
+        <!-- Agenda -->
+        <section id="agenda" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Calendário da zona</p>
+              <h1>Agenda</h1>
+              <p class="muted">Marcos das eleições, preparação de urnas, reuniões e prazos. Aparecem no Início de todos.</p>
+            </div>
+            <button id="marco-new" class="btn btn-primary btn-sm" type="button" data-edit>
+              <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Novo marco
+            </button>
+          </div>
+          <div id="agenda-list" class="agenda-list"></div>
+        </section>
+
+        <!-- Equipe -->
+        <section id="equipe" class="a-section" hidden>
+          <div class="a-head">
+            <div>
+              <p class="kicker-dark">Cartório da 023ª ZE</p>
+              <h1>Equipe</h1>
+              <p class="muted" id="team-sub">Quem trabalha com você, com cargo e contato.</p>
+            </div>
+            <button id="user-new" class="btn btn-primary btn-sm" type="button" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-user-plus" /></svg>Nova conta
+            </button>
+          </div>
+          <div id="team-list" class="team-list"></div>
+        </section>
         <!-- Painel -->
         <section id="painel" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">TRE Marechal Hermes</p>
-              <h1>Painel</h1>
+              <p class="kicker-dark">Memórias da Zona 023</p>
+              <h1>Visão do acervo</h1>
             </div>
             <div class="segmented" role="group" aria-label="Período">
               <button type="button" data-days="7" aria-pressed="false">7 dias</button>
@@ -306,24 +788,50 @@
           </div>
         </section>
 
-        <!-- Conta -->
+        <!-- Perfil -->
         <section id="conta" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Segurança</p>
-              <h1>Sua conta</h1>
+              <p class="kicker-dark">Sua conta</p>
+              <h1>Perfil</h1>
               <p class="muted" id="account-user"></p>
             </div>
           </div>
-          <form id="password-form" class="a-card narrow" novalidate>
-            <h2>Trocar senha</h2>
-            <label class="field"><span class="field-label">Senha atual</span><input id="pw-current" type="password" autocomplete="current-password" /></label>
-            <label class="field"><span class="field-label">Nova senha</span><input id="pw-next" type="password" autocomplete="new-password" /></label>
-            <label class="field"><span class="field-label">Repita a nova senha</span><input id="pw-repeat" type="password" autocomplete="new-password" /></label>
-            <p id="pw-error" class="error" role="alert" hidden></p>
-            <div class="form-actions"><button class="btn btn-navy" type="submit">Trocar senha</button></div>
-            <p class="muted small">A sessão dura 12 horas. Trocar a senha encerra as outras sessões.</p>
-          </form>
+          <div class="profile-grid">
+            <form id="profile-form" class="a-card" novalidate>
+              <div class="profile-head">
+                <span id="profile-avatar" class="avatar avatar-xl" aria-hidden="true"></span>
+                <div><strong id="profile-name"></strong><small id="profile-title"></small></div>
+              </div>
+              <label class="field"><span class="field-label">Nome de exibição</span><input id="pf-name" maxlength="80" autocapitalize="words" /></label>
+              <label class="field"><span class="field-label">Celular com DDD <span class="optional">WhatsApp</span></span><input id="pf-phone" type="tel" inputmode="tel" autocomplete="tel" /></label>
+              <label class="field"><span class="field-label">E-mail <span class="optional">opcional</span></span><input id="pf-email" type="email" inputmode="email" autocomplete="email" /></label>
+              <p id="pf-error" class="error" role="alert" hidden></p>
+              <div class="form-actions"><button class="btn btn-navy" type="submit">Salvar dados</button></div>
+            </form>
+            <form id="password-form" class="a-card" novalidate>
+              <h2><svg class="icon" aria-hidden="true"><use href="#i-key" /></svg>Trocar senha</h2>
+              <label class="field" id="pw-current-field"><span class="field-label">Senha atual</span><input id="pw-current" type="password" autocomplete="current-password" /></label>
+              <label class="field"><span class="field-label">Nova senha</span><input id="pw-next" type="password" autocomplete="new-password" /></label>
+              <label class="field"><span class="field-label">Repita a nova senha</span><input id="pw-repeat" type="password" autocomplete="new-password" /></label>
+              <p id="pw-error" class="error" role="alert" hidden></p>
+              <div class="form-actions"><button class="btn btn-navy" type="submit">Trocar senha</button></div>
+              <p class="muted small">Trocar a senha encerra as sessões nos outros aparelhos.</p>
+            </form>
+            <article class="a-card">
+              <div class="card-head">
+                <h2><svg class="icon" aria-hidden="true"><use href="#i-phone-download" /></svg>Aparelhos conectados</h2>
+                <button id="sessions-revoke" class="link" type="button">Sair dos outros</button>
+              </div>
+              <div id="sessions-list" class="mini-list"></div>
+            </article>
+            <article class="a-card profile-links">
+              <a class="row-link" href="/app" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-phone-download" /></svg><span><strong>Instalar o aplicativo</strong><small>APK para Android ou instalação pelo navegador</small></span></a>
+              <button class="row-link" type="button" id="replay-onboarding"><svg class="icon" aria-hidden="true"><use href="#i-sun" /></svg><span><strong>Rever a apresentação</strong><small>As telas do primeiro acesso</small></span></button>
+              <a class="row-link" href="/memorias" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-memories" /></svg><span><strong>Memórias da Zona 023</strong><small>Acervo público de fotos</small></span></a>
+              <button class="row-link danger logout" type="button"><svg class="icon" aria-hidden="true"><use href="#i-logout" /></svg><span><strong>Sair</strong><small>Encerrar a sessão neste aparelho</small></span></button>
+            </article>
+          </div>
         </section>
       </main>
 
@@ -470,6 +978,239 @@
             <button class="btn btn-outline btn-grow" value="no">Cancelar</button>
             <button class="btn btn-danger btn-grow" value="yes" id="cf-ok">Confirmar</button>
           </div>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Menu completo (celular) -->
+    <dialog id="more-sheet" class="sheet more-sheet" aria-labelledby="more-title">
+      <div class="sheet-form">
+        <div class="sheet-head">
+          <div><p class="kicker-dark" id="more-kicker">Zona 023</p><h2 id="more-title">Menu</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body" id="more-body"></div>
+      </div>
+    </dialog>
+
+    <!-- Conta da equipe -->
+    <dialog id="user-dialog" class="sheet small-dialog" aria-labelledby="us-title">
+      <form id="user-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark">Equipe</p><h2 id="us-title">Nova conta</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body">
+          <label class="field"><span class="field-label">Nome de exibição</span><input id="us-name" maxlength="80" autocapitalize="words" placeholder="Ex.: Maria Silva" /></label>
+          <label class="field" id="us-username-field"><span class="field-label">Usuário</span><input id="us-username" maxlength="32" autocapitalize="none" spellcheck="false" placeholder="Ex.: maria" /></label>
+          <label class="field"><span class="field-label">Cargo ou função</span><input id="us-title-input" maxlength="60" list="cargos" placeholder="Ex.: Chefe do Cartório" /></label>
+          <datalist id="cargos">
+            <option value="Chefe do Cartório"></option>
+            <option value="Servidor(a) do Cartório"></option>
+            <option value="Auxiliar de Serviços Eleitorais"></option>
+            <option value="Juiz Eleitoral"></option>
+            <option value="Juíza Eleitoral"></option>
+            <option value="Promotora Eleitoral"></option>
+            <option value="Promotor Eleitoral"></option>
+            <option value="Presidente de Seção"></option>
+            <option value="Administrador(a) de Prédio"></option>
+            <option value="Coordenador(a) de Acessibilidade"></option>
+            <option value="Administração do sistema"></option>
+          </datalist>
+          <label class="field"><span class="field-label">Perfil de acesso</span>
+            <select id="us-role">
+              <optgroup label="Cartório">
+                <option value="chefe">Chefe do cartório · tudo + contas</option>
+                <option value="equipe">Equipe do cartório · todos os módulos</option>
+                <option value="admin">Administração do sistema · tudo + contas</option>
+              </optgroup>
+              <optgroup label="Autoridades (consulta)">
+                <option value="juiz">Juiz(a) eleitoral</option>
+                <option value="promotor">Promotor(a) eleitoral</option>
+              </optgroup>
+              <optgroup label="Campo">
+                <option value="ase">Auxiliar de Serviços Eleitorais (ASE)</option>
+                <option value="presidente">Presidente de seção</option>
+                <option value="adm_predio">Administrador(a) de prédio</option>
+              </optgroup>
+            </select>
+          </label>
+          <div class="two" id="us-lugar" hidden>
+            <label class="field"><span class="field-label">Local de votação</span><select id="us-local"><option value="">—</option></select></label>
+            <label class="field" id="us-secao-field"><span class="field-label">Seção</span><input id="us-secao" inputmode="numeric" maxlength="4" /></label>
+          </div>
+          <div class="two">
+            <label class="field"><span class="field-label">Celular <span class="optional">WhatsApp</span></span><input id="us-phone" type="tel" inputmode="tel" /></label>
+            <label class="field"><span class="field-label">E-mail <span class="optional">opcional</span></span><input id="us-email" type="email" inputmode="email" /></label>
+          </div>
+          <label class="switch" id="us-active-line" hidden>
+            <input id="us-active" type="checkbox" />
+            <span class="switch-track"><span></span></span>
+            <span><strong>Conta ativa</strong><small>Desativar encerra as sessões e cancela links pendentes</small></span>
+          </label>
+          <p id="us-error" class="error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot">
+          <button id="us-link" class="btn btn-outline" type="button" hidden><svg class="icon" aria-hidden="true"><use href="#i-link" /></svg><span>Gerar link</span></button>
+          <span class="spacer"></span>
+          <button class="btn btn-outline" type="button" data-close>Cancelar</button>
+          <button class="btn btn-navy" type="submit">Salvar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Link de acesso gerado -->
+    <dialog id="share-dialog" class="sheet small-dialog" aria-labelledby="sh-title">
+      <div class="sheet-form">
+        <div class="sheet-head">
+          <div><p class="kicker-dark">Link de acesso</p><h2 id="sh-title">Enviar link</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body">
+          <p class="muted" id="sh-text"></p>
+          <div class="share-box"><code id="sh-url"></code></div>
+          <p class="muted small">Vale por 72 horas e funciona uma única vez. Gerar outro cancela este.</p>
+        </div>
+        <div class="sheet-foot">
+          <button id="sh-copy" class="btn btn-outline" type="button"><svg class="icon" aria-hidden="true"><use href="#i-copy" /></svg><span>Copiar</span></button>
+          <a id="sh-whatsapp" class="btn btn-primary btn-grow" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-chat-send" /></svg><span>Enviar no WhatsApp</span></a>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Marco da agenda -->
+    <dialog id="marco-dialog" class="sheet small-dialog" aria-labelledby="mc-title">
+      <form id="marco-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark">Agenda</p><h2 id="mc-title">Novo marco</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body">
+          <label class="field"><span class="field-label">Título</span><input id="mc-name" maxlength="80" placeholder="Ex.: Preparação das urnas · 2º turno" /></label>
+          <div class="two">
+            <label class="field"><span class="field-label">Data</span><input id="mc-date" type="date" min="2020-01-01" /></label>
+            <label class="field"><span class="field-label">Horário <span class="optional">opcional</span></span><input id="mc-time" type="time" /></label>
+          </div>
+          <label class="field"><span class="field-label">Tipo</span>
+            <select id="mc-kind">
+              <option value="preparacao">Preparação</option>
+              <option value="eleicao">Eleição</option>
+              <option value="reuniao">Reunião ou treinamento</option>
+              <option value="prazo">Prazo</option>
+              <option value="outro">Outro</option>
+            </select>
+          </label>
+          <label class="field"><span class="field-label">Detalhe <span class="optional">opcional</span></span><textarea id="mc-detail" maxlength="240" rows="3" placeholder="Local, quem participa, o que levar"></textarea></label>
+          <p id="mc-error" class="error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot">
+          <button id="mc-delete" class="btn btn-danger-soft" type="button" hidden><svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg><span>Excluir</span></button>
+          <span class="spacer"></span>
+          <button class="btn btn-outline" type="button" data-close>Cancelar</button>
+          <button class="btn btn-navy" type="submit">Salvar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Nova demanda -->
+    <dialog id="dm-dialog" class="sheet small-dialog" aria-labelledby="dm-title">
+      <form id="dm-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark">Dia da eleição</p><h2 id="dm-title">Nova demanda</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body">
+          <div id="dm-tipos" class="dm-tipos" role="radiogroup" aria-label="Tipo"></div>
+          <label class="field"><span class="field-label">O que está acontecendo</span><textarea id="dm-descricao" maxlength="1000" rows="3" placeholder="Ex.: eleitor não encontra o nome no caderno da seção"></textarea></label>
+          <div class="two" id="dm-lugar">
+            <label class="field"><span class="field-label">Local</span><select id="dm-local"><option value="">Escolha</option></select></label>
+            <label class="field"><span class="field-label">Seção <span class="optional">opcional</span></span><input id="dm-secao" inputmode="numeric" maxlength="4" /></label>
+          </div>
+          <label class="field" id="dm-eleitor-field"><span class="field-label">Dados para localizar o eleitor <span class="optional">apagados 7 dias após a conclusão</span></span><input id="dm-eleitor" maxlength="300" placeholder="Título ou nome completo e data de nascimento" /></label>
+          <div class="two" id="dm-origem">
+            <label class="field"><span class="field-label">Quem pediu</span><input id="dm-solicitante" maxlength="120" placeholder="Ex.: ADM do local" /></label>
+            <label class="field"><span class="field-label">Chegou por</span>
+              <select id="dm-canal"><option value="whatsapp">WhatsApp</option><option value="telefone">Telefone</option><option value="presencial">Presencial</option><option value="sistema">Sistema</option></select>
+            </label>
+          </div>
+          <label class="field"><span class="field-label">Prioridade</span>
+            <select id="dm-prioridade"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select>
+          </label>
+          <p id="dm-error" class="error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot">
+          <button class="btn btn-outline" type="button" data-close>Cancelar</button>
+          <button class="btn btn-navy btn-grow" type="submit">Registrar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Atender demanda -->
+    <dialog id="dm-view" class="sheet small-dialog" aria-labelledby="dv-title">
+      <form id="dv-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark" id="dv-kicker">Demanda</p><h2 id="dv-title"></h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body">
+          <div id="dv-info" class="dv-info"></div>
+          <label class="field" id="dv-resposta-field"><span class="field-label">Resposta</span><textarea id="dv-resposta" maxlength="1000" rows="3" placeholder="Ex.: Seção 0587 · C.E. Joel de Oliveira · título regular"></textarea></label>
+          <p id="dv-error" class="error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot" id="dv-actions"></div>
+      </form>
+    </dialog>
+
+    <!-- Local de votação -->
+    <dialog id="lc-dialog" class="sheet small-dialog" aria-labelledby="lc-title">
+      <form id="lc-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark" id="lc-kicker">Local de votação</p><h2 id="lc-title"></h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body">
+          <label class="field"><span class="field-label">Guarda das urnas</span><input id="lc-guarda" maxlength="160" placeholder="Ex.: sala da direção" /></label>
+          <label class="field"><span class="field-label">Acessibilidade</span><input id="lc-acess" maxlength="240" placeholder="Ex.: seção acessível no térreo" /></label>
+          <label class="field"><span class="field-label">Observação</span><textarea id="lc-obs" maxlength="500" rows="2"></textarea></label>
+          <p class="field-label">Salas por seção</p>
+          <div id="lc-salas" class="lc-salas"></div>
+          <p id="lc-error" class="error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot">
+          <button class="btn btn-outline" type="button" data-close>Cancelar</button>
+          <button class="btn btn-navy btn-grow" type="submit">Salvar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Enviar documento -->
+    <dialog id="doc-dialog" class="sheet small-dialog" aria-labelledby="doc-title">
+      <form id="doc-form" class="sheet-form" novalidate>
+        <div class="sheet-head">
+          <div><p class="kicker-dark">Biblioteca</p><h2 id="doc-title">Enviar arquivo</h2></div>
+          <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sheet-body">
+          <label class="field" id="doc-file-field"><span class="field-label">Arquivo <span class="optional">PDF, Word, Excel, imagem · até 40 MB</span></span><input id="doc-file" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.csv,.txt,.jpg,.jpeg,.png" /></label>
+          <label class="field"><span class="field-label">Título</span><input id="doc-titulo" maxlength="160" /></label>
+          <label class="field"><span class="field-label">Descrição <span class="optional">opcional</span></span><textarea id="doc-descricao" maxlength="600" rows="2"></textarea></label>
+          <div class="two">
+            <label class="field"><span class="field-label">Categoria</span><select id="doc-categoria"></select></label>
+            <label class="field"><span class="field-label">Quem vê</span>
+              <select id="doc-visibilidade">
+                <option value="cartorio">Só o cartório</option>
+                <option value="autoridades">Cartório, juiz e promotoria</option>
+                <option value="todos">Todos com acesso</option>
+              </select>
+            </label>
+          </div>
+          <p id="doc-error" class="error" role="alert" hidden></p>
+        </div>
+        <div class="sheet-foot">
+          <button id="doc-delete" class="btn btn-danger-soft" type="button" hidden><svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg><span>Excluir</span></button>
+          <span class="spacer"></span>
+          <button class="btn btn-outline" type="button" data-close>Cancelar</button>
+          <button class="btn btn-navy" type="submit" id="doc-submit">Enviar</button>
         </div>
       </form>
     </dialog>
