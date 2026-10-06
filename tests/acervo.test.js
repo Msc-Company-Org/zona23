@@ -330,10 +330,10 @@ test("versão de tela é servida e recriada se faltar; páginas saem comprimidas
     expect(view.status).toBe(200);
     expect((await sharp(Buffer.from(await view.arrayBuffer())).metadata()).format).toBe("webp");
     const home = await s.app.fetch(
-      new Request("http://localhost/", { headers: { "Accept-Encoding": "gzip, br" } }),
+      new Request("http://localhost/memorias", { headers: { "Accept-Encoding": "gzip, br" } }),
     );
     expect(home.headers.get("Content-Encoding")).toBe("br");
-    const html = await (await s.app.fetch(new Request("http://localhost/"))).text();
+    const html = await (await s.app.fetch(new Request("http://localhost/memorias"))).text();
     const script = html.match(/\/app\.js\?v=[a-f0-9]+/)[0];
     const asset = await s.app.fetch(new Request("http://localhost" + script));
     expect(asset.headers.get("Cache-Control")).toContain("immutable");
@@ -387,7 +387,7 @@ test("download em ZIP traz as fotos filtradas e a planilha; anos e páginas extr
       (await s.app.fetch(new Request("http://localhost/api/download.zip?year=1999"))).status,
     ).toBe(404);
     await s.app.ready;
-    for (const path of ["/baixar", "/manifest.webmanifest", "/assets/icon-192.png", "/assets/favicon-32.png", "/assets/zon023-compartilhar-v1.jpg"])
+    for (const path of ["/memorias/baixar", "/app", "/", "/entrar", "/manifest.webmanifest", "/assets/icon-192.png", "/assets/favicon-32.png", "/assets/zon023-compartilhar-v1.jpg"])
       expect((await s.app.fetch(new Request("http://localhost" + path))).status).toBe(200);
   } finally {
     s.cleanup();

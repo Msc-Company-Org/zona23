@@ -2,6 +2,16 @@
 
 As entradas descrevem entregas. Pendências aparecem no README e não são anunciadas como concluídas.
 
+## 2026-10-06 — Área da equipe
+
+- A raiz do domínio passa a ser o login da equipe; o acervo de fotos vai para `/memorias`, com redirecionamento dos endereços antigos.
+- Login por senha e por link de acesso de uso único, com envio pelo WhatsApp; envio por e-mail opcional.
+- Primeiro acesso guiado: boas-vindas, senha, contato, instalação no celular e resumo dos módulos.
+- Perfis `admin`, `equipe` e `autoridade` (juiz e promotoria), com menus próprios no celular e no computador.
+- Início com contagem para o 2º turno, agenda de marcos, equipe com cargos e links, perfil com aparelhos conectados.
+- Página `/app` para instalar o aplicativo; suporte a APK publicado fora do Git e a `assetlinks.json`.
+- Módulos de eleição apresentados como “Em breve”, com o que cada um fará.
+
 ## 2026-10-06 — Domínio e compartilhamento
 
 - DNS de `zon023.com.br` e `www` apontado para a VPS do acervo.

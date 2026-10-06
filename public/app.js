@@ -171,7 +171,7 @@ function track(kind, ref) {
 
 /* ---------- Rotas: início e /baixar ---------- */
 function route() {
-  const download = location.pathname === "/baixar";
+  const download = location.pathname === "/memorias/baixar";
   $("#view-home").hidden = download;
   $("#view-download").hidden = !download;
   for (const link of $$("[data-link]")) {
@@ -185,7 +185,7 @@ function route() {
     ? "Baixar fotos · 023ª Zona Eleitoral"
     : "Memórias da 023ª Zona Eleitoral | Cartório TRE-RJ · Marechal Hermes";
   if (download) loadDownloads();
-  track("page", download ? "/baixar" : "/");
+  track("page", download ? "/memorias/baixar" : "/memorias");
   syncFab();
 }
 function navigate(href) {
@@ -626,7 +626,7 @@ $("#select-download").addEventListener("click", (event) => {
 
 /* ---------- Abas e pessoas ---------- */
 function changeTab(which, focus = false) {
-  if (location.pathname !== "/baixar") document.title = which === "people"
+  if (location.pathname !== "/memorias/baixar") document.title = which === "people"
     ? "Pessoas do acervo · 023ª Zona Eleitoral"
     : "Memórias da 023ª Zona Eleitoral | Cartório TRE-RJ · Marechal Hermes";
   const people = which === "people";
@@ -701,8 +701,8 @@ function filterPerson(person) {
   renderYearNav();
   $("#filter-name").value = person.name;
   const finish = () => {
-    if (location.pathname !== "/") {
-      history.pushState(null, "", "/");
+    if (location.pathname !== "/memorias") {
+      history.pushState(null, "", "/memorias");
       route();
     }
     changeTab("gallery");
@@ -784,7 +784,7 @@ $("#view-download").addEventListener("click", (event) => {
     toast("Preparando o ZIP… o download começa em instantes.", true);
 });
 $("#dl-pick").onclick = () => {
-  history.pushState(null, "", "/");
+  history.pushState(null, "", "/memorias");
   route();
   changeTab("gallery");
   setSelecting(true);

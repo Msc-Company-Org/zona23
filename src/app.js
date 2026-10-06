@@ -7,6 +7,8 @@ import { readFileSync } from "node:fs";
 import { gzipSync, brotliCompressSync } from "node:zlib";
 import sharp from "sharp";
 import { createAdmin, SETTINGS, today } from "./admin.js";
+import { createAuth, migrateAuth } from "./auth.js";
+import { createEquipe, migrateEquipe } from "./equipe.js";
 
 const MAX_FILE = 25 * 1024 * 1024;
 const VIEW_SIZE = 1600;
@@ -53,6 +55,8 @@ export function createApp({
   trustProxy = false,
   maxStorageMB = 10240,
   adminBootstrapPassword = "",
+  mailer = null,
+  androidApp = null,
 } = {}) {
   if (!Number.isFinite(maxStorageMB) || maxStorageMB < 0)
     throw new Error("MAX_STORAGE_MB deve ser um número válido e não negativo.");
@@ -112,6 +116,8 @@ export function createApp({
       "ALTER TABLE photos ADD COLUMN event_id TEXT REFERENCES events(id) ON DELETE SET NULL",
     );
   db.exec("CREATE INDEX IF NOT EXISTS photo_event ON photos(event_id)");
+  migrateAuth(db);
+  migrateEquipe(db);
   const countHit = db.query(
     "INSERT INTO hits VALUES (?,?,?,1) ON CONFLICT(day,kind,ref) DO UPDATE SET count=count+1",
   );
@@ -252,6 +258,9 @@ export function createApp({
   for (const [file, type] of [
     ["admin.js", "text/javascript;charset=utf-8"],
     ["admin.css", "text/css;charset=utf-8"],
+    ["equipe.js", "text/javascript;charset=utf-8"],
+    ["equipe.css", "text/css;charset=utf-8"],
+    ["aplicativo.js", "text/javascript;charset=utf-8"],
   ]) {
     const entry = load(file, type);
     entry.version = entry.etag.slice(1, 11);
@@ -262,7 +271,7 @@ export function createApp({
     String(value).replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
   function page(file, values = {}, title = "", pathname = "/") {
     let html = readFileSync(join(publicRoot, file), "utf8");
-    for (const asset of ["app.js", "style.css", "admin.js", "admin.css"])
+    for (const asset of ["app.js", "style.css", "admin.js", "admin.css", "equipe.js", "equipe.css", "aplicativo.js"])
       html = html.replace(`/${asset}"`, `/${asset}?v=${texts["/" + asset].version}"`);
     if (html.includes("<!--sprite-->"))
       html = html.replace(
@@ -310,8 +319,23 @@ export function createApp({
     const body = encoding ? entry[encoding] : entry.body;
     return new Response(req.method === "HEAD" ? null : body, { headers });
   }
-  texts["/admin"] = page("admin.html");
+  // Um só documento atende a área da equipe; o script decide entre login, link e painel.
+  const teamPage = page("admin.html");
+  for (const route of ["/", "/equipe", "/admin", "/entrar", "/entrar/link"]) texts[route] = teamPage;
   const dummyHash = Bun.password.hashSync(randomBytes(16).toString("hex"));
+  const auth = createAuth({
+    db,
+    json,
+    InputError,
+    textValue,
+    normalize,
+    hash,
+    dummyHash,
+    mailer,
+    origin: allowedOrigins[0] || "",
+    bootstrapPassword: adminBootstrapPassword,
+    secureCookie: allowedOrigins.some((origin) => origin.startsWith("https:")),
+  });
   const admin = createAdmin({
     db,
     json,
@@ -319,26 +343,36 @@ export function createApp({
     textValue,
     validDate,
     normalize,
-    hash,
     media,
-    dummyHash,
-    bootstrapPassword: adminBootstrapPassword,
-    secureCookie: allowedOrigins.some((origin) => origin.startsWith("https:")),
+    auth,
     onSettings: renderHome,
+  });
+  const equipe = createEquipe({
+    db,
+    json,
+    InputError,
+    textValue,
+    validDate,
+    auth,
+    today,
+    origin: allowedOrigins[0] || "",
   });
   function renderHome() {
     const settings = admin.settings();
-    texts["/"] = page("index.html", settings);
-    texts["/baixar"] = page("index.html", settings, "Baixar fotos · 023ª Zona Eleitoral", "/baixar");
+    // O acervo de fotos mora em /memorias; a raiz é a entrada da equipe.
+    texts["/memorias"] = page("index.html", settings, "", "/memorias");
+    texts["/memorias/baixar"] = page("index.html", settings, "Baixar fotos · 023ª Zona Eleitoral", "/memorias/baixar");
+    texts["/app"] = page("aplicativo.html", settings, "Aplicativo · 023ª Zona Eleitoral", "/app");
   }
   renderHome();
   {
     const body = Buffer.from(
       JSON.stringify({
-        name: "Memórias da 023ª Zona Eleitoral",
+        name: "Zona 023 · Equipe da 023ª Zona Eleitoral",
         short_name: "Zona 023",
-        description: "As fotos da Zona 023 de Marechal Hermes num lugar só.",
+        description: "Área da equipe do cartório da 023ª Zona Eleitoral e Memórias da Zona 023.",
         lang: "pt-BR",
+        id: "/",
         start_url: "/",
         display: "standalone",
         background_color: "#f4f7fc",
@@ -352,6 +386,10 @@ export function createApp({
             type: "image/png",
             purpose: "maskable",
           },
+        ],
+        shortcuts: [
+          { name: "Área da equipe", short_name: "Equipe", url: "/", icons: [{ src: "/assets/icon-192.png", sizes: "192x192" }] },
+          { name: "Memórias da Zona 023", short_name: "Memórias", url: "/memorias", icons: [{ src: "/assets/icon-192.png", sizes: "192x192" }] },
         ],
       }),
     );
@@ -540,12 +578,40 @@ export function createApp({
       );
     await pendingViews.get(id);
   }
+  // APK publicado fora do Git: DATA_DIR/downloads/apk.json descreve o arquivo atual.
+  const downloads = join(root, "downloads");
+  let apkCache = { at: 0, value: null };
+  async function apkInfo() {
+    if (Date.now() - apkCache.at < 30000) return apkCache.value;
+    let value = null;
+    try {
+      const info = JSON.parse(await readFile(join(downloads, "apk.json"), "utf8"));
+      if (
+        /^zona023-[0-9][0-9.]*\.apk$/.test(info.file) &&
+        /^[a-f0-9]{64}$/.test(info.sha256) &&
+        (await Bun.file(join(downloads, info.file)).exists())
+      )
+        value = {
+          version: String(info.version).slice(0, 20),
+          file: info.file,
+          url: `/downloads/${info.file}`,
+          bytes: Bun.file(join(downloads, info.file)).size,
+          sha256: info.sha256,
+          updatedAt: String(info.updatedAt || "").slice(0, 10),
+        };
+    } catch {}
+    apkCache = { at: Date.now(), value };
+    return value;
+  }
   async function fetch(req, server) {
     try {
       const url = new URL(req.url),
         path = url.pathname;
       if (!["GET", "HEAD", "POST", "PATCH", "DELETE"].includes(req.method))
         throw new InputError("Método não permitido.", 405);
+      const ip = trustProxy
+        ? req.headers.get("X-Real-IP") || server?.requestIP(req)?.address || "local"
+        : server?.requestIP(req)?.address || "local";
       if (["POST", "PATCH", "DELETE"].includes(req.method)) {
         const origin = req.headers.get("Origin");
         const expected = allowedOrigins.length ? allowedOrigins : [url.origin];
@@ -556,19 +622,17 @@ export function createApp({
           throw new InputError("Envie a partir da página do acervo.", 403);
         if (Number(req.headers.get("Content-Length") || 0) > MAX_FILE + 65536)
           throw new InputError("A foto deve ter até 25 MB.", 413);
-        const ip = trustProxy
-          ? req.headers.get("X-Real-IP") ||
-            server?.requestIP(req)?.address ||
-            "local"
-          : server?.requestIP(req)?.address || "local";
         // Equipe logada e contagem de acesso não gastam a cota de envios públicos.
         if (path === "/api/hit") hitLimit(ip);
-        else if (!(path.startsWith("/api/admin/") && admin.user(req))) rateLimit(ip);
+        else if (!auth.user(req)) rateLimit(ip);
       }
-      if (path.startsWith("/api/admin/")) return await admin.handle(req, url, path);
+      if (path.startsWith("/api/auth/")) return await auth.handle(req, url, path, ip);
+      if (path.startsWith("/api/equipe/")) return await equipe.handle(req, url, path);
+      if (path.startsWith("/api/admin/")) return await admin.handle(req, url, path, ip);
+      if (path === "/api/app" && req.method === "GET") return json({ apk: await apkInfo() });
       if (path === "/api/hit" && req.method === "POST") {
         const body = await req.json();
-        if (body.kind === "page" && ["/", "/baixar"].includes(body.ref)) hit("page", body.ref);
+        if (body.kind === "page" && ["/memorias", "/memorias/baixar", "/app"].includes(body.ref)) hit("page", body.ref);
         else if (
           body.kind === "photo" &&
           UUID.test(body.ref) &&
@@ -802,7 +866,50 @@ export function createApp({
         throw new InputError("Recurso não encontrado.", 404);
       if (!["GET", "HEAD"].includes(req.method))
         throw new InputError("Método não permitido.", 405);
-      if (texts[path]) return text(req, texts[path]);
+      // Endereços antigos do acervo, já compartilhados, continuam funcionando.
+      const moved =
+        path === "/baixar"
+          ? "/memorias/baixar"
+          : path === "/" && url.searchParams.has("photo")
+            ? "/memorias" + url.search
+            : "";
+      if (moved)
+        return new Response(null, { status: 301, headers: { ...securityHeaders, Location: moved } });
+      if (texts[path]) {
+        // Páginas internas não entram em buscadores.
+        const response = text(req, texts[path]);
+        if (texts[path] === teamPage) response.headers.set("X-Robots-Tag", "noindex, nofollow");
+        return response;
+      }
+      if (path === "/.well-known/assetlinks.json" && androidApp?.fingerprints?.length)
+        return Response.json(
+          [
+            {
+              relation: ["delegate_permission/common.handle_all_urls"],
+              target: {
+                namespace: "android_app",
+                package_name: androidApp.package,
+                sha256_cert_fingerprints: androidApp.fingerprints,
+              },
+            },
+          ],
+          { headers: { ...securityHeaders, "Cache-Control": "public,max-age=3600" } },
+        );
+      const apkPath = path.match(/^\/downloads\/(zona023-[0-9][0-9.]*\.apk)$/);
+      if (apkPath) {
+        const info = await apkInfo();
+        if (!info || info.file !== apkPath[1]) throw new InputError("Arquivo não encontrado.", 404);
+        if (req.method === "GET") hit("apk", info.version);
+        return new Response(req.method === "HEAD" ? null : Bun.file(join(downloads, info.file)), {
+          headers: {
+            ...securityHeaders,
+            "Content-Type": "application/vnd.android.package-archive",
+            "Content-Disposition": `attachment; filename="${info.file}"`,
+            "Content-Length": String(info.bytes),
+            "Cache-Control": "public,max-age=3600",
+          },
+        });
+      }
       if (icons[path])
         return new Response(req.method === "HEAD" ? null : icons[path], {
           headers: {
@@ -845,5 +952,5 @@ export function createApp({
       );
     }
   }
-  return { fetch, close: () => db.close(), ready: iconsReady };
+  return { fetch, close: () => db.close(), ready: iconsReady, auth };
 }

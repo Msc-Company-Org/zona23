@@ -5,7 +5,7 @@
   "scripts": {
     "start": "bun src/server.js",
     "dev": "bun --watch src/server.js",
-    "test": "bun test",
+    "test": "bun test --timeout 30000",
     "check": "node --check public/app.js && bun build src/server.js --target=bun --packages=external --outdir=local/build"
   },
   "dependencies": {

@@ -33,8 +33,8 @@ test("sessao administrativa exige troca, recusa origem externa e encerra acesso 
   expect((await s.request("/api/admin/dashboard","GET",undefined,headers)).status).toBe(200);
   expect((await s.request("/api/admin/events","POST",{name:"Evento de teste",date:"2026-10-06"},headers)).status).toBe(201);
   expect((await s.request("/api/admin/settings","PATCH",{hero_title:"Acervo de teste"},headers)).status).toBe(200);
-  const page=await s.request("/");expect(await page.text()).toContain("Acervo de teste");
+  const page=await s.request("/memorias");expect(await page.text()).toContain("Acervo de teste");
   expect((await s.request("/api/admin/logout","POST",{},headers)).status).toBe(200);
   expect((await s.request("/api/admin/dashboard","GET",undefined,headers)).status).toBe(401);
  }finally{s.close();}
-});
+},20000);

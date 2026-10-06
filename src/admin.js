@@ -1,10 +1,8 @@
-import { randomBytes } from "node:crypto";
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";
 
-// Área da equipe: sessão por cookie HttpOnly, senha com Argon2 (Bun.password).
-const SESSION_HOURS = 12;
-const COOKIE = "z23_session";
+// Acervo na área da equipe: fotos, eventos, pessoas e textos do site.
+// Login, sessão e senha ficam em auth.js.
 export const SETTINGS = {
   hero_kicker: { label: "Linha acima do título", max: 60, value: "Cartório TRE-RJ · Marechal Hermes" },
   hero_title: { label: "Título principal", max: 60, value: "Memórias da" },
@@ -31,52 +29,7 @@ export const today = (offsetDays = 0) =>
   new Date(Date.now() - 3 * 3600000 - offsetDays * 86400000).toISOString().slice(0, 10);
 
 export function createAdmin(ctx) {
-  const { db, json, InputError, textValue, validDate, normalize, hash, media, secureCookie } =
-    ctx;
-
-  if (ctx.bootstrapPassword && !db.query("SELECT 1 FROM users LIMIT 1").get()) {
-    // A equipe só é habilitada com uma senha inicial configurada fora do código.
-    db.query("INSERT INTO users VALUES (?,?,?,1,?)").run(
-      crypto.randomUUID(),
-      "admin",
-      Bun.password.hashSync(ctx.bootstrapPassword),
-      new Date().toISOString(),
-    );
-  }
-
-  const failures = new Map();
-  function checkLock(key) {
-    const now = Date.now();
-    const entry = failures.get(key);
-    if (entry && entry.until > now && entry.count >= 8)
-      throw new InputError("Muitas tentativas. Espere 15 minutos.", 429);
-    if (entry && entry.until <= now) failures.delete(key);
-  }
-  function fail(key) {
-    const entry = failures.get(key) || { count: 0, until: Date.now() + 15 * 60000 };
-    entry.count++;
-    failures.set(key, entry);
-  }
-
-  function cookieValue(req) {
-    const match = (req.headers.get("Cookie") || "").match(
-      new RegExp(`(?:^|;\\s*)${COOKIE}=([a-f0-9]{64})`),
-    );
-    return match?.[1] || "";
-  }
-  function user(req) {
-    const token = cookieValue(req);
-    if (!token) return null;
-    const row = db
-      .query(
-        "SELECT u.id,u.username,u.must_change,s.expires_at FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=?",
-      )
-      .get(hash(token));
-    if (!row || row.expires_at < Date.now()) return null;
-    return row;
-  }
-  const cookie = (value, maxAge) =>
-    `${COOKIE}=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${secureCookie ? "; Secure" : ""}`;
+  const { db, json, InputError, textValue, validDate, normalize, media, auth } = ctx;
 
   const PHOTO_ADMIN = `f.id,f.title,f.description,f.date,f.author,f.created_at,f.hidden,f.bytes,f.event_id,
     (SELECT name FROM events WHERE id=f.event_id) AS event_name,
@@ -124,70 +77,14 @@ export function createAdmin(ctx) {
     );
   }
 
-  async function handle(req, url, path) {
+  // Rotas antigas de sessão continuam funcionando como atalhos de /api/auth/*.
+  const LEGACY = ["login", "logout", "me", "password"];
+
+  async function handle(req, url, path, ip) {
     const method = req.method;
-    if (path === "/api/admin/login" && method === "POST") {
-      if (!db.query("SELECT 1 FROM users LIMIT 1").get())
-        throw new InputError("A área da equipe ainda está em configuração. O acervo continua disponível.", 503);
-      const body = await req.json();
-      const username = textValue(body.username ?? "", "Usuário", 60, true).toLowerCase();
-      const password = typeof body.password === "string" ? body.password : "";
-      checkLock("user:" + username);
-      const row = db.query("SELECT * FROM users WHERE username=?").get(username);
-      const ok = row
-        ? await Bun.password.verify(password, row.password_hash)
-        : (await Bun.password.verify(password, ctx.dummyHash), false);
-      if (!ok) {
-        fail("user:" + username);
-        throw new InputError("Usuário ou senha não conferem.", 401);
-      }
-      failures.delete("user:" + username);
-      const token = randomBytes(32).toString("hex");
-      db.query("DELETE FROM sessions WHERE expires_at<?").run(Date.now());
-      db.query("INSERT INTO sessions VALUES (?,?,?)").run(
-        hash(token),
-        row.id,
-        Date.now() + SESSION_HOURS * 3600000,
-      );
-      const response = json({
-        user: { username: row.username, mustChange: Boolean(row.must_change) },
-      });
-      response.headers.set("Set-Cookie", cookie(token, SESSION_HOURS * 3600));
-      return response;
-    }
-    const me = user(req);
-    if (!me) throw new InputError("Entre com seu usuário para continuar.", 401);
-    if (path === "/api/admin/logout" && method === "POST") {
-      db.query("DELETE FROM sessions WHERE token_hash=?").run(hash(cookieValue(req)));
-      const response = json({ ok: true });
-      response.headers.set("Set-Cookie", cookie("", 0));
-      return response;
-    }
-    if (path === "/api/admin/me" && method === "GET")
-      return json({ user: { username: me.username, mustChange: Boolean(me.must_change) } });
-    if (path === "/api/admin/password" && method === "POST") {
-      const body = await req.json();
-      const row = db.query("SELECT password_hash FROM users WHERE id=?").get(me.id);
-      if (!(await Bun.password.verify(String(body.current ?? ""), row.password_hash)))
-        throw new InputError("A senha atual não confere.", 400);
-      const next = String(body.next ?? "");
-      if (next.length < 8 || next.length > 200)
-        throw new InputError("A nova senha precisa ter pelo menos 8 caracteres.");
-      if (["admin", "admin123", "12345678", "password", "senha123"].includes(next.toLowerCase()))
-        throw new InputError("Essa senha é fácil demais. Escolha outra.");
-      db.query("UPDATE users SET password_hash=?,must_change=0 WHERE id=?").run(
-        await Bun.password.hash(next),
-        me.id,
-      );
-      // Encerra as outras sessões deste usuário.
-      db.query("DELETE FROM sessions WHERE user_id=? AND token_hash<>?").run(
-        me.id,
-        hash(cookieValue(req)),
-      );
-      return json({ ok: true });
-    }
-    if (me.must_change)
-      throw new InputError("Troque a senha inicial antes de continuar.", 403);
+    const legacy = path.match(/^\/api\/admin\/(\w+)$/)?.[1];
+    if (LEGACY.includes(legacy)) return auth.handle(req, url, "/api/auth/" + legacy, ip);
+    auth.guard(req, ["admin", "equipe"]);
 
     // ---------- Painel ----------
     if (path === "/api/admin/dashboard" && method === "GET") {
@@ -498,5 +395,5 @@ export function createAdmin(ctx) {
     throw new InputError("Recurso não encontrado.", 404);
   }
 
-  return { handle, user, settings };
+  return { handle, settings };
 }

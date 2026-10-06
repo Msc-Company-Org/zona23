@@ -1,10 +1,19 @@
 import { createApp } from "./app.js";
+import { mailerFromEnv } from "./mailer.js";
 const app = createApp({
   adminBootstrapPassword: process.env.ADMIN_BOOTSTRAP_PASSWORD || "",
   dataDir: process.env.DATA_DIR || "./local/data",
   publicOrigin: process.env.PUBLIC_ORIGIN || "",
   trustProxy: process.env.TRUST_PROXY === "true",
   maxStorageMB: Number(process.env.MAX_STORAGE_MB || 10240),
+  mailer: mailerFromEnv(),
+  // Impressões digitais SHA-256 do certificado que assina o APK (separadas por vírgula).
+  androidApp: process.env.ANDROID_CERT_SHA256
+    ? {
+        package: process.env.ANDROID_PACKAGE || "br.com.zon023.app",
+        fingerprints: process.env.ANDROID_CERT_SHA256.split(",").map((value) => value.trim()).filter(Boolean),
+      }
+    : null,
 });
 const hostname = process.env.HOST || "127.0.0.1";
 if (
