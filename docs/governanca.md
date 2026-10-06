@@ -11,7 +11,7 @@ Este documento explica como manter o **Memórias da 023ª Zona Eleitoral** compr
 | Produção | Um serviço Docker, com HTTPS pelo proxy e dados persistentes fora do Git. |
 | Validação | Testes de integração e verificação de sintaxe executados antes de publicar. |
 | Publicação | Atualização explícita do serviço; enviar commits não dispara deploy. |
-| GitLab | Espelho proposto; configuração e sincronização ainda não confirmadas. |
+| GitLab | Cópia de `main` sincronizada por SSH; envio para os dois provedores configurado no checkout da VPS. |
 | Acessos operacionais | Inventário e configuração em andamento; não presumir acesso em toda sessão. |
 | Recuperação externa | Cópia externa e teste de restauração ainda precisam de confirmação operacional. |
 
@@ -31,9 +31,9 @@ Essa é a convenção de trabalho; ela não afirma que proteções de branch ou 
 
 Cada publicação deve registrar **commit, imagem, data, validação e referência do backup** no controle operacional privado. O [histórico de mudanças](../CHANGELOG.md) resume o que mudou para quem usa o acervo.
 
-### 🔁 Espelho proposto no GitLab
+### 🔁 Cópia do código no GitLab
 
-A proposta é copiar o histórico do GitHub para o GitLab e conferir se o commit publicado está presente nos dois. O espelho não terá uma linha de desenvolvimento independente. Falhas de sincronização devem ficar registradas até a correção.
+O histórico de `main` foi copiado para o GitLab e o mesmo commit foi conferido nos dois provedores. No checkout da VPS, `git push origin` envia para GitHub e GitLab. Uma alteração feita diretamente pela API ou interface do GitHub precisa de sincronização posterior; não existe sincronização automática por agendamento. O GitLab não tem uma linha de desenvolvimento independente. Se houver divergência, interrompa o envio e investigue, sem forçar a substituição do histórico.
 
 Esse espelho protege o histórico do código; fotos e banco precisam de backup próprio.
 
@@ -74,7 +74,7 @@ Fotografias originais, exportações de produção, bancos e backups ficam fora 
 ## ✅ Próximos passos
 
 1. Confirmar os canais operacionais existentes e documentar apenas os que funcionam.
-2. Configurar e verificar o espelho GitLab.
+2. Manter os commits conferidos nos dois provedores a cada entrega.
 3. Confirmar backup externo, retenção e restauração.
 4. Concluir usuários, perfil e primeiro acesso.
 
