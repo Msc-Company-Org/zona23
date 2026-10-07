@@ -19,6 +19,7 @@
     <script src="/admin.js" defer></script>
     <script src="/equipe.js" defer></script>
     <script src="/trabalho.js" defer></script>
+    <script src="/mapeamento.js" defer></script>
   </head>
   <body class="admin">
     <!--sprite-->
@@ -653,6 +654,12 @@
         </section>
 
         <!-- Locais e seções -->
+        <section id="mapeamento" class="a-section" hidden>
+          <div class="section-head"><div><h1>Votos e equipes</h1><p>Resultados agregados por seção, urna e colégio. Listas de apoio restritas à equipe autorizada.</p></div></div>
+          <div class="mp-filtros"><label>Pleito<select id="mp-pleito"></select></label><label>Colégio, seção ou urna<input id="mp-busca" type="search" placeholder="Buscar"></label><label>Cargo<select id="mp-cargo"><option value="">Todos</option></select></label><label>Equipe<select id="mp-grupo"><option value="">Todas as funções</option><option value="mesarios">Mesários</option><option value="ase">ASE</option><option value="administradores">Administradores de prédio</option><option value="coletores">Coletores de justificativa</option><option value="outros">Outras funções</option></select></label></div>
+          <p id="mp-resumo" aria-live="polite"></p><div id="mp-lista"></div>
+          <details id="mp-importar"><summary>Importar resultados por seção</summary><p>Informe o pleito, a fonte e os resultados no formato JSON. Cada seção do lote substitui seus resultados anteriores neste pleito. Confira o documento de origem antes de gravar.</p><form id="mp-form"><label>JSON de resultados<textarea id="mp-json" rows="10" required></textarea></label><button type="submit" class="btn primary">Validar e importar</button><p id="mp-erro" class="error" role="alert"></p></form></details>
+        </section>
         <section id="locais" class="a-section" hidden>
           <div class="a-head">
             <div>

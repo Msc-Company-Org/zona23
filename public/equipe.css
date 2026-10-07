@@ -1151,3 +1151,17 @@
   .es-pessoas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .tk-view { width: min(720px, calc(100vw - 32px)); }
 }
+
+/* Mapeamento de votos e equipes */
+.mp-filtros { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin:20px 0; }
+.mp-filtros label, #mp-form label { display:grid; gap:8px; }
+.mp-card { margin:16px 0; padding:20px; }
+.mp-card details { padding:12px 0; }
+.mp-card summary { cursor:pointer; line-height:1.7; }
+.mp-secao { border-top:1px solid var(--line,#ddd); }
+.mp-equipe { margin:12px 0; }
+.mp-equipe small { display:block; }
+.mp-tabela { overflow-x:auto; }
+.mp-tabela table { width:100%; border-collapse:collapse; }
+.mp-tabela th,.mp-tabela td { text-align:left; padding:10px; border-bottom:1px solid var(--line,#ddd); }
+#mp-json { width:100%; font-family:monospace; }

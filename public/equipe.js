@@ -29,6 +29,7 @@ const MODULES = {
   pessoas: { label: "Pessoas", icon: "people" },
   textos: { label: "Textos do site", icon: "text" },
   demandas: { label: "Demandas", icon: "ticket" },
+  mapeamento: { label: "Votos e equipes", icon: "ballot" },
   totalizacao: { label: "Totalização", icon: "ballot" },
   locais: { label: "Locais e seções", icon: "school" },
   documentos: { label: "Documentos", icon: "doc" },
@@ -127,7 +128,7 @@ function navGroups() {
   if (AUTORIDADES.includes(me.role))
     return [
       { items: ["inicio"] },
-      { label: "Acompanhamento", items: [isJudge() ? "decisoes" : "acompanhamento", "totalizacao", "demandas", "situacao", "locais", "convocacoes"] },
+      { label: "Acompanhamento", items: [isJudge() ? "decisoes" : "acompanhamento", "totalizacao", "mapeamento", "demandas", "situacao", "locais", "convocacoes"] },
       { label: "Cartório", items: ["agenda", "documentos", "equipe"] },
     ];
   if (me.role === "ase")
@@ -150,7 +151,7 @@ function navGroups() {
     ];
   return [
     { items: ["inicio"] },
-    { label: "Dia da eleição", items: ["demandas", "totalizacao", "situacao"] },
+    { label: "Dia da eleição", items: ["demandas", "totalizacao", "mapeamento", "situacao"] },
     { label: "Trabalho", items: ["tarefas", "agenda", "documentos"] },
     { label: "Eleições 2026", items: ["escala", "frequencia", "declaracoes", "convocacoes", "locais"] },
     { label: "Memórias", items: ["painel", "fotos", "eventos", "pessoas", "textos"] },
@@ -569,6 +570,7 @@ function go(name) {
     textos: loadSettings,
     demandas: loadDemandas,
     totalizacao: loadTotalizacao,
+    mapeamento: loadMapeamento,
     locais: loadLocais,
     documentos: loadDocumentos,
     convocacoes: loadConvocacoes,

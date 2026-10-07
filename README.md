@@ -26,6 +26,7 @@ Um acervo colaborativo para reunir fotografias, identificar as pessoas e preserv
 | **Enviar fotos** | Compartilhar imagens com título, data opcional e identificação das pessoas. |
 | **Baixar fotos** | Guardar imagens individualmente ou em ZIP, com uma planilha CSV. |
 | **Área da equipe** | Login por senha ou link de acesso, primeiro acesso guiado, menus por perfil (equipe, chefia, juiz e promotoria), agenda, equipe e gestão do acervo. [Como funciona](docs/area-da-equipe.md). |
+| **Votos e equipes** | Mapeamento interno por colégio, seção e urna; abstenção e votos importados por pleito; listas de mesários, ASE, administradores e coletores. [Como consultar e importar](docs/mapeamento-votos-equipes.md). |
 | **Aplicativo** | Página `/app` com APK para Android e instalação pelo navegador. |
 
 ### ✨ Feito para o dia a dia
