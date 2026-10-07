@@ -1,3 +1,4 @@
+import { createMapeamento, migrateMapeamento } from "./mapeamento.js";
 import { GROUPS } from "./auth.js";
 import { LOCAIS, SECAO_INFO, SECAO_LOCAL } from "./locais.js";
 
@@ -22,6 +23,7 @@ const CANAIS = ["sistema", "whatsapp", "telefone", "presencial"];
 const DIAS_DADOS_ELEITOR = 7;
 
 export function migrateEleicao(db) {
+  migrateMapeamento(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS locais_info (
       local_id INTEGER PRIMARY KEY, guarda TEXT NOT NULL DEFAULT '', acessibilidade TEXT NOT NULL DEFAULT '',
@@ -99,6 +101,7 @@ export function importarConvocacoes(db, pleito, registros, origem = "") {
 
 export function createEleicao(ctx) {
   const { db, json, InputError, textValue, auth } = ctx;
+  const mapeamento = createMapeamento(ctx);
   const fetchJson =
     ctx.fetchJson ||
     (async (url) => {
@@ -255,6 +258,7 @@ export function createEleicao(ctx) {
   };
 
   async function handle(req, url, path) {
+    if (path === "/api/eleicao/mapeamento") return mapeamento.handle(req, url);
     const method = req.method;
     const me = auth.guard(req);
     const cartorio = GROUPS.cartorio.includes(me.role);

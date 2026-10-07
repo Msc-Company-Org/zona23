@@ -270,6 +270,7 @@ export function createApp({
     ["admin.css", "text/css;charset=utf-8"],
     ["equipe.js", "text/javascript;charset=utf-8"],
     ["trabalho.js", "text/javascript;charset=utf-8"],
+    ["mapeamento.js", "text/javascript;charset=utf-8"],
     ["equipe.css", "text/css;charset=utf-8"],
     ["aplicativo.js", "text/javascript;charset=utf-8"],
   ]) {
@@ -282,7 +283,7 @@ export function createApp({
     String(value).replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
   function page(file, values = {}, title = "", pathname = "/") {
     let html = readFileSync(join(publicRoot, file), "utf8");
-    for (const asset of ["app.js", "style.css", "admin.js", "admin.css", "equipe.js", "trabalho.js", "equipe.css", "aplicativo.js"])
+    for (const asset of ["app.js", "style.css", "admin.js", "admin.css", "equipe.js", "trabalho.js", "mapeamento.js", "equipe.css", "aplicativo.js"])
       html = html.replace(`/${asset}"`, `/${asset}?v=${texts["/" + asset].version}"`);
     if (html.includes("<!--sprite-->"))
       html = html.replace(
