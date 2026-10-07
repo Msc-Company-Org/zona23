@@ -1151,3 +1151,20 @@
   .es-pessoas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .tk-view { width: min(720px, calc(100vw - 32px)); }
 }
+
+/* ---------- Telas simples: resumo em uma linha e cartões de uma informação ---------- */
+.resumo { margin: 0 0 14px; font-size: 14.5px; color: var(--muted); line-height: 1.5; }
+.resumo b { color: var(--navy); }
+.resumo .bad { color: var(--error); font-weight: 700; }
+.resumo .warn { color: #8a6a00; font-weight: 700; }
+.tk-card { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.tk-card .dm-main strong { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tk-card .tk-meta { display: block; margin-top: 2px; font-size: 13px; }
+.tk-col .tk-card { grid-template-columns: minmax(0, 1fr); }
+.es-passados { justify-self: start; margin: 0 2px 4px; grid-column: 1 / -1; }
+.hw-big { margin: 0 0 4px; font-size: 18px; font-weight: 800; color: var(--navy); }
+.hw-big::first-letter { text-transform: uppercase; }
+.home-work .hw-line { margin-top: 8px; }
+.a-head h1 + .muted { margin-top: 4px; }
+.chip-gray { background: var(--bg); color: var(--muted); border-color: var(--line); }
+#hello-sub:empty { display: none; }

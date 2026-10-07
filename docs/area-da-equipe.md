@@ -68,33 +68,33 @@ A apresentação pode ser revista em *Perfil → Rever a apresentação*.
 | Módulo | Situação |
 | --- | --- |
 | Início, Agenda, Equipe, Perfil | Disponíveis. |
-| Demandas do dia da eleição | Disponível: abrir, assumir, responder e concluir. |
-| Totalização | Disponível: portal público do TSE, seção por seção. |
-| Locais e seções | Disponível: 32 locais, 225 seções e 79.560 eleitores aptos (ELO), endereços, seções acessíveis, salas e mapa. |
-| Convocações | Disponível: lista importada do ELO/Convoca+ (sem título de eleitor), situação e presença do dia. |
+| Pedidos dos locais (demandas do dia da eleição) | Disponível: abrir, assumir, responder e concluir. |
+| Apuração do TSE (totalização) | Disponível: portal público do TSE, seção por seção. |
+| Locais de votação | Disponível: 32 locais, 225 seções e 79.560 eleitores aptos (ELO), endereços, seções acessíveis, salas e mapa. |
+| Convocados | Disponível: lista importada do ELO/Convoca+ (sem título de eleitor), situação e presença do dia. |
 | Documentos | Disponível: biblioteca com categorias e visibilidade por perfil. |
 | Tarefas | Disponível: responsável e apoio, prazo, situação (a fazer, em andamento, aguardando terceiro, concluída), checklist, comentários com `@usuário`, documentos da biblioteca, histórico, quadro no computador, lotes por modelo (ex.: justificativas por dias pares e ímpares) e aviso pelo WhatsApp. |
-| Escala ASE | Disponível: escala colada do WhatsApp, atividade e horário do dia, presença, limite de 10 convocações nos dois turnos (alerta a partir de 9, bloqueio acima de 10), trocas aprovadas pela chefia e cópia no formato do grupo. |
+| Escala dos ASE | Disponível: escala colada do WhatsApp, atividade e horário do dia, presença, limite de 10 convocações nos dois turnos (alerta a partir de 9, bloqueio acima de 10), trocas aprovadas pela chefia e cópia no formato do grupo. |
 | Minha escala (ASE) | Disponível: dias, horário, atividade, contador de convocações e pedido de troca. A conta do ASE é ligada pelo nome igual ao da escala. |
 | Memórias (acervo) | Disponível para chefia e equipe. |
 | Presença, Declarações, Sala de situação, Para decidir | Em preparação; veja o [planejamento](planejamento.md). |
 
 ### Tarefas
 
-- **Visões:** *Comigo*, *Apoio*, *Equipe*, *Atrasadas* e *Concluídas*. No computador, a visão em quadro separa *A fazer*, *Em andamento* e *Aguardando terceiro*.
+- **Abas:** *Minhas* (responsável ou apoio), *Da equipe* e *Concluídas*; atrasadas aparecem em vermelho. No computador, a visão em quadro separa *A fazer*, *Em andamento* e *Aguardando terceiro*.
 - **Delegar:** escolha o responsável e quem apoia. Ao abrir a tarefa, *Avisar* monta a mensagem para o WhatsApp de quem vai executar.
 - **Colaborar:** comentário com `@usuário` chama a pessoa para o apoio. Marcar o primeiro passo do checklist põe a tarefa em andamento. Toda mudança fica no histórico.
 - **Aguardando terceiro:** exige dizer de quem (ex.: Central de Mandados, chamado de TI).
-- **Dividir lote:** um modelo vira uma tarefa por pessoa, com o mesmo checklist, por dias pares e ímpares, por faixas de seção ou igual para todos.
+- **Dividir entre pessoas:** um modelo vira uma tarefa por pessoa, com o mesmo checklist, por dias pares e ímpares, por faixas de seção ou igual para todos.
 - **Apagar:** só quem criou ou a chefia; no dia a dia, cancele.
 
-### Escala ASE
+### Escala dos ASE
 
-- **Colar do WhatsApp:** copie a mensagem da escala no grupo (`*SEGUNDA, 12/10/2026*` + `▫️ NOME`) e cole. *Conferir* mostra quantos dias, entradas, saídas e pessoas novas; *Aplicar* grava. Os dias do texto ficam iguais ao texto; os outros não mudam.
+- **Atualizar escala:** copie a mensagem da escala no grupo (`*SEGUNDA, 12/10/2026*` + `▫️ NOME`) e cole. *Conferir* mostra quantos dias, entradas, saídas e pessoas novas; *Aplicar* grava. Os dias do texto ficam iguais ao texto; os outros não mudam.
 - **Convocações:** cada dia escalado conta uma; os dias marcados com *Todos* (eleição) contam para todos os ASE. Com 9 ou 10 a pessoa aparece *no limite*; acima de 10, em vermelho, e a inclusão manual é bloqueada.
 - **Um dia:** atividade, horário, observação, presença de cada pessoa, incluir e retirar.
 - **Trocas:** o ASE pede pelo app (ou o cartório registra o pedido que chegou pelo grupo); a chefia aprova ou recusa, e a escala muda sozinha.
-- **Copiar escala:** gera o texto dos próximos dias no formato do grupo.
+- **Copiar:** gera o texto dos próximos dias no formato do grupo.
 
 ## 🛠️ Criar as contas
 
