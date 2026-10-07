@@ -2,6 +2,13 @@
 
 As entradas descrevem entregas. Pendências aparecem no README e não são anunciadas como concluídas.
 
+## 2026-10-07 — Telas mais simples
+
+- Menu só com o que funciona, em três grupos: *Rotina do cartório*, *Dia da eleição* e *Fotos*. Saem os itens "Em breve".
+- Nomes que dizem a função: *Pedidos dos locais*, *Apuração do TSE*, *Locais de votação*, *Convocados*, *Escala dos ASE*.
+- Cabeçalhos com título e uma frase de objetivo; Início só com contagem, *Para fazer* e *Próximas datas*.
+- Indicadores viram uma linha de resumo; Tarefas com três abas e cartões de uma linha; escala mostra os próximos dias e esconde os anteriores.
+
 ## 2026-10-06 — Tarefas e Escala ASE
 
 - **Tarefas:** responsável e apoio, prazo, prioridade, situação com *aguardando terceiro*, checklist, comentários com `@usuário`, documentos da biblioteca e histórico; visões *Comigo*, *Apoio*, *Equipe*, *Atrasadas* e *Concluídas*, com quadro no computador.

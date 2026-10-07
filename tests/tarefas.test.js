@@ -76,7 +76,7 @@ test("tarefas: delegar, apoio por @menção, checklist, histórico e visões", a
     // Aguardando terceiro exige dizer de quem.
     expect((await s.request(`/api/tarefas/${id}`, "PATCH", { status: "aguardando" }, lucas.cookie)).status).toBe(400);
     const aguardando = await s.request(`/api/tarefas/${id}`, "PATCH", { status: "aguardando", aguardando: "Central de Mandados" }, lucas.cookie);
-    expect(aguardando.data.tarefa.statusNome).toBe("Aguardando terceiro");
+    expect(aguardando.data.tarefa.statusNome).toBe("Aguardando");
 
     // Passar adiante registra no histórico e tira a pessoa do apoio.
     const passada = await s.request(`/api/tarefas/${id}`, "PATCH", { responsavel: bia.id, status: "concluida" }, lucas.cookie);

@@ -20,7 +20,7 @@ export const TIPOS = {
 export const STATUS = {
   a_fazer: "A fazer",
   em_andamento: "Em andamento",
-  aguardando: "Aguardando terceiro",
+  aguardando: "Aguardando",
   concluida: "Concluída",
   cancelada: "Cancelada",
 };
@@ -309,8 +309,9 @@ export function createTarefas(ctx) {
     const hoje = today();
 
     if (path === "/api/tarefas" && method === "GET") {
-      const visao = url.searchParams.get("visao") || "comigo";
+      const visao = url.searchParams.get("visao") || "minhas";
       const filtros = {
+        minhas: "(t.responsavel=$me OR EXISTS (SELECT 1 FROM tarefa_apoio a WHERE a.tarefa_id=t.id AND a.user_id=$me)) AND t.status IN ('a_fazer','em_andamento','aguardando')",
         comigo: "t.responsavel=$me AND t.status IN ('a_fazer','em_andamento','aguardando')",
         apoio: "EXISTS (SELECT 1 FROM tarefa_apoio a WHERE a.tarefa_id=t.id AND a.user_id=$me) AND t.status IN ('a_fazer','em_andamento','aguardando')",
         equipe: "t.status IN ('a_fazer','em_andamento','aguardando')",

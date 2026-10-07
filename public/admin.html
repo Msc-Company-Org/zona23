@@ -517,30 +517,17 @@
             <article id="countdown" class="countdown-card"></article>
             <article id="home-work" class="a-card home-work" hidden>
               <div class="card-head">
-                <h2><svg class="icon" aria-hidden="true"><use href="#i-tasks" /></svg><span id="home-work-title">Seu trabalho</span></h2>
+                <h2 id="home-work-title">Para fazer</h2>
                 <button class="link" type="button" id="home-work-link" data-go="tarefas">Abrir</button>
               </div>
               <div id="home-work-body"></div>
             </article>
             <article class="a-card home-agenda">
               <div class="card-head">
-                <h2><svg class="icon" aria-hidden="true"><use href="#i-calendar" /></svg>Próximos marcos</h2>
+                <h2>Próximas datas</h2>
                 <button class="link" type="button" data-go="agenda">Agenda</button>
               </div>
               <ol id="home-marcos" class="timeline"></ol>
-            </article>
-            <article class="a-card home-modules">
-              <div class="card-head">
-                <h2><svg class="icon" aria-hidden="true"><use href="#i-more" /></svg>Seus módulos</h2>
-              </div>
-              <div id="home-modules" class="module-grid"></div>
-            </article>
-            <article class="a-card home-team">
-              <div class="card-head">
-                <h2><svg class="icon" aria-hidden="true"><use href="#i-users" /></svg>Equipe</h2>
-                <button class="link" type="button" data-go="equipe">Ver todos</button>
-              </div>
-              <div id="home-team" class="team-strip"></div>
             </article>
           </div>
         </section>
@@ -553,20 +540,17 @@
         <section id="tarefas" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Trabalho do cartório</p>
               <h1>Tarefas</h1>
-              <p class="muted">Quem está com o quê, até quando e em que pé está. Delegue, peça apoio e acompanhe sem se perder no grupo.</p>
+              <p class="muted">O que cada pessoa precisa fazer, e até quando.</p>
             </div>
             <div class="head-actions">
-              <button id="tk-lote" class="btn btn-outline btn-sm" type="button"><svg class="icon" aria-hidden="true"><use href="#i-swap" /></svg>Dividir lote</button>
+              <button id="tk-lote" class="btn btn-outline btn-sm" type="button">Dividir entre pessoas</button>
               <button id="tk-new" class="btn btn-primary btn-sm" type="button"><svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Nova tarefa</button>
             </div>
           </div>
           <div class="segmented dm-filter" role="group" aria-label="Visão">
-            <button type="button" data-tk-visao="comigo" aria-pressed="true">Comigo <b id="tk-c-comigo">0</b></button>
-            <button type="button" data-tk-visao="apoio" aria-pressed="false">Apoio <b id="tk-c-apoio">0</b></button>
-            <button type="button" data-tk-visao="equipe" aria-pressed="false">Equipe <b id="tk-c-equipe">0</b></button>
-            <button type="button" data-tk-visao="atrasadas" aria-pressed="false">Atrasadas <b id="tk-c-atrasadas">0</b></button>
+            <button type="button" data-tk-visao="minhas" aria-pressed="true">Minhas <b id="tk-c-minhas">0</b></button>
+            <button type="button" data-tk-visao="equipe" aria-pressed="false">Da equipe <b id="tk-c-equipe">0</b></button>
             <button type="button" data-tk-visao="concluidas" aria-pressed="false">Concluídas</button>
           </div>
           <div class="tk-tools">
@@ -583,21 +567,19 @@
         <section id="escala" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Eleições 2026 · Auxiliares de Serviços Eleitorais</p>
-              <h1>Escala ASE</h1>
-              <p class="muted">Quem vem em cada dia, horário e atividade, presença e o limite de 10 convocações nos dois turnos.</p>
+              <h1>Escala dos ASE</h1>
+              <p class="muted">Quem vem ao cartório em cada dia.</p>
             </div>
             <div class="head-actions">
-              <button id="es-copiar" class="btn btn-outline btn-sm" type="button"><svg class="icon" aria-hidden="true"><use href="#i-copy" /></svg>Copiar escala</button>
-              <button id="es-importar" class="btn btn-primary btn-sm" type="button"><svg class="icon" aria-hidden="true"><use href="#i-paste" /></svg>Colar do WhatsApp</button>
+              <button id="es-copiar" class="btn btn-outline btn-sm" type="button">Copiar</button>
+              <button id="es-importar" class="btn btn-primary btn-sm" type="button">Atualizar escala</button>
             </div>
           </div>
-          <div id="es-kpis" class="kpis es-kpis"></div>
+          <p id="es-resumo" class="resumo"></p>
           <div class="segmented dm-filter" role="group" aria-label="Visão">
-            <button type="button" data-es-visao="proximos" aria-pressed="true">Próximos dias</button>
+            <button type="button" data-es-visao="proximos" aria-pressed="true">Dias</button>
             <button type="button" data-es-visao="pessoas" aria-pressed="false">Pessoas <b id="es-c-pessoas">0</b></button>
             <button type="button" data-es-visao="trocas" aria-pressed="false">Trocas <b id="es-c-trocas">0</b></button>
-            <button type="button" data-es-visao="todos" aria-pressed="false">Todos os dias</button>
           </div>
           <div id="es-body"></div>
         </section>
@@ -606,9 +588,8 @@
         <section id="minha-escala" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Auxiliar de Serviços Eleitorais</p>
               <h1>Minha escala</h1>
-              <p class="muted">Os dias em que você vem ao cartório, o horário, a atividade e quantas convocações já tem.</p>
+              <p class="muted">Seus dias de trabalho no cartório.</p>
             </div>
           </div>
           <div id="me-body"></div>
@@ -618,12 +599,11 @@
         <section id="demandas" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Dia da eleição</p>
-              <h1>Demandas</h1>
-              <p class="muted" id="dm-sub">Pedidos dos locais de votação: título, seção, material, urna, mesário, estrutura. Registre, assuma e conclua com a resposta.</p>
+              <h1>Pedidos dos locais</h1>
+              <p class="muted" id="dm-sub">O que os locais de votação pedem ao cartório no dia da eleição.</p>
             </div>
             <button id="dm-new" class="btn btn-primary btn-sm" type="button">
-              <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Nova demanda
+              <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Novo pedido
             </button>
           </div>
           <div class="segmented dm-filter" role="group" aria-label="Situação">
@@ -638,9 +618,8 @@
         <section id="totalizacao" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Dia da eleição · dados públicos do TSE</p>
-              <h1>Totalização</h1>
-              <p class="muted">Seções da 23ª ZE com boletim recebido e totalizado pelo TSE. Atualiza sozinho a cada 3 minutos.</p>
+              <h1>Apuração do TSE</h1>
+              <p class="muted">Seções da zona já totalizadas. Atualiza a cada 3 minutos.</p>
             </div>
             <div class="tt-actions">
               <select id="tt-pleito" aria-label="Turno"></select>
@@ -656,9 +635,8 @@
         <section id="locais" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Eleições 2026 · 23ª ZE</p>
-              <h1>Locais e seções</h1>
-              <p class="muted" id="lc-sub">Colégios, seções, salas, guarda das urnas e acessibilidade.</p>
+              <h1>Locais de votação</h1>
+              <p class="muted" id="lc-sub">Endereço, seções e salas de cada colégio.</p>
             </div>
           </div>
           <label class="field-icon lc-search">
@@ -672,12 +650,11 @@
         <section id="convocacoes" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Eleições 2026 · ELO/Convoca+</p>
-              <h1>Convocações</h1>
-              <p class="muted" id="cv-sub">Quem trabalha em cada local, a situação no ELO e a presença no dia.</p>
+              <h1>Convocados</h1>
+              <p class="muted" id="cv-sub">Quem trabalha em cada local e quem compareceu.</p>
             </div>
           </div>
-          <div id="cv-kpis" class="kpis cv-kpis"></div>
+          <p id="cv-kpis" class="resumo"></p>
           <div class="cv-filters">
             <label class="field-icon"><svg class="icon" aria-hidden="true"><use href="#i-search" /></svg><input id="cv-busca" type="search" placeholder="Nome ou colégio" autocomplete="off" /></label>
             <select id="cv-situacao" aria-label="Situação"><option value="">Todas as situações</option><option value="Nomeado">Nomeados</option><option value="Dispensado">Dispensados</option></select>
@@ -690,9 +667,8 @@
         <section id="documentos" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Biblioteca</p>
               <h1>Documentos</h1>
-              <p class="muted">Planejamento, manuais, avisos, normas e modelos. Cada arquivo aparece só para os perfis escolhidos.</p>
+              <p class="muted">Arquivos de consulta: planejamento, manuais e avisos.</p>
             </div>
             <button id="doc-new" class="btn btn-primary btn-sm" type="button" hidden>
               <svg class="icon" aria-hidden="true"><use href="#i-upload" /></svg>Enviar arquivo
@@ -705,9 +681,8 @@
         <section id="agenda" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Calendário da zona</p>
               <h1>Agenda</h1>
-              <p class="muted">Marcos das eleições, preparação de urnas, reuniões e prazos. Aparecem no Início de todos.</p>
+              <p class="muted">Datas importantes da eleição e do cartório.</p>
             </div>
             <button id="marco-new" class="btn btn-primary btn-sm" type="button" data-edit>
               <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Novo marco
@@ -720,9 +695,8 @@
         <section id="equipe" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Cartório da 023ª ZE</p>
               <h1>Equipe</h1>
-              <p class="muted" id="team-sub">Quem trabalha com você, com cargo e contato.</p>
+              <p class="muted" id="team-sub">Contatos de quem trabalha com você.</p>
             </div>
             <button id="user-new" class="btn btn-primary btn-sm" type="button" hidden>
               <svg class="icon" aria-hidden="true"><use href="#i-user-plus" /></svg>Nova conta
@@ -787,7 +761,6 @@
         <section id="fotos" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Acervo da Zona 023</p>
               <h1>Fotos</h1>
             </div>
             <a class="btn btn-primary btn-sm" href="/" target="_blank" rel="noopener">
@@ -825,9 +798,8 @@
         <section id="eventos" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Zona 023</p>
               <h1>Eventos</h1>
-              <p class="muted">Eleições, treinamentos, confraternizações. Cada foto pode ter um evento.</p>
+              <p class="muted">Ocasiões em que as fotos foram tiradas.</p>
             </div>
             <button id="event-new" class="btn btn-primary btn-sm" type="button">
               <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Novo evento
@@ -840,7 +812,6 @@
         <section id="pessoas" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Zona 023</p>
               <h1>Pessoas</h1>
               <p class="muted">Corrija nomes e junte cadastros repetidos.</p>
             </div>
@@ -857,9 +828,8 @@
         <section id="textos" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Nomenclatura</p>
               <h1>Textos do site</h1>
-              <p class="muted">Títulos e variações do nome que aparecem para o público.</p>
+              <p class="muted">Títulos que o público vê na página de fotos.</p>
             </div>
           </div>
           <div class="texts-layout">
@@ -886,7 +856,6 @@
         <section id="conta" class="a-section" hidden>
           <div class="a-head">
             <div>
-              <p class="kicker-dark">Sua conta</p>
               <h1>Perfil</h1>
               <p class="muted" id="account-user"></p>
             </div>
@@ -1210,7 +1179,7 @@
     <dialog id="dm-dialog" class="sheet small-dialog" aria-labelledby="dm-title">
       <form id="dm-form" class="sheet-form" novalidate>
         <div class="sheet-head">
-          <div><p class="kicker-dark">Dia da eleição</p><h2 id="dm-title">Nova demanda</h2></div>
+          <div><p class="kicker-dark">Pedidos dos locais</p><h2 id="dm-title">Novo pedido</h2></div>
           <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
         </div>
         <div class="sheet-body">
@@ -1356,11 +1325,11 @@
     <dialog id="tk-lote-dialog" class="sheet small-dialog" aria-labelledby="tl-title">
       <form id="tl-form" class="sheet-form" novalidate>
         <div class="sheet-head">
-          <div><p class="kicker-dark">Tarefas</p><h2 id="tl-title">Dividir um lote</h2></div>
+          <div><p class="kicker-dark">Tarefas</p><h2 id="tl-title">Dividir entre pessoas</h2></div>
           <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
         </div>
         <div class="sheet-body">
-          <p class="muted small">Um modelo vira uma tarefa para cada pessoa, com o mesmo checklist. Ex.: justificativas pós-turno por dias pares e ímpares.</p>
+          <p class="muted small">Cria uma tarefa igual para cada pessoa escolhida.</p>
           <label class="field"><span class="field-label">Modelo</span><select id="tl-modelo"></select></label>
           <div class="field"><span class="field-label">Como dividir</span><div id="tl-criterios" class="tl-criterios" role="radiogroup" aria-label="Como dividir"></div></div>
           <div class="field"><span class="field-label">Quem executa</span><div id="tl-pessoas" class="chips tk-pessoas"></div></div>
@@ -1382,11 +1351,11 @@
     <dialog id="es-import-dialog" class="sheet small-dialog" aria-labelledby="ei-title">
       <form id="ei-form" class="sheet-form" novalidate>
         <div class="sheet-head">
-          <div><p class="kicker-dark">Escala ASE</p><h2 id="ei-title">Colar do WhatsApp</h2></div>
+          <div><p class="kicker-dark">Escala dos ASE</p><h2 id="ei-title">Atualizar pelo WhatsApp</h2></div>
           <button class="icon-btn" type="button" data-close aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close" /></svg></button>
         </div>
         <div class="sheet-body">
-          <p class="muted small">Copie a mensagem da escala no grupo e cole aqui. Os dias do texto ficam iguais ao texto; horário, atividade e presença de quem continua são mantidos. Os outros dias não mudam.</p>
+          <p class="muted small">Copie a mensagem da escala no grupo e cole aqui. Só os dias que estão no texto mudam.</p>
           <label class="field"><span class="field-label">Texto da escala</span><textarea id="ei-texto" rows="9" placeholder="*SEGUNDA, 12/10/2026*&#10;&#10;▫️ NOME COMPLETO&#10;&#10;▫️ NOME COMPLETO"></textarea></label>
           <div id="ei-previa" class="ei-previa" hidden></div>
           <p id="ei-error" class="error" role="alert" hidden></p>

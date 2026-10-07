@@ -28,9 +28,9 @@ const MODULES = {
   eventos: { label: "Eventos", icon: "event" },
   pessoas: { label: "Pessoas", icon: "people" },
   textos: { label: "Textos do site", icon: "text" },
-  demandas: { label: "Demandas", icon: "ticket" },
-  totalizacao: { label: "Totalização", icon: "ballot" },
-  locais: { label: "Locais e seções", icon: "school" },
+  demandas: { label: "Pedidos dos locais", icon: "ticket" },
+  totalizacao: { label: "Apuração do TSE", icon: "ballot" },
+  locais: { label: "Locais de votação", icon: "school" },
   documentos: { label: "Documentos", icon: "doc" },
   declaracoes: {
     label: "Declarações",
@@ -70,7 +70,7 @@ const MODULES = {
     ],
   },
   tarefas: { label: "Tarefas", icon: "tasks" },
-  escala: { label: "Escala ASE", icon: "shift" },
+  escala: { label: "Escala dos ASE", icon: "shift" },
   frequencia: {
     label: "Presença",
     icon: "attendance",
@@ -83,7 +83,7 @@ const MODULES = {
       ["certificate", "Declarações em lote", "Todas as declarações do dia ou do turno em PDF, já no modelo do cartório."],
     ],
   },
-  convocacoes: { label: "Convocações", icon: "badge" },
+  convocacoes: { label: "Convocados", icon: "badge" },
 
   situacao: {
     label: "Sala de situação",
@@ -123,60 +123,52 @@ const MODULES = {
   },
 };
 
+// Menu por perfil: só o que já funciona, em poucos grupos com nomes que dizem para que servem.
 function navGroups() {
   if (AUTORIDADES.includes(me.role))
     return [
       { items: ["inicio"] },
-      { label: "Acompanhamento", items: [isJudge() ? "decisoes" : "acompanhamento", "totalizacao", "demandas", "situacao", "locais", "convocacoes"] },
+      { label: "Dia da eleição", items: ["totalizacao", "demandas", "locais", "convocacoes"] },
       { label: "Cartório", items: ["agenda", "documentos", "equipe"] },
     ];
   if (me.role === "ase")
     return [
-      { items: ["inicio"] },
-      { label: "Meu trabalho", items: ["minha-escala", "declaracoes", "agenda"] },
-      { label: "Consulta", items: ["locais", "documentos", "equipe"] },
+      { items: ["inicio", "minha-escala"] },
+      { label: "Consulta", items: ["agenda", "locais", "documentos", "equipe"] },
     ];
   if (me.role === "presidente")
     return [
-      { items: ["inicio"] },
-      { label: "Dia da eleição", items: ["minha-secao", "demandas"] },
-      { label: "Consulta", items: ["documentos", "agenda", "equipe"] },
+      { items: ["inicio", "demandas"] },
+      { label: "Consulta", items: ["agenda", "documentos", "equipe"] },
     ];
   if (me.role === "adm_predio")
     return [
-      { items: ["inicio"] },
-      { label: "Dia da eleição", items: ["meu-local", "demandas"] },
-      { label: "Consulta", items: ["locais", "documentos", "agenda", "equipe"] },
+      { items: ["inicio", "demandas"] },
+      { label: "Consulta", items: ["locais", "agenda", "documentos", "equipe"] },
     ];
   return [
     { items: ["inicio"] },
-    { label: "Dia da eleição", items: ["demandas", "totalizacao", "situacao"] },
-    { label: "Trabalho", items: ["tarefas", "agenda", "documentos"] },
-    { label: "Eleições 2026", items: ["escala", "frequencia", "declaracoes", "convocacoes", "locais"] },
-    { label: "Memórias", items: ["painel", "fotos", "eventos", "pessoas", "textos"] },
-    { label: "Cartório", items: ["equipe"] },
+    { label: "Rotina do cartório", items: ["tarefas", "escala", "agenda", "documentos", "equipe"] },
+    { label: "Dia da eleição", items: ["demandas", "totalizacao", "locais", "convocacoes"] },
+    { label: "Fotos", items: ["fotos", "eventos", "pessoas", "textos"] },
   ];
 }
 // Barra inferior do celular: atalhos por perfil e rótulos curtos.
 const TAB_KEYS = {
-  juiz: ["inicio", "decisoes", "totalizacao", "demandas"],
-  promotor: ["inicio", "acompanhamento", "totalizacao", "demandas"],
-  ase: ["inicio", "minha-escala", "declaracoes", "documentos"],
-  presidente: ["inicio", "minha-secao", "demandas", "documentos"],
-  adm_predio: ["inicio", "meu-local", "demandas", "locais"],
+  juiz: ["inicio", "totalizacao", "demandas", "documentos"],
+  promotor: ["inicio", "totalizacao", "demandas", "documentos"],
+  ase: ["inicio", "minha-escala", "agenda", "documentos"],
+  presidente: ["inicio", "demandas", "agenda", "documentos"],
+  adm_predio: ["inicio", "demandas", "locais", "documentos"],
 };
-const tabKeys = () => TAB_KEYS[me.role] || ["inicio", "demandas", "totalizacao", "tarefas"];
+const tabKeys = () => TAB_KEYS[me.role] || ["inicio", "tarefas", "escala", "demandas"];
 const TAB_LABEL = {
-  situacao: "Situação",
-  decisoes: "Decidir",
-  acompanhamento: "Acompanhar",
   escala: "Escala",
-  totalizacao: "Totalização",
+  totalizacao: "Apuração",
+  demandas: "Pedidos",
   "minha-escala": "Escala",
-  "minha-secao": "Seção",
-  "meu-local": "Local",
   locais: "Locais",
-  declaracoes: "Declarações",
+  convocacoes: "Convocados",
 };
 const allowedSections = () => [...navGroups().flatMap((group) => group.items), "conta"];
 
@@ -587,8 +579,7 @@ async function loadHome() {
   const hour = new Date().getHours();
   const first = firstName(me);
   $("#hello-title").textContent = `${hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite"}, ${first}`;
-  $("#hello-sub").textContent = `${me.title || ROLE_LABEL[me.role]} · 023ª Zona Eleitoral`;
-  renderHomeModules();
+  $("#hello-sub").textContent = "";
   loadHomeWork();
   try {
     homeData = await api("/api/equipe/inicio");
@@ -597,12 +588,6 @@ async function loadHome() {
     if (homeData.local)
       $("#hello-sub").textContent = `${me.title || ROLE_LABEL[me.role]} · ${homeData.local.nome}${me.secao ? ` · seção ${me.secao}` : ""}`;
     renderTimeline($("#home-marcos"), homeData.marcos.slice(0, 5));
-    $("#home-team").innerHTML = homeData.team
-      .map(
-        (person) =>
-          `<button type="button" class="team-chip" data-go="equipe">${userAvatar(person)}<span><strong>${esc(firstName(person))}</strong><small>${esc(person.title || ROLE_LABEL[person.role])}</small></span></button>`,
-      )
-      .join("");
   } catch (error) {
     $("#countdown").innerHTML = `<p class="error">${esc(error.message)}</p>`;
   }
@@ -1000,10 +985,10 @@ async function loadDemandas() {
   const cartorio = EDITORS.includes(me.role);
   $("#dm-new").hidden = !(cartorio || ["presidente", "adm_predio"].includes(me.role));
   $("#dm-sub").textContent = cartorio
-    ? "Pedidos dos locais de votação: título, seção, material, urna, mesário, estrutura. Registre, assuma e conclua com a resposta."
+    ? "O que os locais de votação pedem ao cartório no dia da eleição."
     : AUTORIDADES.includes(me.role)
-      ? "Acompanhe os pedidos dos locais e o atendimento do cartório."
-      : "Peça ao cartório o que precisar. A resposta chega aqui, sem lotar o grupo.";
+      ? "Os pedidos dos locais e a resposta do cartório."
+      : "Peça ao cartório o que precisar. A resposta chega aqui.";
   try {
     const data = await api("/api/eleicao/demandas");
     demandas = data.demandas;
@@ -1088,7 +1073,7 @@ $("#dm-form").addEventListener("submit", async (event) => {
       },
     });
     $("#dm-dialog").close();
-    toast("Demanda registrada.");
+    toast("Pedido registrado.");
     loadDemandas();
   } catch (error) {
     errorAt("#dm-error", error.message);
@@ -1462,17 +1447,11 @@ function renderConvocacoes() {
   const kpi = (name, value, label, hero = false) =>
     `<div class="kpi${hero ? " hero" : ""}"><span class="kpi-icon">${icon(name)}</span><strong>${value}</strong><span>${label}</span></div>`;
   const marcadas = (r.presenca.presente || 0) + (r.presenca.faltou || 0) + (r.presenca.substituido || 0);
+  void kpi;
   $("#cv-kpis").innerHTML = r.total
-    ? [
-        kpi("badge", fmt(r.total), `convocados · ${Object.keys(r.funcao).join(", ")}`, true),
-        kpi("check-circle", fmt(r.situacao.Nomeado), "nomeados"),
-        kpi("swap", fmt(r.situacao.Dispensado), "dispensados"),
-        kpi("attendance", `${fmt(marcadas)}/${fmt(r.situacao.Nomeado)}`, `presença registrada · ${fmt(r.presenca.faltou)} falta(s)`),
-      ].join("")
+    ? `<b>${fmt(r.situacao.Nomeado)} nomeados</b> · ${fmt(r.situacao.Dispensado)} dispensados · presença marcada para ${fmt(marcadas)}${r.presenca.faltou ? ` · <span class="bad">${fmt(r.presenca.faltou)} falta(s)</span>` : ""}`
     : "";
-  $("#cv-sub").textContent = r.total
-    ? `Pleito ${cv.pleito} · importado do ELO/Convoca+. Presença registrada pelo cartório no dia.`
-    : "Quem trabalha em cada local, a situação no ELO e a presença no dia.";
+  $("#cv-sub").textContent = `Quem trabalha em cada local e quem compareceu.${r.total ? ` Lista do ELO: ${Object.keys(r.funcao).join(", ").toLowerCase()}.` : ""}`;
   const q = normalizeText($("#cv-busca").value);
   const situacao = $("#cv-situacao").value;
   const presenca = $("#cv-presenca").value;
