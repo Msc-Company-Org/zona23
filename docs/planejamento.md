@@ -38,8 +38,8 @@ L = lê · E = edita · P = próprio (só o que é seu) · — = não vê
 | Totalização (TSE) | E (atualizar) | E | L | L | — | — | — | ✅ |
 | Locais e seções | E | E | L | L | L | — | L | ✅ |
 | Documentos | E | E | L† | L† | L† | L† | L† | ✅ |
-| Tarefas | E (delegar) | E | — | — | — | — | — | 🛠️ 12/10 |
-| Escala ASE | E (aprovar trocas) | E | — | — | P | — | — | 📅 12/10 |
+| Tarefas | E (delegar) | E | — | — | — | — | — | ✅ |
+| Escala ASE | E (aprovar trocas) | E | — | — | P | — | — | ✅ |
 | Presença | E | E | — | — | P | P (mesários) | P (local) | 📅 16/10 |
 | Declarações | E | E | — | — | P | P | P | 📅 16/10 |
 | Convocações e presença | E (aprovar) | E | L | L | — | — | — | ✅ lista e presença · 📅 dispensas |
@@ -63,9 +63,9 @@ L = lê · E = edita · P = próprio (só o que é seu) · — = não vê
 | Workflow | Passos | Estado |
 | --- | --- | --- |
 | Montar a equipe | Criar conta → definir cargo e perfil → enviar link pelo WhatsApp → acompanhar “aguardando 1º acesso”. | ✅ |
-| Delegar trabalho | Criar tarefa (ou a partir de modelo) → responsável e apoio → prazo → referência SEI/PJe → aviso no WhatsApp → acompanhar até concluir. | 🛠️ |
-| Dividir lotes | Modelo “Justificativas pós-turno” → dividir por critério (dias pares/ímpares, faixas de seção) → uma tarefa por pessoa, com o mesmo procedimento anexado. | 🛠️ |
-| Aprovar trocas e dispensas | Fila única de pedidos → aprovar ou recusar com motivo → escala e convocações se atualizam. | 📅 |
+| Delegar trabalho | Criar tarefa (ou a partir de modelo) → responsável e apoio → prazo → referência SEI/PJe → aviso no WhatsApp → acompanhar até concluir. | ✅ |
+| Dividir lotes | Modelo “Justificativas pós-turno” → dividir por critério (dias pares/ímpares, faixas de seção) → uma tarefa por pessoa, com o mesmo procedimento anexado. | ✅ |
+| Aprovar trocas e dispensas | Fila única de pedidos → aprovar ou recusar com motivo → escala e convocações se atualizam. | ✅ trocas da escala · 📅 dispensas |
 | Dia da eleição | Demandas em tela cheia → distribuir (assumir/atribuir) → acompanhar totalização e checklist dos locais. | ✅ / 📅 |
 | Fechar o turno | Relatório: demandas por tipo e tempo de resposta, faltosos, horários de totalização, declarações emitidas. | 📅 |
 
@@ -73,9 +73,9 @@ L = lê · E = edita · P = próprio (só o que é seu) · — = não vê
 
 | Workflow | Descrição | Estado |
 | --- | --- | --- |
-| Minhas tarefas | Lista do que está comigo e do que apoio, com prazo, checklist e comentários. | 🛠️ |
-| Colaborar | Comentar, marcar colegas, anexar documento, passar a tarefa adiante com histórico. | 🛠️ |
-| Escala e presença | Registrar presença do dia, gerar declarações em lote, conferir o limite de 10 dias. | 📅 |
+| Minhas tarefas | Lista do que está comigo e do que apoio, com prazo, checklist e comentários. | ✅ |
+| Colaborar | Comentar, marcar colegas, anexar documento, passar a tarefa adiante com histórico. | ✅ |
+| Escala e presença | Registrar presença do dia, gerar declarações em lote, conferir o limite de 10 dias. | ✅ escala, presença e limite · 📅 declarações |
 | Atendimento no dia | Assumir demanda, consultar (ELO/e-Título fora do sistema), responder e concluir. | ✅ |
 | Documentos | Publicar planejamento, avisos, manuais e modelos com a visibilidade certa. | ✅ |
 
@@ -98,7 +98,7 @@ L = lê · E = edita · P = próprio (só o que é seu) · — = não vê
 
 ## 6. Módulos em detalhe
 
-### 6.1 Tarefas: delegação, cooperação e acompanhamento (🛠️)
+### 6.1 Tarefas: delegação, cooperação e acompanhamento (✅)
 
 - **Campos:**
   - título, tipo (SEI, PJe, FILIA, ELO, Conseg, chamado de TI, edital, justificativas, credenciamento, ofício, outro);
@@ -110,8 +110,10 @@ L = lê · E = edita · P = próprio (só o que é seu) · — = não vê
   - histórico de quem mudou o quê.
 - **Modelos:** justificativas pós-turno (divisão em lote), editais de audiência pública, frequência e declarações do dia, credenciamento de fiscais.
 - **Visões:** minhas, que apoio, da equipe, atrasadas; quadro (kanban) no computador.
+- **Feito:** todos os itens acima. `@usuário` no comentário chama a pessoa para o apoio; marcar o primeiro passo põe a tarefa em andamento.
+- **Próximo:** aviso no celular (Web Push) ao receber tarefa; modelos editáveis pela chefia.
 
-### 6.2 Escala, presença e declarações (📅)
+### 6.2 Escala, presença e declarações (✅ escala · 📅 declarações)
 
 - **Importação:** colar o texto da escala do WhatsApp (`*DIA, dd/mm/aaaa*` + `▫️ NOME`) cria os dias e as pessoas.
 - **Escala:**
@@ -119,6 +121,8 @@ L = lê · E = edita · P = próprio (só o que é seu) · — = não vê
   - contador de 10 convocações nos dois turnos, com alerta no 9º dia e bloqueio acima de 10;
   - pedido de troca com aprovação da chefia.
 - **Presença:** presente, faltou ou substituído, com entrada e saída.
+- **Feito:** importação colando o texto (com prévia), atividade e horário por dia e por pessoa, presença, contador nos dois turnos com os dias de *todos* (eleição), alerta em 9 ou 10, bloqueio acima de 10, trocas com aprovação da chefia, *Minha escala* para o ASE e cópia no formato do grupo.
+- **Na escala real (06/10):** 50 ASE, 55 dias e 401 entradas; 4 pessoas passam de 10 convocações e uma aparece duas vezes em 02/10 e 24/10.
 - **Declarações:**
   - lote em PDF (impressão do navegador) no modelo do cartório;
   - envio individual pelo WhatsApp.
@@ -201,7 +205,7 @@ Ler grupos ou automatizar o WhatsApp pessoal não está nos planos: viola os ter
 | Totalização por seção | Portal do TSE | Banco (automático) | ✅ |
 | Datas do turno (preparação, conferência, entrega, eleição) | Planejamento e avisos do cartório | Agenda | ✅ estrutura · 📅 lançar |
 | Roteiros de distribuição e recolhimento | Planejamento Logístico 2026 | Banco | 📅 |
-| Escala de ASE | Texto do WhatsApp | Banco (importação) | 📅 |
+| Escala de ASE | Texto do WhatsApp (escala atualizada de 01/10) | Banco (importação privada) | ✅ |
 | Convocados | ELO/Convoca+ · Relatório de Mesários por Situação | Banco (importação privada, sem título) | ✅ coletores do 1º turno (123) · 📅 demais funções |
 | Documentos (planejamento, avisos, e-book) | Drive e grupos | Biblioteca | ✅ envio · 📅 carga inicial |
 
@@ -210,7 +214,7 @@ Ler grupos ou automatizar o WhatsApp pessoal não está nos planos: viola os ter
 | Até | Entrega |
 | --- | --- |
 | 08/10 | Publicação na VPS com login, perfis, demandas, totalização, locais e documentos; carga inicial de documentos e da agenda. |
-| 12/10 | Tarefas (delegação, apoio, comentários, modelos) e Escala ASE. |
+| 12/10 | ✅ Tarefas (delegação, apoio, comentários, modelos) e Escala ASE, entregues em 06/10. |
 | 16/10 | Convocações, presença, declarações em lote e *Para decidir*. |
 | 21/10 | Sala de situação, *Meu local* e *Minha seção*, contas de campo enviadas por link. |
 | 22/10 | Painéis e relatório do turno. Congelamento: só correções até 26/10. |
@@ -218,6 +222,7 @@ Ler grupos ou automatizar o WhatsApp pessoal não está nos planos: viola os ter
 ## 9. Decisões pendentes
 
 - Modelo atual da declaração de comparecimento.
+- Se os dias de eleição (*todos*) contam no limite de 10 convocações dos ASE. Hoje contam, o que deixa 45 dos 50 ASE no limite.
 - Relatório de convocados do ELO (formato e campos).
 - Acesso do pessoal de campo no 2º turno: todos os presidentes e ADMs, ou só ADMs e coordenadores.
 - WhatsApp Cloud API: seguir ou ficar com os links prontos.

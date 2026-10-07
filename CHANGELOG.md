@@ -2,6 +2,14 @@
 
 As entradas descrevem entregas. Pendências aparecem no README e não são anunciadas como concluídas.
 
+## 2026-10-06 — Tarefas e Escala ASE
+
+- **Tarefas:** responsável e apoio, prazo, prioridade, situação com *aguardando terceiro*, checklist, comentários com `@usuário`, documentos da biblioteca e histórico; visões *Comigo*, *Apoio*, *Equipe*, *Atrasadas* e *Concluídas*, com quadro no computador.
+- **Lotes por modelo:** justificativas pós-turno, editais de audiências públicas, frequência e declarações, credenciamento, ofício e chamado de TI, divididos por dias pares e ímpares, faixas de seção ou por pessoa.
+- **Escala ASE:** importação colando o texto do WhatsApp, atividade e horário do dia, presença, limite de 10 convocações nos dois turnos, trocas com aprovação da chefia e cópia no formato do grupo.
+- **Minha escala** para quem é ASE e cartão *Seu trabalho* no Início.
+- Importador aceita escala e tarefas na carga privada.
+
 ## 2026-10-06 — Área da equipe
 
 - A raiz do domínio passa a ser o login da equipe; o acervo de fotos vai para `/memorias`, com redirecionamento dos endereços antigos.

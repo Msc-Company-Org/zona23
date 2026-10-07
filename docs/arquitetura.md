@@ -32,7 +32,7 @@ Alterações em `public/` exigem reinício ou nova publicação, pois os recurso
 
 ## 🔐 Acesso e limites
 
-O acervo (`/memorias`) permite consulta e contribuição públicas. A área da equipe (`/`) usa sessão por cookie HttpOnly e `SameSite=Strict`, senha com Argon2, troca obrigatória da senha inicial e link de acesso de uso único (só o hash do token é guardado). Perfis `admin`, `equipe` e `autoridade` controlam as rotas `/api/equipe/*` e `/api/admin/*`; as escritas da equipe ficam em `audit_log`. Detalhes em [Área da equipe](area-da-equipe.md).
+O acervo (`/memorias`) permite consulta e contribuição públicas. A área da equipe (`/`) usa sessão por cookie HttpOnly e `SameSite=Strict`, senha com Argon2, troca obrigatória da senha inicial e link de acesso de uso único (só o hash do token é guardado). Perfis (`admin`, `chefe`, `equipe`, `juiz`, `promotor`, `ase`, `presidente`, `adm_predio`) controlam as rotas `/api/equipe/*`, `/api/eleicao/*`, `/api/documentos/*`, `/api/tarefas/*`, `/api/escala/*` e `/api/admin/*`; as escritas da equipe ficam em `audit_log`. Tarefas e escala são do cartório; quem é ASE só vê a própria escala (`/api/escala/minha`) e pede trocas. Detalhes em [Área da equipe](area-da-equipe.md).
 
 As escritas verificam a origem. `PUBLIC_ORIGIN` aceita origens separadas por vírgula. `TRUST_PROXY` exige um proxy confiável controlando o cabeçalho de IP e ausência de acesso direto à aplicação.
 

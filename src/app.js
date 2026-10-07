@@ -11,6 +11,8 @@ import { createAuth, migrateAuth } from "./auth.js";
 import { createEquipe, migrateEquipe } from "./equipe.js";
 import { createEleicao, migrateEleicao } from "./eleicao.js";
 import { createDocumentos, migrateDocumentos, MAX_DOCUMENTO } from "./documentos.js";
+import { createTarefas, migrateTarefas } from "./tarefas.js";
+import { createEscala, migrateEscala } from "./escala.js";
 
 const MAX_FILE = 25 * 1024 * 1024;
 const VIEW_SIZE = 1600;
@@ -124,6 +126,8 @@ export function createApp({
   migrateEquipe(db);
   migrateEleicao(db);
   migrateDocumentos(db);
+  migrateTarefas(db);
+  migrateEscala(db);
   const countHit = db.query(
     "INSERT INTO hits VALUES (?,?,?,1) ON CONFLICT(day,kind,ref) DO UPDATE SET count=count+1",
   );
@@ -265,6 +269,7 @@ export function createApp({
     ["admin.js", "text/javascript;charset=utf-8"],
     ["admin.css", "text/css;charset=utf-8"],
     ["equipe.js", "text/javascript;charset=utf-8"],
+    ["trabalho.js", "text/javascript;charset=utf-8"],
     ["equipe.css", "text/css;charset=utf-8"],
     ["aplicativo.js", "text/javascript;charset=utf-8"],
   ]) {
@@ -277,7 +282,7 @@ export function createApp({
     String(value).replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
   function page(file, values = {}, title = "", pathname = "/") {
     let html = readFileSync(join(publicRoot, file), "utf8");
-    for (const asset of ["app.js", "style.css", "admin.js", "admin.css", "equipe.js", "equipe.css", "aplicativo.js"])
+    for (const asset of ["app.js", "style.css", "admin.js", "admin.css", "equipe.js", "trabalho.js", "equipe.css", "aplicativo.js"])
       html = html.replace(`/${asset}"`, `/${asset}?v=${texts["/" + asset].version}"`);
     if (html.includes("<!--sprite-->"))
       html = html.replace(
@@ -365,6 +370,8 @@ export function createApp({
   });
   const eleicao = createEleicao({ db, json, InputError, textValue, auth, totalizacao, fetchJson });
   const documentos = createDocumentos({ db, json, InputError, textValue, auth, root, securityHeaders });
+  const tarefas = createTarefas({ db, json, InputError, textValue, validDate, auth, today });
+  const escala = createEscala({ db, json, InputError, textValue, validDate, auth, today });
   function renderHome() {
     const settings = admin.settings();
     // O acervo de fotos mora em /memorias; a raiz é a entrada da equipe.
@@ -638,6 +645,8 @@ export function createApp({
       if (path.startsWith("/api/auth/")) return await auth.handle(req, url, path, ip);
       if (path.startsWith("/api/equipe/")) return await equipe.handle(req, url, path);
       if (path.startsWith("/api/eleicao/")) return await eleicao.handle(req, url, path);
+      if (path === "/api/tarefas" || path.startsWith("/api/tarefas/")) return await tarefas.handle(req, url, path);
+      if (path === "/api/escala" || path.startsWith("/api/escala/")) return await escala.handle(req, url, path);
       if (path === "/api/documentos" || path.startsWith("/api/documentos/")) return await documentos.handle(req, url, path);
       if (path.startsWith("/api/admin/")) return await admin.handle(req, url, path, ip);
       if (path === "/api/app" && req.method === "GET") return json({ apk: await apkInfo() });

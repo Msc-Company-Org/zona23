@@ -44,19 +44,7 @@ const MODULES = {
       ["chat-send", "Para quem saiu antes", "Envio individual pelo WhatsApp a quem foi liberado antes de receber."],
     ],
   },
-  "minha-escala": {
-    label: "Minha escala",
-    icon: "shift",
-    soon: "12/10",
-    group: "Auxiliar de Serviços Eleitorais",
-    lede: "Os dias em que você foi escalado, o horário de chegada e o que vai fazer.",
-    features: [
-      ["clock", "Horário do dia", "Chegada, saída e atividade, sem procurar no grupo."],
-      ["alert", "Seus dias X/10", "Quantas convocações você já cumpriu nos dois turnos."],
-      ["swap", "Pedir troca", "Pedido de troca de dia com resposta do cartório."],
-      ["certificate", "Suas declarações", "Declaração de cada dia trabalhado para baixar."],
-    ],
-  },
+  "minha-escala": { label: "Minha escala", icon: "shift" },
   "minha-secao": {
     label: "Minha seção",
     icon: "ballot",
@@ -81,32 +69,8 @@ const MODULES = {
       ["users", "Presenças", "Administradores e coletores presentes ou ausentes."],
     ],
   },
-  tarefas: {
-    label: "Tarefas",
-    icon: "tasks",
-    soon: "12/10",
-    group: "Trabalho do cartório",
-    lede: "Os pedidos do dia a dia com responsável, prazo e situação — sem se perder no grupo.",
-    features: [
-      ["tasks", "Quem está com o quê", "Cada pedido tem responsável, prazo e status: a fazer, em andamento ou concluído."],
-      ["doc", "Referência do processo", "SEI, PJe (CarPrecCrim, FP, IP), FILIA, ELO, Conseg, chamado de TI, edital e ofício."],
-      ["swap", "Lotes divididos", "Modelos recorrentes, como justificativas por dias pares e ímpares, viram tarefas para cada pessoa."],
-      ["chat-send", "Aviso no WhatsApp", "Ao atribuir, um toque envia o resumo para quem vai executar."],
-    ],
-  },
-  escala: {
-    label: "Escala ASE",
-    icon: "shift",
-    soon: "12/10",
-    group: "Eleições 2026",
-    lede: "A escala dos auxiliares com horário, atividade do dia e o limite de 10 convocações sob controle.",
-    features: [
-      ["copy", "Cola do WhatsApp", "A escala atual entra colando o texto do grupo, no mesmo formato de dia e nomes."],
-      ["clock", "Horário e atividade", "Cada pessoa vê o horário de chegada e o que fará: urnas, envelopes, roteiro."],
-      ["alert", "Limite de 10 dias", "Contador por pessoa nos dois turnos, com alerta no 9º dia e bloqueio acima de 10."],
-      ["swap", "Trocas registradas", "Pedido de troca de dia com aprovação, sem mensagens soltas no grupo."],
-    ],
-  },
+  tarefas: { label: "Tarefas", icon: "tasks" },
+  escala: { label: "Escala ASE", icon: "shift" },
   frequencia: {
     label: "Presença",
     icon: "attendance",
@@ -608,6 +572,9 @@ function go(name) {
     locais: loadLocais,
     documentos: loadDocumentos,
     convocacoes: loadConvocacoes,
+    tarefas: loadTarefas,
+    escala: loadEscala,
+    "minha-escala": loadMinhaEscala,
   };
   clearInterval(refreshTimer);
   if (MODULES[name]?.soon) renderModule(name);
@@ -622,6 +589,7 @@ async function loadHome() {
   $("#hello-title").textContent = `${hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite"}, ${first}`;
   $("#hello-sub").textContent = `${me.title || ROLE_LABEL[me.role]} · 023ª Zona Eleitoral`;
   renderHomeModules();
+  loadHomeWork();
   try {
     homeData = await api("/api/equipe/inicio");
     $("#hello-date").textContent = dateLong(homeData.today);
@@ -1564,4 +1532,5 @@ $("#cv-list").addEventListener("click", async (event) => {
   }
 });
 
-boot();
+// Espera os demais scripts da página (trabalho.js) antes de abrir a sessão.
+addEventListener("DOMContentLoaded", boot);
