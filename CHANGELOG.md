@@ -2,6 +2,13 @@
 
 As entradas descrevem entregas. Pendências aparecem no README e não são anunciadas como concluídas.
 
+## 2026-10-07 — Cards clicáveis
+
+- Locais de votação: card fechado com colégio, bairro e número de seções; seções, endereço e ações abrem ao tocar (a busca por seção já abre o colégio certo).
+- Escala dos ASE: cada dia é um card de uma linha; os nomes ficam no detalhe do dia.
+- Convocados: locais fechados por padrão; filtros lado a lado.
+- Início: contagem compacta e no máximo 3 próximas datas.
+
 ## 2026-10-07 — Telas mais simples
 
 - Menu só com o que funciona, em três grupos: *Rotina do cartório*, *Dia da eleição* e *Fotos*. Saem os itens "Em breve".

@@ -584,16 +584,6 @@ function diaCard(d) {
       <span class="es-dia-info"><strong>${esc(SEMANA_LONGA[d.semana] || d.semana)}${d.data === es.hoje ? ' <span class="chip chip-tag chip-yellow">Hoje</span>' : ""}</strong>${d.atividade || d.horario ? `<small>${esc([d.atividade, d.horario].filter(Boolean).join(" · "))}</small>` : ""}</span>
       <span class="es-dia-count">${d.todos ? `<span class="chip chip-tag chip-navy">Todos</span>` : `<b>${d.pessoas.length}</b><small>ASE</small>`}${passado && d.pessoas.length ? `<small>${presentes} presentes</small>` : ""}</span>
     </button>
-    ${
-      d.pessoas.length
-        ? `<ul class="es-nomes">${d.pessoas
-            .map((p) => {
-              const [, chip] = ES_PRESENCA[p.presenca] || [];
-              return `<li class="${chip || ""}${p.situacao === "acima" ? " sit-acima" : ""}" title="${esc(p.nome)}${p.situacao === "acima" ? " · acima do limite" : ""}">${esc(nomeCurto(p.nome))}${p.horario ? `<small>${esc(p.horario)}</small>` : ""}</li>`;
-            })
-            .join("")}</ul>`
-        : ""
-    }
   </article>`;
 }
 function trocaCard(t, gestao) {

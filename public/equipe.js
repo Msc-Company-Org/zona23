@@ -587,7 +587,7 @@ async function loadHome() {
     renderCountdown();
     if (homeData.local)
       $("#hello-sub").textContent = `${me.title || ROLE_LABEL[me.role]} · ${homeData.local.nome}${me.secao ? ` · seção ${me.secao}` : ""}`;
-    renderTimeline($("#home-marcos"), homeData.marcos.slice(0, 5));
+    renderTimeline($("#home-marcos"), homeData.marcos.slice(0, 3));
   } catch (error) {
     $("#countdown").innerHTML = `<p class="error">${esc(error.message)}</p>`;
   }
@@ -608,7 +608,7 @@ function renderCountdown() {
       <p class="cd-sub">${esc(dateLong(next.date))}${next.time ? ` · ${esc(next.time.replace(/^0/, "").replace(":", "h").replace("h00", "h"))}` : ""}</p>
       ${next.detail ? `<p class="cd-detail">${esc(next.detail)}</p>` : ""}
     </div>
-    <svg class="cd-art" viewBox="0 0 320 240" aria-hidden="true"><use href="#art-urna" /></svg>`;
+`;
 }
 function renderTimeline(list, marcos) {
   list.innerHTML = marcos.length
@@ -1252,25 +1252,26 @@ function renderLocais() {
     (l) => !q || normalizeText(`${l.nome} ${l.bairro} ${l.endereco}`).includes(q) || l.secoes.some((x) => String(x.secao) === q),
   );
   const fmt = (n) => n.toLocaleString("pt-BR");
-  $("#lc-sub").textContent = `${locaisCache.length} colégios · ${locaisCache.reduce((n, l) => n + l.secoes.length, 0)} seções · ${fmt(locaisCache.reduce((n, l) => n + l.eleitores, 0))} eleitores aptos · áreas A a N`;
+  $("#lc-sub").textContent = `${locaisCache.length} colégios e ${locaisCache.reduce((n, l) => n + l.secoes.length, 0)} seções. Toque num colégio para ver as seções.`;
   $("#lc-list").innerHTML = list.length
     ? list
         .map(
-          (l) => `<article class="lc-card">
-          <header>
+          (l) => `<details class="lc-card"${q && l.secoes.some((x) => String(x.secao) === q) ? " open" : ""}>
+          <summary>
             <span class="tt-area">${l.area}</span>
-            <div><strong>${esc(l.nome)}</strong><small>${esc(l.endereco)} · ${esc(l.bairro)} · ${esc(l.bpm)} BPM · código ${esc(l.codigo)}</small></div>
-          </header>
+            <span class="lc-head"><strong>${esc(l.nome)}</strong><small>${esc(l.bairro)} · ${l.secoes.length} seções${l.demandasAbertas ? ` · <b class="lc-alert">${l.demandasAbertas} pedido(s)</b>` : ""}</small></span>
+          </summary>
+          <p class="lc-end">${esc(l.endereco)} · ${esc(l.bpm)} BPM · código ${esc(l.codigo)}</p>
           <div class="lc-secoes">${l.secoes.map((x) => `<span class="lc-secao${String(x.secao) === q ? " hit" : ""}${x.acessivel ? " acess" : ""}" title="${x.aptos} eleitores aptos${x.acessivel ? " · seção acessível" : ""}"><b>${x.secao}${x.acessivel ? '<i aria-label="acessível">♿</i>' : ""}</b>${x.sala ? esc(x.sala) : `${x.aptos} aptos`}</span>`).join("")}</div>
           ${l.guarda || l.acessibilidade || l.observacao ? `<p class="lc-info">${[l.guarda && `Guarda: ${l.guarda}`, l.acessibilidade && `Acessibilidade: ${l.acessibilidade}`, l.observacao].filter(Boolean).map(esc).join(" · ")}</p>` : ""}
           <footer>
-            <span class="muted small">${l.secoes.length} seções · ${fmt(l.eleitores)} eleitores${l.demandasAbertas ? ` · <b class="lc-alert">${l.demandasAbertas} demanda(s) aberta(s)</b>` : ""}</span>
+            <span class="muted small">${fmt(l.eleitores)} eleitores aptos</span>
             <span class="lc-actions">
               <a class="icon-btn" href="${mapsUrl(l)}" target="_blank" rel="noopener" aria-label="Abrir no mapa">${icon("out")}</a>
               ${canEdit ? `<button class="icon-btn" type="button" data-local="${l.id}" aria-label="Editar local">${icon("edit")}</button>` : ""}
             </span>
           </footer>
-        </article>`,
+        </details>`,
         )
         .join("")
     : `<div class="empty-state">${icon("school")}<strong>Nenhum local encontrado</strong><p>Busque pelo número da seção, o nome do colégio ou o bairro.</p></div>`;
@@ -1449,7 +1450,7 @@ function renderConvocacoes() {
   const marcadas = (r.presenca.presente || 0) + (r.presenca.faltou || 0) + (r.presenca.substituido || 0);
   void kpi;
   $("#cv-kpis").innerHTML = r.total
-    ? `<b>${fmt(r.situacao.Nomeado)} nomeados</b> · ${fmt(r.situacao.Dispensado)} dispensados · presença marcada para ${fmt(marcadas)}${r.presenca.faltou ? ` · <span class="bad">${fmt(r.presenca.faltou)} falta(s)</span>` : ""}`
+    ? `<b>${fmt(r.situacao.Nomeado)} nomeados</b> · ${fmt(r.situacao.Dispensado)} dispensados ${marcadas ? ` · presença marcada para ${fmt(marcadas)}` : ""}${r.presenca.faltou ? ` · <span class="bad">${fmt(r.presenca.faltou)} falta(s)</span>` : ""}`
     : "";
   $("#cv-sub").textContent = `Quem trabalha em cada local e quem compareceu.${r.total ? ` Lista do ELO: ${Object.keys(r.funcao).join(", ").toLowerCase()}.` : ""}`;
   const q = normalizeText($("#cv-busca").value);
@@ -1471,7 +1472,7 @@ function renderConvocacoes() {
   $("#cv-list").innerHTML = lista.length
     ? [...grupos.values()]
         .map(
-          ({ local, itens }) => `<details class="cv-local" open>
+          ({ local, itens }) => `<details class="cv-local"${q || presenca || situacao ? " open" : ""}>
           <summary><span class="tt-area">${local?.area || "—"}</span><span class="tt-name"><strong>${esc(local?.nome || "Sem local")}</strong><small>${itens.length} pessoa(s) · ${itens.filter((c) => c.presenca === "presente").length} presente(s)</small></span></summary>
           <ul class="cv-pessoas">${itens
             .map((c) => {
