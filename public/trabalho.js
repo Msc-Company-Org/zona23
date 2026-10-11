@@ -15,13 +15,13 @@ const whatsappLink = (phone, texto) => `https://wa.me/${whatsappNumber(phone || 
 
 /* ---------- Tarefas ---------- */
 let tk = null,
-  tkVisao = "comigo",
+  tkVisao = "minhas",
   tkLayout = "lista",
   tkAberta = null,
   tkEditando = null,
   tkModelo = "",
   tkDocs = null;
-const TK_STATUS_CHIP = { a_fazer: "chip-yellow", em_andamento: "chip-blue", aguardando: "", concluida: "chip-green", cancelada: "" };
+const TK_STATUS_CHIP = { a_fazer: "chip-yellow", em_andamento: "chip-blue", aguardando: "chip-gray", concluida: "chip-green", cancelada: "chip-gray" };
 const TK_ICON = {
   sei: "doc",
   pje: "gavel",
@@ -56,7 +56,6 @@ async function loadTarefas() {
       const badge = $(`#tk-c-${key}`);
       if (badge) badge.textContent = n;
     }
-    $("#tk-c-atrasadas").closest("button").classList.toggle("has-late", tk.contagem.atrasadas > 0);
     renderTarefas();
   } catch (error) {
     $("#tk-list").innerHTML = `<p class="error">${esc(error.message)}</p>`;
@@ -65,22 +64,13 @@ async function loadTarefas() {
   refreshTimer = setInterval(() => section === "tarefas" && !$("#tk-view").open && !$("#tk-dialog").open && !$("#tk-lote-dialog").open && loadTarefas(), 60000);
 }
 function tkCard(t) {
+  const quem = t.responsavel ? firstName(t.responsavel) + (t.apoio.length ? ` + ${t.apoio.length}` : "") : "Sem responsável";
   return `<button type="button" class="tk-card prio-${t.prioridade} st-${t.status}${t.atrasada ? " late" : ""}" data-tarefa="${t.id}">
-    <span class="dm-icon">${icon(TK_ICON[t.tipo] || "tasks")}</span>
     <span class="dm-main">
-      <span class="dm-top"><b>#${t.numero}</b> ${esc(t.tipoNome)}${t.referencia ? ` · <span class="tk-ref">${esc(t.referencia)}</span>` : ""}${t.prioridade !== "normal" ? ` <span class="chip chip-tag chip-red">${t.prioridade === "urgente" ? "Urgente" : "Alta"}</span>` : ""}</span>
-      <strong>${esc(t.titulo)}</strong>
-      <span class="tk-meta">
-        <span class="tk-prazo${t.atrasada ? " late" : ""}">${icon("clock")}${esc(prazoLabel(t))}</span>
-        ${t.itens.total ? `<span class="tk-check">${barra(t.itens.feitos, t.itens.total)}${t.itens.feitos}/${t.itens.total}</span>` : ""}
-        ${t.comentarios ? `<span>${icon("comment")}${t.comentarios}</span>` : ""}
-        ${t.status === "aguardando" && t.aguardando ? `<span class="tk-wait">${icon("swap")}${esc(t.aguardando)}</span>` : ""}
-      </span>
+      <strong>${esc(t.titulo)}${t.prioridade !== "normal" ? ` <span class="chip chip-tag chip-red">${t.prioridade === "urgente" ? "Urgente" : "Alta"}</span>` : ""}</strong>
+      <small class="tk-meta">${t.prazo ? `<span class="tk-prazo${t.atrasada ? " late" : ""}">${esc(prazoLabel(t))}</span> · ` : ""}${esc(quem)}${t.itens.total ? ` · ${t.itens.feitos}/${t.itens.total} passos` : ""}${t.status === "aguardando" && t.aguardando ? ` · aguardando ${esc(t.aguardando)}` : ""}</small>
     </span>
-    <span class="dm-side">
-      <span class="chip chip-tag ${TK_STATUS_CHIP[t.status]}">${esc(t.statusNome)}</span>
-      <span class="tk-people">${avatarMini(t.responsavel)}${t.apoio.map((p) => avatarMini(p, " apoio")).join("")}</span>
-    </span>
+    <span class="chip chip-tag ${TK_STATUS_CHIP[t.status]}">${esc(t.statusNome)}</span>
   </button>`;
 }
 function renderTarefas() {
@@ -89,11 +79,12 @@ function renderTarefas() {
     (t) => !q || normalizeText(`${t.titulo} ${t.referencia} ${t.tipoNome} ${t.responsavel?.name || ""} ${t.apoio.map((p) => p.name).join(" ")} #${t.numero}`).includes(q),
   );
   const vazio = {
-    comigo: ["Nada com você agora", "Quando alguém te passar uma tarefa, ela aparece aqui com prazo e checklist."],
+    minhas: ["Nada com você agora", "As tarefas que passarem para você aparecem aqui."],
+    comigo: ["Nada com você agora", ""],
     apoio: ["Você não está apoiando nenhuma tarefa", "Quem te marcar com @ num comentário te chama para ajudar."],
-    equipe: ["Nenhuma tarefa em aberto", "Crie a primeira ou divida um lote, como as justificativas pós-turno."],
+    equipe: ["Nenhuma tarefa em aberto", "Use “Nova tarefa” para passar um trabalho a alguém."],
     atrasadas: ["Nada atrasado", "Tudo dentro do prazo."],
-    concluidas: ["Nenhuma tarefa concluída ainda", "As concluídas e canceladas ficam aqui com o histórico."],
+    concluidas: ["Nenhuma tarefa concluída ainda", ""],
   }[tkVisao];
   const quadro = tkLayout === "quadro" && tkVisao !== "concluidas";
   $("#tk-list").className = quadro ? "tk-board" : "tk-list";
@@ -505,6 +496,7 @@ $("#tl-form").addEventListener("submit", async (event) => {
 /* ---------- Escala ASE ---------- */
 let es = null,
   esVisao = "proximos",
+  esPassados = false,
   esDia = null;
 const ES_PRESENCA = { presente: ["Presente", "chip-green"], faltou: ["Faltou", "chip-red"], substituido: ["Substituído", "chip-blue"] };
 const ES_SITUACAO = { alerta: ["No limite", "chip-yellow"], acima: ["Acima do limite", "chip-red"] };
@@ -518,8 +510,6 @@ async function loadEscala() {
   }
 }
 function renderEscala() {
-  const kpi = (name, value, label, hero = false, extra = "") =>
-    `<div class="kpi${hero ? " hero" : ""}${extra}"><span class="kpi-icon">${icon(name)}</span><strong>${value}</strong><span>${label}</span></div>`;
   const futuros = es.dias.filter((d) => d.data >= es.hoje && (d.pessoas.length || d.todos));
   const proximo = futuros[0];
   const acima = es.pessoas.filter((p) => p.situacao === "acima");
@@ -527,26 +517,30 @@ function renderEscala() {
   const pendentes = es.trocas.filter((t) => t.status === "pendente");
   $("#es-c-pessoas").textContent = es.pessoas.length;
   $("#es-c-trocas").textContent = pendentes.length;
-  $("#es-kpis").innerHTML = es.dias.length
+  $("#es-resumo").innerHTML = es.dias.length
     ? [
-        kpi(
-          "shift",
-          proximo ? (proximo.data === es.hoje ? "Hoje" : diaMes(proximo.data)) : "—",
-          proximo ? `${proximo.todos ? "todos os ASE" : `${proximo.pessoas.length} ASE`}${proximo.atividade ? ` · ${esc(proximo.atividade)}` : ""}` : "sem dias pela frente",
-          true,
-        ),
-        kpi("users", es.pessoas.length, `ASE na escala · ${es.dias.length} dias`),
-        kpi("alert", alerta.length, "no limite (9 ou 10)", false, alerta.length ? " warn" : ""),
-        kpi("alert", acima.length, `acima de ${es.limite}`, false, acima.length ? " bad" : ""),
-        kpi("swap", pendentes.length, "trocas pedidas"),
-      ].join("")
+        proximo ? `<b>${proximo.data === es.hoje ? "Hoje" : esc(diaMes(proximo.data))}:</b> ${proximo.todos ? "todos os ASE" : `${proximo.pessoas.length} ASE`}` : "",
+        `${es.pessoas.length} ASE na escala`,
+        acima.length ? `<span class="bad">${acima.length} acima de ${es.limite} convocações</span>` : "",
+        pendentes.length ? `<span class="warn">${pendentes.length} troca(s) para responder</span>` : "",
+      ]
+        .filter(Boolean)
+        .join(" · ")
     : "";
+  void alerta;
   if (!es.dias.length) {
-    $("#es-body").innerHTML = `<div class="empty-state">${icon("shift")}<strong>A escala ainda não foi lançada</strong><p>Copie a mensagem da escala no grupo dos ASE e use “Colar do WhatsApp”. Os dias e as pessoas entram de uma vez.</p></div>`;
+    $("#es-body").innerHTML = `<div class="empty-state"><strong>A escala ainda não foi lançada</strong><p>Copie a mensagem da escala no grupo dos ASE e use “Atualizar pelo WhatsApp”.</p></div>`;
     return;
   }
   const corpo = {
-    proximos: () => (futuros.length ? futuros.slice(0, 14).map(diaCard).join("") : `<div class="empty-state">${icon("shift")}<strong>Nenhum dia pela frente</strong><p>Cole a escala atualizada para lançar os próximos dias.</p></div>`),
+    proximos: () => {
+      const passados = es.dias.filter((d) => d.data < es.hoje && d.pessoas.length);
+      return (
+        (passados.length ? `<button type="button" class="link es-passados" id="es-passados">${esPassados ? "Esconder dias anteriores" : `Ver ${passados.length} dias anteriores`}</button>` : "") +
+        (esPassados ? passados.map(diaCard).join("") : "") +
+        (futuros.length ? futuros.map(diaCard).join("") : `<div class="empty-state"><strong>Nenhum dia pela frente</strong><p>Use “Atualizar pelo WhatsApp” para lançar os próximos dias.</p></div>`)
+      );
+    },
     todos: () => {
       const meses = {};
       for (const d of es.dias) (meses[d.data.slice(0, 7)] ||= []).push(d);
@@ -572,7 +566,7 @@ function renderEscala() {
         .join("")}</div>`,
     trocas: () => {
       const gestao = GESTAO.includes(me.role);
-      return `<div class="es-trocas-head"><p class="muted small">${gestao ? "Aprove ou recuse. Ao aprovar, a escala muda sozinha." : "Pedidos dos ASE. Quem aprova é a chefia do cartório."}</p><button type="button" class="btn btn-outline btn-sm" id="es-nova-troca">${icon("plus")}Registrar pedido</button></div>${
+      return `<div class="es-trocas-head"><p class="muted small">${gestao ? "Ao aprovar, a escala muda sozinha." : "Quem aprova é a chefia."}</p><button type="button" class="btn btn-outline btn-sm" id="es-nova-troca">${icon("plus")}Registrar pedido</button></div>${
         es.trocas.length
           ? `<div class="dm-list">${es.trocas.map((t) => trocaCard(t, gestao)).join("")}</div>`
           : `<div class="empty-state">${icon("swap")}<strong>Nenhum pedido de troca</strong><p>Quem é ASE pede pelo app; o cartório também pode registrar o que chegou pelo grupo.</p></div>`
@@ -587,7 +581,7 @@ function diaCard(d) {
   return `<article class="es-dia${d.data === es.hoje ? " today" : ""}${passado ? " past" : ""}">
     <button type="button" class="es-dia-head" data-es-dia="${d.data}">
       <span class="tl-date"><b>${Number(d.data.slice(8))}</b>${MONTHS[Number(d.data.slice(5, 7)) - 1]}</span>
-      <span class="es-dia-info"><strong>${esc(SEMANA_LONGA[d.semana] || d.semana)}${d.data === es.hoje ? ' <span class="chip chip-tag chip-yellow">Hoje</span>' : ""}</strong><small>${esc([d.atividade, d.horario].filter(Boolean).join(" · ") || `${d.turno}º turno`)}</small></span>
+      <span class="es-dia-info"><strong>${esc(SEMANA_LONGA[d.semana] || d.semana)}${d.data === es.hoje ? ' <span class="chip chip-tag chip-yellow">Hoje</span>' : ""}</strong>${d.atividade || d.horario ? `<small>${esc([d.atividade, d.horario].filter(Boolean).join(" · "))}</small>` : ""}</span>
       <span class="es-dia-count">${d.todos ? `<span class="chip chip-tag chip-navy">Todos</span>` : `<b>${d.pessoas.length}</b><small>ASE</small>`}${passado && d.pessoas.length ? `<small>${presentes} presentes</small>` : ""}</span>
     </button>
     ${
@@ -627,6 +621,10 @@ for (const button of $$("[data-es-visao]"))
     es && renderEscala();
   });
 $("#es-body").addEventListener("click", async (event) => {
+  if (event.target.closest("#es-passados")) {
+    esPassados = !esPassados;
+    return renderEscala();
+  }
   const dia = event.target.closest("[data-es-dia]");
   if (dia) return openDia(dia.dataset.esDia);
   const pessoa = event.target.closest("[data-es-pessoa]");
@@ -968,7 +966,7 @@ $("#me-body").addEventListener("click", async (event) => {
   }
 });
 
-/* ---------- Início: seu trabalho ---------- */
+/* ---------- Início: o que fazer agora ---------- */
 async function loadHomeWork() {
   const card = $("#home-work");
   const cartorio = EDITORS.includes(me.role);
@@ -977,38 +975,31 @@ async function loadHomeWork() {
   try {
     if (me.role === "ase") {
       const minha = await api("/api/escala/minha");
-      $("#home-work-title").textContent = "Sua escala";
+      $("#home-work-title").textContent = "Seu próximo dia";
       $("#home-work-link").dataset.go = "minha-escala";
       const proximo = minha.dias?.find((d) => d.data >= minha.hoje);
-      $("#home-work-body").innerHTML = minha.pessoa
-        ? `<div class="hw-stats"><div><b>${minha.pessoa.total}/${minha.limite}</b><small>convocações</small></div><div><b>${proximo ? diaMes(proximo.data) : "—"}</b><small>próximo dia</small></div></div>${proximo ? `<p class="hw-line">${icon("clock")}${esc([SEMANA_LONGA[proximo.semana], proximo.atividade, proximo.horario].filter(Boolean).join(" · "))}</p>` : ""}`
-        : `<p class="muted">Seu nome ainda não está na escala lançada pelo cartório.</p>`;
+      $("#home-work-body").innerHTML = !minha.pessoa
+        ? `<p class="muted">Seu nome ainda não está na escala.</p>`
+        : proximo
+          ? `<p class="hw-big">${esc(dateLong(proximo.data))}</p><p class="muted">${esc([proximo.atividade, proximo.horario].filter(Boolean).join(" · ") || "Horário a confirmar")}</p>`
+          : `<p class="muted">Nenhum dia pela frente.</p>`;
       return;
     }
     const [tarefas, escala] = await Promise.all([api("/api/tarefas/resumo"), api("/api/escala/resumo").catch(() => null)]);
-    $("#home-work-title").textContent = "Seu trabalho";
+    $("#home-work-title").textContent = "Para fazer";
     $("#home-work-link").dataset.go = "tarefas";
     const gestao = GESTAO.includes(me.role);
-    const proximoEs = escala?.proximos?.[0];
-    $("#home-work-body").innerHTML = `
-      <div class="hw-stats">
-        <button type="button" data-go="tarefas"><b>${tarefas.comigo}</b><small>comigo</small></button>
-        <button type="button" data-go="tarefas" class="${tarefas.atrasadas ? "late" : ""}"><b>${tarefas.atrasadas}</b><small>atrasadas</small></button>
-        <button type="button" data-go="tarefas"><b>${tarefas.apoio}</b><small>apoio</small></button>
-        ${gestao ? `<button type="button" data-go="tarefas" class="${tarefas.equipeAtrasadas ? "late" : ""}"><b>${tarefas.equipe}</b><small>equipe${tarefas.equipeAtrasadas ? ` · ${tarefas.equipeAtrasadas} atras.` : ""}</small></button>` : ""}
-      </div>
-      ${
-        tarefas.proximas.length
-          ? `<ul class="hw-tasks">${tarefas.proximas.map((t) => `<li><button type="button" data-hw-tarefa="${t.id}"><span>${esc(t.titulo)}</span><small class="${t.atrasada ? "late" : ""}">${esc(prazoLabel(t))}</small></button></li>`).join("")}</ul>`
-          : `<p class="muted small">Nenhuma tarefa com você agora.</p>`
-      }
-      ${
-        proximoEs
-          ? `<button type="button" class="hw-line hw-escala" data-go="escala">${icon("shift")}<span><b>Escala ASE · ${proximoEs.data === escala.hoje ? "hoje" : esc(diaMes(proximoEs.data))}</b> ${proximoEs.todos ? "todos os ASE" : `${proximoEs.pessoas} ASE`}${proximoEs.atividade ? ` · ${esc(proximoEs.atividade)}` : ""}</span></button>`
-          : ""
-      }
-      ${gestao && escala?.trocasPendentes ? `<button type="button" class="hw-line hw-alert" data-go="escala">${icon("swap")}<span>${escala.trocasPendentes} pedido(s) de troca aguardando você</span></button>` : ""}
-      ${escala?.acima ? `<button type="button" class="hw-line hw-alert" data-go="escala">${icon("alert")}<span>${escala.acima} ASE acima de 10 convocações</span></button>` : ""}`;
+    const hoje = escala?.proximos?.find((d) => d.data === escala.hoje);
+    const linhas = [
+      gestao && tarefas.equipeAtrasadas ? `<button type="button" class="hw-line hw-alert" data-go="tarefas">${tarefas.equipeAtrasadas} tarefa(s) atrasada(s) na equipe</button>` : "",
+      gestao && escala?.trocasPendentes ? `<button type="button" class="hw-line hw-alert" data-go="escala">${escala.trocasPendentes} troca(s) de escala para responder</button>` : "",
+      escala?.acima ? `<button type="button" class="hw-line hw-alert" data-go="escala">${escala.acima} ASE acima de 10 convocações</button>` : "",
+      hoje ? `<button type="button" class="hw-line" data-go="escala">Escala de hoje: ${hoje.todos ? "todos os ASE" : `${hoje.pessoas} ASE`}${hoje.atividade ? ` · ${esc(hoje.atividade)}` : ""}</button>` : "",
+    ].join("");
+    $("#home-work-body").innerHTML =
+      (tarefas.proximas.length
+        ? `<ul class="hw-tasks">${tarefas.proximas.map((t) => `<li><button type="button" data-hw-tarefa="${t.id}"><span>${esc(t.titulo)}</span><small class="${t.atrasada ? "late" : ""}">${t.prazo ? esc(prazoLabel(t)) : ""}</small></button></li>`).join("")}</ul>`
+        : `<p class="muted">Nenhuma tarefa com você.</p>`) + linhas;
   } catch (error) {
     $("#home-work-body").innerHTML = `<p class="error">${esc(error.message)}</p>`;
   }
