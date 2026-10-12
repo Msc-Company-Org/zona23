@@ -963,7 +963,7 @@ export function createApp({
     } catch (error) {
       if (error instanceof InputError)
         return json({ error: error.message }, error.status);
-      if (error instanceof SyntaxError || error instanceof TypeError)
+      if (error instanceof SyntaxError)
         return json({ error: "Confira os dados enviados." }, 400);
       console.error("Falha no acervo:", error.message);
       return json(
